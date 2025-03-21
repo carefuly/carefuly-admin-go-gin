@@ -22,7 +22,13 @@ func main() {
 	var relyConfig config.RelyConfig
 	relyConfig.Logger = ioc.InitStdoutLogger()
 	initConfig := ioc.InitConfig(true)
-	relyConfig.Db = ioc.NewDbPool().InitDb(initConfig.DatabaseConfig)
+
+	dbPool := ioc.NewDbPool()
+	dbPool.InitDatabases(initConfig.DatabaseConfig)
+	relyConfig.Db = config.DatabasesPool{
+		Careful: dbPool.CarefulDB,
+	}
+
 	relyConfig.Redis = ioc.InitRedis(initConfig.RedisConfig)
 	relyConfig.Token = initConfig.TokenConfig
 

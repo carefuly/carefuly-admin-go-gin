@@ -8,6 +8,8 @@
 
 package config
 
+import "gorm.io/gorm"
+
 type DatabaseConfig struct {
 	Type     string `yaml:"type" json:"type"`
 	Host     string `yaml:"host" json:"host"`
@@ -17,4 +19,8 @@ type DatabaseConfig struct {
 	Database string `yaml:"dbname" json:"dbname"`
 	Charset  string `yaml:"charset" json:"charset"`
 	Prefix   string `yaml:"prefix" json:"prefix"`
+}
+
+type DatabasesPool struct {
+	Careful *gorm.DB
 }

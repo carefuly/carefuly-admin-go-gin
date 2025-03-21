@@ -22,16 +22,29 @@ import (
 )
 
 type DbPool struct {
-	db *gorm.DB
+	CarefulDB *gorm.DB
 }
 
 func NewDbPool() *DbPool {
 	return &DbPool{
-		db: new(gorm.DB),
+		CarefulDB: new(gorm.DB),
 	}
 }
 
-func (i DbPool) InitDb(database config.DatabaseConfig) *gorm.DB {
+func (i *DbPool) InitDatabases(databases map[string]config.DatabaseConfig) {
+	for name, dbConfig := range databases {
+		db := i.InitDb(dbConfig)
+		switch name {
+		case "careful":
+			i.CarefulDB = db
+		// 可以根据需要添加更多 case
+		default:
+			zap.L().Warn("未知的数据库配置名称", zap.String("name", name))
+		}
+	}
+}
+
+func (i *DbPool) InitDb(database config.DatabaseConfig) *gorm.DB {
 	// 配置日志
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
@@ -43,26 +56,27 @@ func (i DbPool) InitDb(database config.DatabaseConfig) *gorm.DB {
 	)
 	// dsn
 	var dsn string
-	// 全局模式
-	var err error
 	// 判断数据库类型
 	if database.Type == "mysql" {
 		// mysql
 		dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
 			database.Username, database.Password, database.Host, database.Port, database.Database, database.Charset)
-		i.db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				TablePrefix: database.Prefix, // 表名前缀
 			},
 			Logger: newLogger,
 		})
-	}
-	// 连接数据失败
-	if err != nil {
-		zap.L().Error("数据库连接失败", zap.Error(err))
+
+		// 连接数据失败
+		if err != nil {
+			zap.L().Error("数据库连接失败", zap.Error(err))
+		}
+
+		return db
 	}
 
 	// 迁移表
 
-	return i.db
+	return nil
 }

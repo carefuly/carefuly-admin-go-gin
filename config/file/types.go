@@ -12,20 +12,19 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type Config struct {
 	ServerConfig   `yaml:"server" json:"server"`
-	DatabaseConfig `yaml:"database" json:"database"`
+	DatabaseConfig map[string]DatabaseConfig `yaml:"database" json:"database"`
 	RedisConfig    `yaml:"redis" json:"redis"`
 	TokenConfig    `yaml:"token" json:"token"`
 }
 
 type RelyConfig struct {
 	Logger *zap.Logger
-	Db     *gorm.DB
+	Db     DatabasesPool
 	Redis  redis.Cmdable
 	Trans  ut.Translator
-	Token TokenConfig
+	Token  TokenConfig
 }
