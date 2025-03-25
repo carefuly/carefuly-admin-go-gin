@@ -1,0 +1,80 @@
+/**
+ * Description：
+ * FileName：captcha.go
+ * Author：CJiaの用心
+ * Create：2025/3/25 11:25:25
+ * Remark：
+ */
+
+package controller
+
+import (
+	"errors"
+	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/service/captcha"
+	service "github.com/carefuly/carefuly-admin-go-gin/internal/service/third"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
+	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"net/http"
+)
+
+type CaptchaController interface {
+	RegisterRoutes(router *gin.RouterGroup)
+	GenerateCaptchaHandler(ctx *gin.Context)
+}
+
+type captchaController struct {
+	rely config.RelyConfig
+	svc  service.CaptchaService
+}
+
+func NewCaptchaController(rely config.RelyConfig, svc service.CaptchaService) CaptchaController {
+	return &captchaController{
+		rely: rely,
+		svc:  svc,
+	}
+}
+
+type CaptchaRequest struct {
+	Type    captcha.TypeCaptcha `form:"type" binding:"required,oneof=1 2 3"` // 验证码类型
+	BizType string              `form:"bizType" binding:"required"`          // 业务类型
+}
+
+type CaptchaResponse struct {
+	Id   string `json:"id"`   // 验证码ID
+	Img  string `json:"img"`  // 验证码图片
+	Code string `json:"code"` // 验证码
+}
+
+func (c *captchaController) RegisterRoutes(router *gin.RouterGroup) {
+	router.GET("/generateCaptcha", c.GenerateCaptchaHandler)
+}
+
+func (c *captchaController) GenerateCaptchaHandler(ctx *gin.Context) {
+	var req CaptchaRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		validate.NewValidatorError(c.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	id, b64s, code, err := c.svc.Generate(ctx, req.Type, req.BizType)
+	// 不管成功还是失败, 控制台都要返回验证码
+	zap.L().Info("当前生成的验证码", zap.String("code", code))
+
+	switch {
+	case err == nil:
+		response.NewResponse().SuccessResponse(ctx, "验证码生成成功", CaptchaResponse{
+			Id:   id,
+			Img:  b64s,
+			Code: code,
+		})
+	case errors.Is(err, service.ErrCaptchaSendTooMany):
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "验证码发送太频繁，请稍后再试", nil)
+	default:
+		ctx.Set("internal", err.Error())
+		zap.L().Error("验证码生成异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+	}
+}

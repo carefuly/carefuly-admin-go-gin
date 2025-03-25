@@ -29,9 +29,10 @@ type Server struct {
 	locale string
 }
 
-func NewServer(rely config.RelyConfig) *Server {
+func NewServer(rely config.RelyConfig, locale string) *Server {
 	return &Server{
 		rely: rely,
+		locale: locale,
 	}
 }
 
@@ -83,14 +84,14 @@ func (s *Server) InitGinTrans() (ut.Translator, error) {
 	return trans, nil
 }
 
-func (s *Server) InitWebServer(middle []gin.HandlerFunc) *gin.Engine {
+func (s *Server) InitWebServer(middle []gin.HandlerFunc, rely config.RelyConfig) *gin.Engine {
 	server := gin.Default()
 	server.Use(middle...)
 
 	ApiGroup := server.Group("/dev-api")
 	v1 := ApiGroup.Group("/v1")
 
-	router.NewRouter(s.rely, v1).RegisterRoutes()
+	router.NewRouter(rely, v1).RegisterRoutes()
 
 	return server
 }

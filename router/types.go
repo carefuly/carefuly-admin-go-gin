@@ -27,4 +27,5 @@ func NewRouter(rely config.RelyConfig, router *gin.RouterGroup) *Router {
 
 func (r *Router) RegisterRoutes() {
 	NewAuthRouter(r.rely).RegisterAuthRouter(r.router)
+	NewThirdRouter(r.rely).RegisterAuthRouter(r.router)
 }

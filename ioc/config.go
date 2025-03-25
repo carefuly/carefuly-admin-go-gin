@@ -92,6 +92,9 @@ func InitConfig(debug bool) *config.Config {
 		zap.L().Error("解析配置文件失败", zap.Error(err))
 	}
 
+	globalConfig.ServerConfig.Host = conf.ServerConfig.Host
+	globalConfig.ServerConfig.Port = conf.ServerConfig.Port
+
 	zap.L().Debug("[配置文件信息]", zap.Any("globalConfig", globalConfig))
 
 	// 将配置信息返回

@@ -32,10 +32,10 @@ func main() {
 	relyConfig.Redis = ioc.InitRedis(initConfig.RedisConfig)
 	relyConfig.Token = initConfig.TokenConfig
 
-	server := ioc.NewServer(relyConfig)
+	server := ioc.NewServer(relyConfig, "zh")
 	middlewares := server.InitGinMiddlewares()
 	relyConfig.Trans, _ = server.InitGinTrans()
-	engine := server.InitWebServer(middlewares)
+	engine := server.InitWebServer(middlewares, relyConfig)
 
 	err := engine.Run(fmt.Sprintf("%s:%d", initConfig.ServerConfig.Host, initConfig.ServerConfig.Port))
 	if err != nil {
