@@ -1,0 +1,130 @@
+basePath: /dev-api
+definitions:
+  captcha.TypeCaptcha:
+    enum:
+    - 1
+    type: integer
+    x-enum-comments:
+      DigitIotaCaptcha: 数字字母验证码
+    x-enum-varnames:
+    - DigitIotaCaptcha
+  controller.CaptchaResponse:
+    properties:
+      code:
+        description: 验证码
+        type: string
+      id:
+        description: 验证码ID
+        type: string
+      img:
+        description: 验证码图片
+        type: string
+    type: object
+  controller.RegisterRequest:
+    properties:
+      password:
+        description: 密码
+        maxLength: 20
+        minLength: 3
+        type: string
+      username:
+        description: 用户账号
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  response.Response:
+    properties:
+      code:
+        description: 状态码
+        type: integer
+      data:
+        description: 数据
+      msg:
+        description: 提示信息
+      success:
+        description: 是否成功
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: 2224693191@qq.com
+    name: CJiaの用心
+    url: http://www.swagger.io/support
+  description: CarefulAdmin在线接口文档
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms
+  title: CarefulAdmin
+  version: "1.0"
+paths:
+  /v1/auth/password-register:
+    post:
+      consumes:
+      - application/json
+      description: 密码注册
+      operationId: PassWordRegisterHandler
+      parameters:
+      - description: 参数
+        in: body
+        name: RegisterRequest
+        required: true
+        schema:
+          $ref: '#/definitions/controller.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 密码注册
+      tags:
+      - 注册
+  /v1/third/generateCaptcha:
+    get:
+      consumes:
+      - application/json
+      description: 生成验证码
+      operationId: GenerateCaptchaHandler
+      parameters:
+      - description: 业务类型
+        in: query
+        name: bizType
+        required: true
+        type: string
+      - description: 验证码类型
+        enum:
+        - 1
+        in: query
+        name: type
+        required: true
+        type: integer
+        x-enum-comments:
+          DigitIotaCaptcha: 数字字母验证码
+        x-enum-varnames:
+        - DigitIotaCaptcha
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.CaptchaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 生成验证码
+      tags:
+      - 认证管理
+swagger: "2.0"

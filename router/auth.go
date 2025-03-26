@@ -10,6 +10,9 @@ package router
 
 import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
+	dao "github.com/carefuly/carefuly-admin-go-gin/internal/dao/system"
+	repository "github.com/carefuly/carefuly-admin-go-gin/internal/repository/system"
+	service "github.com/carefuly/carefuly-admin-go-gin/internal/service/auth"
 	controller "github.com/carefuly/carefuly-admin-go-gin/internal/web/controller/auth"
 	"github.com/gin-gonic/gin"
 )
@@ -27,6 +30,12 @@ func NewAuthRouter(rely config.RelyConfig) *AuthRouter {
 func (r *AuthRouter) RegisterAuthRouter(router *gin.RouterGroup) {
 	authRouter := router.Group("/auth")
 
-	registerHandler := controller.NewRegisterController(r.rely)
+	userDAO := dao.NewGORMUserDAO(r.rely.Db.Careful)
+	userRepository := repository.NewUserRepository(userDAO)
+	userPasswordDAO := dao.NewUserPasswordDAO(r.rely.Db.Careful)
+	userPasswordRepository := repository.NewUserPassWordRepository(userPasswordDAO)
+
+	registerService := service.NewRegisterService(userRepository, userPasswordRepository)
+	registerHandler := controller.NewRegisterController(r.rely, registerService)
 	registerHandler.RegisterRoutes(authRouter)
 }

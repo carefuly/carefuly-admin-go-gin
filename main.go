@@ -18,6 +18,17 @@ import (
 	"syscall"
 )
 
+// @title CarefulAdmin
+// @version 1.0
+// @description CarefulAdmin在线接口文档
+// @termsOfService http://swagger.io/terms
+// @contact.name CJiaの用心
+// @contact.url http://www.swagger.io/support
+// @contact.email 2224693191@qq.com
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
+// @BasePath /dev-api
 func main() {
 	var relyConfig config.RelyConfig
 	relyConfig.Logger = ioc.InitStdoutLogger()

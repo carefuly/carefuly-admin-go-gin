@@ -11,6 +11,7 @@ package ioc
 import (
 	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
+	"github.com/carefuly/carefuly-admin-go-gin/docs"
 	"github.com/carefuly/carefuly-admin-go-gin/router"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -20,6 +21,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"reflect"
 	"strings"
 )
@@ -31,7 +34,7 @@ type Server struct {
 
 func NewServer(rely config.RelyConfig, locale string) *Server {
 	return &Server{
-		rely: rely,
+		rely:   rely,
 		locale: locale,
 	}
 }
@@ -87,6 +90,11 @@ func (s *Server) InitGinTrans() (ut.Translator, error) {
 func (s *Server) InitWebServer(middle []gin.HandlerFunc, rely config.RelyConfig) *gin.Engine {
 	server := gin.Default()
 	server.Use(middle...)
+
+	// 配置接口前缀
+	docs.SwaggerInfo.BasePath = "/dev-api"
+	// 配置接口文档
+	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	ApiGroup := server.Group("/dev-api")
 	v1 := ApiGroup.Group("/v1")

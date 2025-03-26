@@ -9,12 +9,12 @@
 package captcha
 
 // TypeCaptcha 验证码类型枚举
-type TypeCaptcha int
+type TypeCaptcha int // 验证码类型枚举
 
 const (
 	DigitIotaCaptcha TypeCaptcha = 1 // 数字字母验证码
-	MathIotaCaptcha  TypeCaptcha = 2 // 数学验证码
-	SlideIotaCaptcha TypeCaptcha = 3 // 滑动验证码
+	// MathIotaCaptcha  TypeCaptcha = 2 // 数学验证码
+	// SlideIotaCaptcha TypeCaptcha = 3 // 滑动验证码
 )
 
 // Captcha 验证码生成器接口

@@ -1,0 +1,189 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "CarefulAdmin在线接口文档",
+        "title": "CarefulAdmin",
+        "termsOfService": "http://swagger.io/terms",
+        "contact": {
+            "name": "CJiaの用心",
+            "url": "http://www.swagger.io/support",
+            "email": "2224693191@qq.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/dev-api",
+    "paths": {
+        "/v1/auth/password-register": {
+            "post": {
+                "description": "密码注册",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "注册"
+                ],
+                "summary": "密码注册",
+                "operationId": "PassWordRegisterHandler",
+                "parameters": [
+                    {
+                        "description": "参数",
+                        "name": "RegisterRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/third/generateCaptcha": {
+            "get": {
+                "description": "生成验证码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "生成验证码",
+                "operationId": "GenerateCaptchaHandler",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "业务类型",
+                        "name": "bizType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            1
+                        ],
+                        "type": "integer",
+                        "x-enum-comments": {
+                            "DigitIotaCaptcha": "数字字母验证码"
+                        },
+                        "x-enum-varnames": [
+                            "DigitIotaCaptcha"
+                        ],
+                        "description": "验证码类型",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.CaptchaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "captcha.TypeCaptcha": {
+            "type": "integer",
+            "enum": [
+                1
+            ],
+            "x-enum-comments": {
+                "DigitIotaCaptcha": "数字字母验证码"
+            },
+            "x-enum-varnames": [
+                "DigitIotaCaptcha"
+            ]
+        },
+        "controller.CaptchaResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "验证码",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "验证码ID",
+                    "type": "string"
+                },
+                "img": {
+                    "description": "验证码图片",
+                    "type": "string"
+                }
+            }
+        },
+        "controller.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "description": "密码",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "username": {
+                    "description": "用户账号",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "状态码",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "数据"
+                },
+                "msg": {
+                    "description": "提示信息"
+                },
+                "success": {
+                    "description": "是否成功",
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

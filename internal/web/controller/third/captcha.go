@@ -38,8 +38,8 @@ func NewCaptchaController(rely config.RelyConfig, svc service.CaptchaService) Ca
 }
 
 type CaptchaRequest struct {
-	Type    captcha.TypeCaptcha `form:"type" binding:"required,oneof=1 2 3"` // 验证码类型
-	BizType string              `form:"bizType" binding:"required"`          // 业务类型
+	Type    captcha.TypeCaptcha `form:"type" binding:"required"`    // 验证码类型
+	BizType string              `form:"bizType" binding:"required"` // 业务类型
 }
 
 type CaptchaResponse struct {
@@ -52,6 +52,17 @@ func (c *captchaController) RegisterRoutes(router *gin.RouterGroup) {
 	router.GET("/generateCaptcha", c.GenerateCaptchaHandler)
 }
 
+// GenerateCaptchaHandler
+// @id GenerateCaptchaHandler
+// @Summary 生成验证码
+// @Description 生成验证码
+// @Tags 认证管理
+// @Accept application/json
+// @Produce application/json
+// @Param CaptchaRequest query CaptchaRequest true "参数"
+// @Success 200 {object} CaptchaResponse
+// @Failure 400 {object} response.Response
+// @Router /v1/third/generateCaptcha [get]
 func (c *captchaController) GenerateCaptchaHandler(ctx *gin.Context) {
 	var req CaptchaRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
