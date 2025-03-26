@@ -50,7 +50,7 @@ func (c *registerController) RegisterRoutes(router *gin.RouterGroup) {
 // @id PassWordRegisterHandler
 // @Summary 密码注册
 // @Description 密码注册
-// @Tags 注册
+// @Tags 认证管理
 // @Accept application/json
 // @Produce application/json
 // @Param RegisterRequest body RegisterRequest true "参数"

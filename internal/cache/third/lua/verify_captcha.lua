@@ -3,7 +3,7 @@ local cntKey = key .. ":cnt"
 local blockKey = key .. ":block" -- 用户被限制的key
 -- 用户输入的验证码
 local expectedCode = ARGV[1]
-local expireTime = 600
+local expireTime = 60
 
 -- 检查用户是否被限制
 if redis.call("exists", blockKey) == 1 then

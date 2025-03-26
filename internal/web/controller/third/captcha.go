@@ -13,6 +13,7 @@ import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/captcha"
 	service "github.com/carefuly/carefuly-admin-go-gin/internal/service/third"
+	_const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
@@ -38,8 +39,8 @@ func NewCaptchaController(rely config.RelyConfig, svc service.CaptchaService) Ca
 }
 
 type CaptchaRequest struct {
-	Type    captcha.TypeCaptcha `form:"type" binding:"required"`    // 验证码类型
-	BizType string              `form:"bizType" binding:"required"` // 业务类型
+	Type    captcha.TypeCaptcha   `form:"type" binding:"required"`    // 验证码类型
+	BizType _const.BizTypeCaptcha `form:"bizType" binding:"required"` // 业务类型
 }
 
 type CaptchaResponse struct {
@@ -56,7 +57,7 @@ func (c *captchaController) RegisterRoutes(router *gin.RouterGroup) {
 // @id GenerateCaptchaHandler
 // @Summary 生成验证码
 // @Description 生成验证码
-// @Tags 认证管理
+// @Tags 第三方管理
 // @Accept application/json
 // @Produce application/json
 // @Param CaptchaRequest query CaptchaRequest true "参数"

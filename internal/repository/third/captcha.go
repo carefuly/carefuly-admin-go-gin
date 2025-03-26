@@ -11,14 +11,20 @@ package repository
 import (
 	"context"
 	cache "github.com/carefuly/carefuly-admin-go-gin/internal/cache/third"
+	_const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
 )
 
 var (
-	ErrCaptchaSendTooMany = cache.ErrCaptchaSendTooMany
+	ErrCaptchaSendTooMany   = cache.ErrCaptchaSendTooMany
+	ErrCaptchaNotFound      = cache.ErrCaptchaNotFound
+	ErrUserBlocked          = cache.ErrUserBlocked
+	ErrCaptchaIncorrect     = cache.ErrCaptchaIncorrect
+	ErrCaptchaVerifyTooMany = cache.ErrCaptchaVerifyTooMany
 )
 
 type CaptchaRepository interface {
-	Set(ctx context.Context, id, code, bizType string) error
+	Set(ctx context.Context, id, code string, bizType _const.BizTypeCaptcha) error
+	Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, code string) (bool, error)
 }
 
 type captchaRepository struct {
@@ -31,12 +37,10 @@ func NewCaptchaRepository(cache cache.CaptchaCache) CaptchaRepository {
 	}
 }
 
-func (repo *captchaRepository) Set(ctx context.Context, id, code, bizType string) error{
+func (repo *captchaRepository) Set(ctx context.Context, id, code string, bizType _const.BizTypeCaptcha) error {
 	return repo.cache.Set(ctx, id, code, bizType)
 }
 
-func (repo *captchaRepository) Verify(ctx context.Context, biz, to, code string) (bool, error) {
-	// return repo.cache.Verify(ctx, biz, to, code)
-	return true, nil
+func (repo *captchaRepository) Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, code string) (bool, error) {
+	return repo.cache.Verify(ctx, id, biz, code)
 }
-

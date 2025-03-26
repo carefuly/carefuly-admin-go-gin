@@ -24,6 +24,47 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/auth/password-login": {
+            "post": {
+                "description": "密码登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "密码登录",
+                "operationId": "PasswordCaptchaLoginHandler",
+                "parameters": [
+                    {
+                        "description": "参数",
+                        "name": "LoginRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/password-register": {
             "post": {
                 "description": "密码注册",
@@ -34,7 +75,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "注册"
+                    "认证管理"
                 ],
                 "summary": "密码注册",
                 "operationId": "PassWordRegisterHandler",
@@ -75,13 +116,22 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "第三方管理"
                 ],
                 "summary": "生成验证码",
                 "operationId": "GenerateCaptchaHandler",
                 "parameters": [
                     {
+                        "enum": [
+                            "passLogin"
+                        ],
                         "type": "string",
+                        "x-enum-comments": {
+                            "BizTypeCaptchaLogin": "密码登录"
+                        },
+                        "x-enum-varnames": [
+                            "BizTypeCaptchaLogin"
+                        ],
                         "description": "业务类型",
                         "name": "bizType",
                         "in": "query",
@@ -122,6 +172,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "_const.BizTypeCaptcha": {
+            "type": "string",
+            "enum": [
+                "passLogin"
+            ],
+            "x-enum-comments": {
+                "BizTypeCaptchaLogin": "密码登录"
+            },
+            "x-enum-varnames": [
+                "BizTypeCaptchaLogin"
+            ]
+        },
         "captcha.TypeCaptcha": {
             "type": "integer",
             "enum": [
@@ -147,6 +209,55 @@ const docTemplate = `{
                 },
                 "img": {
                     "description": "验证码图片",
+                    "type": "string"
+                }
+            }
+        },
+        "controller.LoginRequest": {
+            "type": "object",
+            "required": [
+                "bizType",
+                "code",
+                "id",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "bizType": {
+                    "description": "验证码类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/_const.BizTypeCaptcha"
+                        }
+                    ]
+                },
+                "code": {
+                    "description": "验证码",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "验证码",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "密码",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "username": {
+                    "description": "用户账号",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                }
+            }
+        },
+        "controller.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "description": "登录令牌",
                     "type": "string"
                 }
             }

@@ -17,11 +17,13 @@ import (
 
 var (
 	ErrDuplicateUsername = errors.New("用户账号")
-	ErrUserNotFound   = gorm.ErrRecordNotFound
+	ErrUserNotFound      = gorm.ErrRecordNotFound
 )
 
 type UserDAO interface {
 	Insert(ctx context.Context, u model.User) error
+
+	FindByUserName(ctx context.Context, username string) (*model.User, error)
 
 	ExistsByUserName(ctx context.Context, username string) (bool, error)
 }
@@ -38,6 +40,12 @@ func NewGORMUserDAO(db *gorm.DB) UserDAO {
 
 func (dao *GORMUserDAO) Insert(ctx context.Context, u model.User) error {
 	return dao.db.WithContext(ctx).Create(&u).Error
+}
+
+func (dao *GORMUserDAO) FindByUserName(ctx context.Context, username string) (*model.User, error) {
+	var user model.User
+	err := dao.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
+	return &user, err
 }
 
 func (dao *GORMUserDAO) ExistsByUserName(ctx context.Context, username string) (bool, error) {
