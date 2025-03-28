@@ -1,6 +1,6 @@
 /**
  * Description：
- * FileName：register.go
+ * FileName：auth.go
  * Author：CJiaの用心
  * Create：2025/3/28 11:31:10
  * Remark：

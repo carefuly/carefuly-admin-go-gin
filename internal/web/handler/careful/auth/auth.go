@@ -1,6 +1,6 @@
 /**
  * Description：
- * FileName：register.go
+ * FileName：auth.go
  * Author：CJiaの用心
  * Create：2025/3/28 11:50:29
  * Remark：
@@ -22,20 +22,20 @@ import (
 	"net/http"
 )
 
-type RegisterController interface {
+type RegisterHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	PassWordRegisterHandler(ctx *gin.Context)
 	PasswordCaptchaLoginHandler(ctx *gin.Context)
 }
 
-type registerController struct {
+type registerHandler struct {
 	rely       config.RelyConfig
 	svc        system.UserService
 	captchaSvc third.CaptchaService
 }
 
-func NewRegisterController(rely config.RelyConfig, svc system.UserService, captchaSvc third.CaptchaService) RegisterController {
-	return &registerController{
+func NewRegisterHandler(rely config.RelyConfig, svc system.UserService, captchaSvc third.CaptchaService) RegisterHandler {
+	return &registerHandler{
 		rely:       rely,
 		svc:        svc,
 		captchaSvc: captchaSvc,
@@ -59,7 +59,7 @@ type LoginResponse struct {
 	Token string `json:"token"` // 登录令牌
 }
 
-func (c *registerController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *registerHandler) RegisterRoutes(router *gin.RouterGroup) {
 	router.POST("/password-register", c.PassWordRegisterHandler)
 	router.POST("/password-login", c.PasswordCaptchaLoginHandler)
 }
@@ -75,7 +75,7 @@ func (c *registerController) RegisterRoutes(router *gin.RouterGroup) {
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/auth/password-register [post]
-func (c *registerController) PassWordRegisterHandler(ctx *gin.Context) {
+func (c *registerHandler) PassWordRegisterHandler(ctx *gin.Context) {
 	var req RegisterRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(c.rely.Trans).HandleValidatorError(ctx, err)
@@ -110,7 +110,7 @@ func (c *registerController) PassWordRegisterHandler(ctx *gin.Context) {
 // @Success 200 {object} LoginResponse
 // @Failure 400 {object} response.Response
 // @Router /v1/auth/password-login [post]
-func (c *registerController) PasswordCaptchaLoginHandler(ctx *gin.Context) {
+func (c *registerHandler) PasswordCaptchaLoginHandler(ctx *gin.Context) {
 	var req LoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(c.rely.Trans).HandleValidatorError(ctx, err)

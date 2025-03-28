@@ -43,6 +43,6 @@ func (r *AuthRouter) RegisterRouter(router *gin.RouterGroup) {
 	userPasswordRepository := systemRepository.NewUserPassWordRepository(userPasswordDAO)
 	userService := sysetmService.NewUserService(userRepository, userPasswordRepository)
 
-	registerHandler := auth.NewRegisterController(r.rely, userService, captchaService)
+	registerHandler := auth.NewRegisterHandler(r.rely, userService, captchaService)
 	registerHandler.RegisterRoutes(baseRouter)
 }
