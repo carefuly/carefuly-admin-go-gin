@@ -11,7 +11,6 @@ package ioc
 import (
 	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
-	model "github.com/carefuly/carefuly-admin-go-gin/internal/model/system"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -74,8 +73,8 @@ func (i *DbPool) InitDb(database config.DatabaseConfig) *gorm.DB {
 			zap.L().Error("数据库连接失败", zap.Error(err))
 		}
 
-		model.NewUser().AutoMigrate(db)
-		model.NewUserPassword().AutoMigrate(db)
+		// system.NewUser().AutoMigrate(db)
+		// system.NewUserPassword().AutoMigrate(db)
 
 		return db
 	}

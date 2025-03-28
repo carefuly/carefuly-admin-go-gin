@@ -2,11 +2,11 @@
  * Description：
  * FileName：types.go
  * Author：CJiaの用心
- * Create：2025/3/20 23:22:58
+ * Create：2025/3/27 13:58:06
  * Remark：
  */
 
-package router
+package careful
 
 import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
@@ -26,6 +26,6 @@ func NewRouter(rely config.RelyConfig, router *gin.RouterGroup) *Router {
 }
 
 func (r *Router) RegisterRoutes() {
-	// NewThirdRouter(r.rely).RegisterAuthRouter(r.router)
-	// NewAuthRouter(r.rely).RegisterAuthRouter(r.router)
+	NewAuthRouter(r.rely).RegisterRouter(r.router)
+	NewThirdRouter(r.rely).RegisterRouter(r.router)
 }

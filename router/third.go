@@ -10,10 +10,10 @@ package router
 
 import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
-	cache "github.com/carefuly/carefuly-admin-go-gin/internal/cache/third"
-	repository "github.com/carefuly/carefuly-admin-go-gin/internal/repository/third"
-	service "github.com/carefuly/carefuly-admin-go-gin/internal/service/third"
-	controller "github.com/carefuly/carefuly-admin-go-gin/internal/web/controller/third"
+	"github.com/carefuly/carefuly-admin-go-gin/v1/internal/cache/third"
+	"github.com/carefuly/carefuly-admin-go-gin/v1/internal/repository/third"
+	"github.com/carefuly/carefuly-admin-go-gin/v1/internal/service/third"
+	"github.com/carefuly/carefuly-admin-go-gin/v1/internal/web/controller/third"
 	"github.com/gin-gonic/gin"
 )
 

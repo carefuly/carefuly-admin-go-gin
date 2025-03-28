@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/v1/auth/password-login": {
             "post": {
-                "description": "密码登录",
+                "description": "图形验证码密码登录",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,7 +36,7 @@ const docTemplate = `{
                 "tags": [
                     "认证管理"
                 ],
-                "summary": "密码登录",
+                "summary": "图形验证码密码登录",
                 "operationId": "PasswordCaptchaLoginHandler",
                 "parameters": [
                     {
@@ -45,7 +45,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.LoginRequest"
+                            "$ref": "#/definitions/auth.LoginRequest"
                         }
                     }
                 ],
@@ -53,7 +53,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.LoginResponse"
+                            "$ref": "#/definitions/auth.LoginResponse"
                         }
                     },
                     "400": {
@@ -67,7 +67,7 @@ const docTemplate = `{
         },
         "/v1/auth/password-register": {
             "post": {
-                "description": "密码注册",
+                "description": "账号密码注册",
                 "consumes": [
                     "application/json"
                 ],
@@ -77,7 +77,7 @@ const docTemplate = `{
                 "tags": [
                     "认证管理"
                 ],
-                "summary": "密码注册",
+                "summary": "账号密码注册",
                 "operationId": "PassWordRegisterHandler",
                 "parameters": [
                     {
@@ -86,7 +86,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.RegisterRequest"
+                            "$ref": "#/definitions/auth.RegisterRequest"
                         }
                     }
                 ],
@@ -108,7 +108,7 @@ const docTemplate = `{
         },
         "/v1/third/generateCaptcha": {
             "get": {
-                "description": "生成验证码",
+                "description": "生成指定业务验证码",
                 "consumes": [
                     "application/json"
                 ],
@@ -116,14 +116,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "第三方管理"
+                    "第三方业务管理"
                 ],
-                "summary": "生成验证码",
+                "summary": "生成指定业务验证码",
                 "operationId": "GenerateCaptchaHandler",
                 "parameters": [
                     {
                         "enum": [
-                            "passLogin"
+                            "BizCaptchaLogin"
                         ],
                         "type": "string",
                         "x-enum-comments": {
@@ -158,7 +158,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.CaptchaResponse"
+                            "$ref": "#/definitions/third.CaptchaResponse"
                         }
                     },
                     "400": {
@@ -175,7 +175,7 @@ const docTemplate = `{
         "_const.BizTypeCaptcha": {
             "type": "string",
             "enum": [
-                "passLogin"
+                "BizCaptchaLogin"
             ],
             "x-enum-comments": {
                 "BizTypeCaptchaLogin": "密码登录"
@@ -184,36 +184,7 @@ const docTemplate = `{
                 "BizTypeCaptchaLogin"
             ]
         },
-        "captcha.TypeCaptcha": {
-            "type": "integer",
-            "enum": [
-                1
-            ],
-            "x-enum-comments": {
-                "DigitIotaCaptcha": "数字字母验证码"
-            },
-            "x-enum-varnames": [
-                "DigitIotaCaptcha"
-            ]
-        },
-        "controller.CaptchaResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "验证码",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "验证码ID",
-                    "type": "string"
-                },
-                "img": {
-                    "description": "验证码图片",
-                    "type": "string"
-                }
-            }
-        },
-        "controller.LoginRequest": {
+        "auth.LoginRequest": {
             "type": "object",
             "required": [
                 "bizType",
@@ -253,7 +224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "controller.LoginResponse": {
+        "auth.LoginResponse": {
             "type": "object",
             "properties": {
                 "token": {
@@ -262,7 +233,7 @@ const docTemplate = `{
                 }
             }
         },
-        "controller.RegisterRequest": {
+        "auth.RegisterRequest": {
             "type": "object",
             "required": [
                 "password",
@@ -283,6 +254,18 @@ const docTemplate = `{
                 }
             }
         },
+        "captcha.TypeCaptcha": {
+            "type": "integer",
+            "enum": [
+                1
+            ],
+            "x-enum-comments": {
+                "DigitIotaCaptcha": "数字字母验证码"
+            },
+            "x-enum-varnames": [
+                "DigitIotaCaptcha"
+            ]
+        },
         "response.Response": {
             "type": "object",
             "properties": {
@@ -299,6 +282,23 @@ const docTemplate = `{
                 "success": {
                     "description": "是否成功",
                     "type": "boolean"
+                }
+            }
+        },
+        "third.CaptchaResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "验证码",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "验证码Id",
+                    "type": "string"
+                },
+                "img": {
+                    "description": "验证码图片",
+                    "type": "string"
                 }
             }
         }

@@ -12,7 +12,7 @@ import (
 	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	"github.com/carefuly/carefuly-admin-go-gin/docs"
-	"github.com/carefuly/carefuly-admin-go-gin/router"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/web/router/careful"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales/en"
@@ -99,7 +99,7 @@ func (s *Server) InitWebServer(middle []gin.HandlerFunc, rely config.RelyConfig)
 	ApiGroup := server.Group("/dev-api")
 	v1 := ApiGroup.Group("/v1")
 
-	router.NewRouter(rely, v1).RegisterRoutes()
+	careful.NewRouter(rely, v1).RegisterRoutes()
 
 	return server
 }

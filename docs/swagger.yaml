@@ -2,33 +2,13 @@ basePath: /dev-api
 definitions:
   _const.BizTypeCaptcha:
     enum:
-    - passLogin
+    - BizCaptchaLogin
     type: string
     x-enum-comments:
       BizTypeCaptchaLogin: 密码登录
     x-enum-varnames:
     - BizTypeCaptchaLogin
-  captcha.TypeCaptcha:
-    enum:
-    - 1
-    type: integer
-    x-enum-comments:
-      DigitIotaCaptcha: 数字字母验证码
-    x-enum-varnames:
-    - DigitIotaCaptcha
-  controller.CaptchaResponse:
-    properties:
-      code:
-        description: 验证码
-        type: string
-      id:
-        description: 验证码ID
-        type: string
-      img:
-        description: 验证码图片
-        type: string
-    type: object
-  controller.LoginRequest:
+  auth.LoginRequest:
     properties:
       bizType:
         allOf:
@@ -57,13 +37,13 @@ definitions:
     - password
     - username
     type: object
-  controller.LoginResponse:
+  auth.LoginResponse:
     properties:
       token:
         description: 登录令牌
         type: string
     type: object
-  controller.RegisterRequest:
+  auth.RegisterRequest:
     properties:
       password:
         description: 密码
@@ -79,6 +59,14 @@ definitions:
     - password
     - username
     type: object
+  captcha.TypeCaptcha:
+    enum:
+    - 1
+    type: integer
+    x-enum-comments:
+      DigitIotaCaptcha: 数字字母验证码
+    x-enum-varnames:
+    - DigitIotaCaptcha
   response.Response:
     properties:
       code:
@@ -91,6 +79,18 @@ definitions:
       success:
         description: 是否成功
         type: boolean
+    type: object
+  third.CaptchaResponse:
+    properties:
+      code:
+        description: 验证码
+        type: string
+      id:
+        description: 验证码Id
+        type: string
+      img:
+        description: 验证码图片
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -110,7 +110,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 密码登录
+      description: 图形验证码密码登录
       operationId: PasswordCaptchaLoginHandler
       parameters:
       - description: 参数
@@ -118,26 +118,26 @@ paths:
         name: LoginRequest
         required: true
         schema:
-          $ref: '#/definitions/controller.LoginRequest'
+          $ref: '#/definitions/auth.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.LoginResponse'
+            $ref: '#/definitions/auth.LoginResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 密码登录
+      summary: 图形验证码密码登录
       tags:
       - 认证管理
   /v1/auth/password-register:
     post:
       consumes:
       - application/json
-      description: 密码注册
+      description: 账号密码注册
       operationId: PassWordRegisterHandler
       parameters:
       - description: 参数
@@ -145,7 +145,7 @@ paths:
         name: RegisterRequest
         required: true
         schema:
-          $ref: '#/definitions/controller.RegisterRequest'
+          $ref: '#/definitions/auth.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -157,19 +157,19 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 密码注册
+      summary: 账号密码注册
       tags:
       - 认证管理
   /v1/third/generateCaptcha:
     get:
       consumes:
       - application/json
-      description: 生成验证码
+      description: 生成指定业务验证码
       operationId: GenerateCaptchaHandler
       parameters:
       - description: 业务类型
         enum:
-        - passLogin
+        - BizCaptchaLogin
         in: query
         name: bizType
         required: true
@@ -195,12 +195,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.CaptchaResponse'
+            $ref: '#/definitions/third.CaptchaResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 生成验证码
+      summary: 生成指定业务验证码
       tags:
-      - 第三方管理
+      - 第三方业务管理
 swagger: "2.0"
