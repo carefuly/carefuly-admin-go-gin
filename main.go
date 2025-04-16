@@ -29,6 +29,9 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host localhost:8080
 // @BasePath /dev-api
+// @securityDefinitions.apikey  LoginToken
+// @in                          header
+// @name                        Authorization
 func main() {
 	var relyConfig config.RelyConfig
 	relyConfig.Logger = ioc.InitStdoutLogger()
@@ -44,7 +47,7 @@ func main() {
 	relyConfig.Token = initConfig.TokenConfig
 
 	server := ioc.NewServer(relyConfig, "zh")
-	middlewares := server.InitGinMiddlewares()
+	middlewares := server.InitGinMiddlewares(relyConfig)
 	relyConfig.Trans, _ = server.InitGinTrans()
 	engine := server.InitWebServer(middlewares, relyConfig)
 

@@ -14,7 +14,7 @@ import (
 	"github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/auth"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
-	_const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
+	constantsCaptcha "github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
@@ -48,11 +48,11 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Username string                `json:"username" binding:"required,min=3,max=50"` // 用户账号
-	Password string                `json:"password" binding:"required,min=3,max=20"` // 密码
-	Id       string                `json:"id" binding:"required"`                    // 验证码
-	Code     string                `json:"code" binding:"required"`                  // 验证码
-	BizType  _const.BizTypeCaptcha `json:"bizType" binding:"required"`               // 验证码类型
+	Username string                          `json:"username" binding:"required,min=3,max=50"` // 用户账号
+	Password string                          `json:"password" binding:"required,min=3,max=20"` // 密码
+	Id       string                          `json:"id" binding:"required"`                    // 验证码
+	Code     string                          `json:"code" binding:"required"`                  // 验证码
+	BizType  constantsCaptcha.BizTypeCaptcha `json:"bizType" binding:"required"`               // 验证码类型
 }
 
 type LoginResponse struct {
@@ -65,7 +65,6 @@ func (c *registerHandler) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // PassWordRegisterHandler
-// @id PassWordRegisterHandler
 // @Summary 账号密码注册
 // @Description 账号密码注册
 // @Tags 认证管理
@@ -100,7 +99,6 @@ func (c *registerHandler) PassWordRegisterHandler(ctx *gin.Context) {
 }
 
 // PasswordCaptchaLoginHandler
-// @id PasswordCaptchaLoginHandler
 // @Summary 图形验证码密码登录
 // @Description 图形验证码密码登录
 // @Tags 认证管理

@@ -12,7 +12,7 @@ import (
 	"context"
 	"errors"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/careful/third"
-	_const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
+	constantsCaptcha "github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/third/captcha"
 )
 
@@ -25,8 +25,8 @@ var (
 )
 
 type CaptchaService interface {
-	Generate(ctx context.Context, t captcha.TypeCaptcha, bizType _const.BizTypeCaptcha) (string, string, string, error)
-	Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, inputCode string) (bool, error)
+	Generate(ctx context.Context, t captcha.TypeCaptcha, bizType constantsCaptcha.BizTypeCaptcha) (string, string, string, error)
+	Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, inputCode string) (bool, error)
 }
 
 type captchaService struct {
@@ -40,7 +40,7 @@ func NewCaptchaService(repo third.CaptchaRepository) CaptchaService {
 	}
 }
 
-func (svc *captchaService) Generate(ctx context.Context, t captcha.TypeCaptcha, bizType _const.BizTypeCaptcha) (string, string, string, error) {
+func (svc *captchaService) Generate(ctx context.Context, t captcha.TypeCaptcha, bizType constantsCaptcha.BizTypeCaptcha) (string, string, string, error) {
 	// 根据类型生成验证码
 	svc.digit = svc.NewCaptchaGenerator(t)
 
@@ -52,7 +52,7 @@ func (svc *captchaService) Generate(ctx context.Context, t captcha.TypeCaptcha, 
 	return id, b64s, code, svc.repo.Set(ctx, id, code, bizType)
 }
 
-func (svc *captchaService) Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, inputCode string) (bool, error) {
+func (svc *captchaService) Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, inputCode string) (bool, error) {
 	ok, err := svc.repo.Verify(ctx, id, biz, inputCode)
 
 	switch {

@@ -11,6 +11,7 @@ package models
 import (
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -20,6 +21,7 @@ import (
 type CoreModels struct {
 	Id         string     `gorm:"type:varchar(100);primary_key;column:id;comment:主键ID" json:"id"`              // 主键ID
 	Sort       int        `gorm:"type:int;default:1;column:sort;comment:显示排序" json:"sort"`                     // 显示排序
+	Version    int        `gorm:"type:int;default:1;column:version;comment:版本号" json:"version"`                // 版本号
 	Creator    string     `gorm:"type:varchar(100);index;column:creator;comment:创建人" json:"creator"`           // 创建人
 	Modifier   string     `gorm:"type:varchar(100);index;column:modifier;comment:修改人" json:"modifier"`         // 修改人
 	BelongDept string     `gorm:"type:varchar(100);index;column:belong_dept;comment:数据归属部门" json:"belongDept"` // 数据归属部门
@@ -31,7 +33,7 @@ type CoreModels struct {
 
 func (c *CoreModels) BeforeCreate(tx *gorm.DB) (err error) {
 	// 记录ID
-	c.Id = uuid.NewV4().String()
+	c.Id = strings.ToUpper(uuid.NewV4().String())
 	// 返回异常
 	return
 }

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	"github.com/carefuly/carefuly-admin-go-gin/docs"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/web/middleware"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/web/router/careful"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -39,8 +40,17 @@ func NewServer(rely config.RelyConfig, locale string) *Server {
 	}
 }
 
-func (s *Server) InitGinMiddlewares() []gin.HandlerFunc {
-	return []gin.HandlerFunc{}
+func (s *Server) InitGinMiddlewares(rely config.RelyConfig) []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		middleware.Cors(),
+		middleware.NewLoginJWTMiddlewareBuilder(rely).
+			IgnorePaths("/dev-api/v1/auth/password-register").
+			IgnorePaths("/dev-api/v1/auth/password-login").
+			IgnorePaths("/dev-api/v1/third/generateCaptcha").
+			Build(),
+		middleware.NewLogger(rely.Logger).Logger(),
+		middleware.NewStorage().StorageLogger(rely.Db.Careful),
+	}
 }
 
 func (s *Server) InitGinTrans() (ut.Translator, error) {

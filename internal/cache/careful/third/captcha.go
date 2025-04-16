@@ -13,7 +13,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	_const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
+	constantsCaptcha "github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -23,7 +23,7 @@ var (
 	//go:embed lua/verify_captcha.lua
 	luaVerifyCode string
 
-	ErrCaptchaSendTooMany   = errors.New("发送太频繁")
+	ErrCaptchaSendTooMany   = errors.New("生成验证码太频繁")
 	ErrCaptchaNotFound      = errors.New("验证码不存在")
 	ErrUserBlocked          = errors.New("用户被限制")
 	ErrCaptchaIncorrect     = errors.New("验证码错误")
@@ -31,8 +31,8 @@ var (
 )
 
 type CaptchaCache interface {
-	Set(ctx context.Context, id, code string, bizType _const.BizTypeCaptcha) error
-	Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, code string) (bool, error)
+	Set(ctx context.Context, id, code string, bizType constantsCaptcha.BizTypeCaptcha) error
+	Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, code string) (bool, error)
 }
 
 type captchaCache struct {
@@ -45,7 +45,7 @@ func NewCaptchaCache(cmd redis.Cmdable) CaptchaCache {
 	}
 }
 
-func (c *captchaCache) Set(ctx context.Context, id, code string, bizType _const.BizTypeCaptcha) error {
+func (c *captchaCache) Set(ctx context.Context, id, code string, bizType constantsCaptcha.BizTypeCaptcha) error {
 	res, err := c.cmd.Eval(ctx, luaSetCode, []string{c.key(id, bizType)}, code).Int()
 	if err != nil {
 		// 调用 redis 出了问题
@@ -62,7 +62,7 @@ func (c *captchaCache) Set(ctx context.Context, id, code string, bizType _const.
 	}
 }
 
-func (c *captchaCache) Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, code string) (bool, error) {
+func (c *captchaCache) Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, code string) (bool, error) {
 	res, err := c.cmd.Eval(ctx, luaVerifyCode, []string{c.key(id, biz)}, code).Int()
 	if err != nil {
 		// 调用 redis 出了问题
@@ -83,7 +83,7 @@ func (c *captchaCache) Verify(ctx context.Context, id string, biz _const.BizType
 	}
 }
 
-func (c *captchaCache) key(id string, bizType _const.BizTypeCaptcha) string {
+func (c *captchaCache) key(id string, bizType constantsCaptcha.BizTypeCaptcha) string {
 	// careful:id:bizType
 	return fmt.Sprintf("careful:%s:%s", id, bizType)
 }

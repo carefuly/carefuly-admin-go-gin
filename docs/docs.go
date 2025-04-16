@@ -37,7 +37,6 @@ const docTemplate = `{
                     "认证管理"
                 ],
                 "summary": "图形验证码密码登录",
-                "operationId": "PasswordCaptchaLoginHandler",
                 "parameters": [
                     {
                         "description": "参数",
@@ -78,7 +77,6 @@ const docTemplate = `{
                     "认证管理"
                 ],
                 "summary": "账号密码注册",
-                "operationId": "PassWordRegisterHandler",
                 "parameters": [
                     {
                         "description": "参数",
@@ -119,7 +117,6 @@ const docTemplate = `{
                     "第三方业务管理"
                 ],
                 "summary": "生成指定业务验证码",
-                "operationId": "GenerateCaptchaHandler",
                 "parameters": [
                     {
                         "enum": [
@@ -127,7 +124,7 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "x-enum-comments": {
-                            "BizTypeCaptchaLogin": "密码登录"
+                            "BizTypeCaptchaLogin": "验证码密码登录"
                         },
                         "x-enum-varnames": [
                             "BizTypeCaptchaLogin"
@@ -169,21 +166,461 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/tools/dict/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "批量删除字典",
+                "parameters": [
+                    {
+                        "description": "ID数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/create": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "创建字典",
+                "parameters": [
+                    {
+                        "description": "字典信息",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tools.Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "删除字典",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "根据ID获取字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "根据ID获取字典",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/import": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导入字典",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "导入字典",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "文件(支持xlsx/csv格式)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "获取所有字典",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典编码",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": -1,
+                        "description": "字典类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": -1,
+                        "description": "字典数据类型",
+                        "name": "typeValue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "分页获取字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "分页获取字典",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典编码",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": -1,
+                        "description": "字典类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": -1,
+                        "description": "字典数据类型",
+                        "name": "typeValue",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/update/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "更新字典",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "字典信息",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tools.Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "_const.BizTypeCaptcha": {
-            "type": "string",
-            "enum": [
-                "BizCaptchaLogin"
-            ],
-            "x-enum-comments": {
-                "BizTypeCaptchaLogin": "密码登录"
-            },
-            "x-enum-varnames": [
-                "BizTypeCaptchaLogin"
-            ]
-        },
         "auth.LoginRequest": {
             "type": "object",
             "required": [
@@ -198,7 +635,7 @@ const docTemplate = `{
                     "description": "验证码类型",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/_const.BizTypeCaptcha"
+                            "$ref": "#/definitions/captcha.BizTypeCaptcha"
                         }
                     ]
                 },
@@ -254,6 +691,18 @@ const docTemplate = `{
                 }
             }
         },
+        "captcha.BizTypeCaptcha": {
+            "type": "string",
+            "enum": [
+                "BizCaptchaLogin"
+            ],
+            "x-enum-comments": {
+                "BizTypeCaptchaLogin": "验证码密码登录"
+            },
+            "x-enum-varnames": [
+                "BizTypeCaptchaLogin"
+            ]
+        },
         "captcha.TypeCaptcha": {
             "type": "integer",
             "enum": [
@@ -264,6 +713,42 @@ const docTemplate = `{
             },
             "x-enum-varnames": [
                 "DigitIotaCaptcha"
+            ]
+        },
+        "dict.TypeConst": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-comments": {
+                "TypeConst0": "普通字典",
+                "TypeConst1": "系统字典",
+                "TypeConst2": "枚举字典"
+            },
+            "x-enum-varnames": [
+                "TypeConst0",
+                "TypeConst1",
+                "TypeConst2"
+            ]
+        },
+        "dict.TypeValueConst": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-comments": {
+                "TypeValueConst0": "字符串",
+                "TypeValueConst1": "整型",
+                "TypeValueConst2": "布尔"
+            },
+            "x-enum-varnames": [
+                "TypeValueConst0",
+                "TypeValueConst1",
+                "TypeValueConst2"
             ]
         },
         "response.Response": {
@@ -301,6 +786,57 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "tools.Request": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "字典编码",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "name": {
+                    "description": "字典名称",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "type": {
+                    "description": "字典类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeConst"
+                        }
+                    ]
+                },
+                "typeValue": {
+                    "description": "字典类型值",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeValueConst"
+                        }
+                    ]
+                },
+                "version": {
+                    "description": "版本",
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "LoginToken": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

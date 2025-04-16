@@ -11,7 +11,7 @@ package third
 import (
 	"context"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/cache/careful/third"
-	_const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
+	constantsCaptcha "github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
 )
 
 var (
@@ -23,8 +23,8 @@ var (
 )
 
 type CaptchaRepository interface {
-	Set(ctx context.Context, id, code string, bizType _const.BizTypeCaptcha) error
-	Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, code string) (bool, error)
+	Set(ctx context.Context, id, code string, bizType constantsCaptcha.BizTypeCaptcha) error
+	Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, code string) (bool, error)
 }
 
 type captchaRepository struct {
@@ -37,10 +37,10 @@ func NewCaptchaRepository(cache third.CaptchaCache) CaptchaRepository {
 	}
 }
 
-func (repo *captchaRepository) Set(ctx context.Context, id, code string, bizType _const.BizTypeCaptcha) error {
+func (repo *captchaRepository) Set(ctx context.Context, id, code string, bizType constantsCaptcha.BizTypeCaptcha) error {
 	return repo.cache.Set(ctx, id, code, bizType)
 }
 
-func (repo *captchaRepository) Verify(ctx context.Context, id string, biz _const.BizTypeCaptcha, code string) (bool, error) {
+func (repo *captchaRepository) Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, code string) (bool, error) {
 	return repo.cache.Verify(ctx, id, biz, code)
 }

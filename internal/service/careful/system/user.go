@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	ErrDuplicateUsername        = system.ErrDuplicateUsername
+	ErrDuplicateUsername     = system.ErrDuplicateUsername
 	ErrInvalidUserOrPassword = errors.New("用户账号或密码错误")
 	ErrGenerateTokenError    = errors.New("生成Token异常")
 )
@@ -40,7 +40,7 @@ type userService struct {
 
 func NewUserService(repo system.UserRepository, userPassRepo system.UserPassWordRepository) UserService {
 	return &userService{
-		repo: repo,
+		repo:         repo,
 		userPassRepo: userPassRepo,
 	}
 }
@@ -116,6 +116,7 @@ func (svc *userService) FindByUserName(ctx *gin.Context, rely config.RelyConfig,
 	return svc.setJWTToken(ctx, rely, user)
 }
 
+// IsDuplicateEntryError 判断是否是唯一冲突错误
 func (svc *userService) IsDuplicateEntryError(err error) bool {
 	var mysqlErr *mysql.MySQLError
 	if errors.As(err, &mysqlErr) {
@@ -125,6 +126,7 @@ func (svc *userService) IsDuplicateEntryError(err error) bool {
 	return false
 }
 
+// setJWTToken 设置JWT Token
 func (svc *userService) setJWTToken(ctx *gin.Context, rely config.RelyConfig, u domainSystem.User) (string, error) {
 	uc := UserClaims{
 		UId:       u.Id,
@@ -135,7 +137,7 @@ func (svc *userService) setJWTToken(ctx *gin.Context, rely config.RelyConfig, u 
 		UserAgent: ctx.GetHeader("User-Agent"),
 		RegisteredClaims: jwt.RegisteredClaims{
 			// 一小时过期
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60 * 1)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60 * 24)),
 		},
 	}
 
