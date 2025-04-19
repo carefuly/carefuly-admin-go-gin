@@ -31,10 +31,19 @@ func NewToolsRouter(rely config.RelyConfig) *ToolsRouter {
 func (r *ToolsRouter) RegisterRouter(router *gin.RouterGroup) {
 	baseRouter := router.Group("/tools")
 
+	// 字典
 	redisDictCache := cacheTools.NewRedisDictCache(r.rely.Redis)
 	dictDAO := daoTools.NewDictDao(r.rely.Db.Careful)
 	dictRepository := repositoryTools.NewDictRepository(dictDAO, redisDictCache)
 	dictService := serviceTools.NewDictService(dictRepository)
 	dictHandler := handlerTools.NewDictHandler(r.rely, dictService)
 	dictHandler.RegisterRoutes(baseRouter)
+
+	// 字典信息
+	dictTypeCache := cacheTools.NewRedisDictTypeCache(r.rely.Redis)
+	dictTypeDao := daoTools.NewDictTypeDao(r.rely.Db.Careful)
+	dictTypeRepository := repositoryTools.NewDictTypeRepository(dictTypeDao, dictTypeCache)
+	dictTypeService := serviceTools.NewDictTypeService(dictTypeRepository, dictRepository)
+	dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService)
+	dictTypeHandler.RegisterRoutes(baseRouter)
 }

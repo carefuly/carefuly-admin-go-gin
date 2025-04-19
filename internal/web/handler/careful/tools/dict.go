@@ -32,6 +32,13 @@ import (
 type DictHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
+	Import(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	BatchDelete(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	GetById(ctx *gin.Context)
+	GetListPage(ctx *gin.Context)
+	GetListAll(ctx *gin.Context)
 }
 
 type dictHandler struct {
@@ -46,16 +53,16 @@ func NewDictHandler(rely config.RelyConfig, svc tools.DictService) DictHandler {
 	}
 }
 
-type Request struct {
+type DictRequest struct {
 	Name      string              `json:"name" binding:"required,max=100"` // 字典名称
 	Code      string              `json:"code" binding:"required,max=100"` // 字典编码
-	Type      dict.TypeConst      `json:"type"`                            // 字典类型
-	TypeValue dict.TypeValueConst `json:"typeValue"`                       // 字典类型值
+	Type      dict.TypeConst      `json:"type" default:"0"`                // 字典类型
+	TypeValue dict.TypeValueConst `json:"typeValue" default:"0"`           // 字典类型值
 	Version   int                 `json:"version"`                         // 版本
 	Remark    string              `json:"remark" binding:"max=255"`        // 备注
 }
 
-type ImportRequest struct {
+type ImportDictRequest struct {
 	File *multipart.FileHeader `form:"file" binding:"required"`
 }
 
@@ -73,10 +80,10 @@ func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
 // Create
 // @Summary 创建字典
 // @Description 创建字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
-// @Param Request body Request true "字典信息"
+// @Param DictRequest body DictRequest true "字典信息"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/tools/dict/create [post]
@@ -90,7 +97,7 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req Request
+	var req DictRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
 		return
@@ -141,7 +148,7 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 // Import
 // @Summary 导入字典
 // @Description 导入字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept multipart/form-data
 // @Produce application/json
 // @Param file formData file true "文件(支持xlsx/csv格式)"
@@ -158,7 +165,7 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 		return
 	}
 
-	var req ImportRequest
+	var req ImportDictRequest
 	if err := ctx.ShouldBind(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
 		return
@@ -188,7 +195,7 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 // Delete
 // @Summary 删除字典
 // @Description 删除字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Param id path string true "ID"
@@ -220,7 +227,7 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 // BatchDelete
 // @Summary 批量删除字典
 // @Description 批量删除字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Param ids body []string true "ID数组"
@@ -249,11 +256,11 @@ func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 // Update
 // @Summary 更新字典
 // @Description 更新字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Param id path string true "ID"
-// @Param Request body Request true "字典信息"
+// @Param DictRequest body DictRequest true "字典信息"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/tools/dict/update/{id} [put]
@@ -273,7 +280,7 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var req Request
+	var req DictRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
 		return
@@ -316,7 +323,7 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典已存在", nil)
 	case errors.Is(err, tools.ErrDictNotFound):
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "记录不存在", nil)
-	case errors.Is(err, tools.ErrVersionInconsistency):
+	case errors.Is(err, tools.ErrDictVersionInconsistency):
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 	default:
 		ctx.Set("internal", err.Error())
@@ -328,7 +335,7 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 // GetById
 // @Summary 根据ID获取字典
 // @Description 根据ID获取字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Param id path string true "ID"
@@ -370,7 +377,7 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 // GetListPage
 // @Summary 分页获取字典
 // @Description 分页获取字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Param page query int true "页码" default(1)
@@ -431,7 +438,7 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 // GetListAll
 // @Summary 获取所有字典
 // @Description 获取所有字典
-// @Tags 字典管理
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Param creator query string false "创建人"

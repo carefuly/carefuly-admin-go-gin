@@ -20,21 +20,22 @@ import (
 	_import "github.com/carefuly/carefuly-admin-go-gin/pkg/utils/import"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/jsonformat"
 	"github.com/go-sql-driver/mysql"
+	"strconv"
 	"strings"
 )
 
 var (
-	ErrDictRecordNotFound   = tools.ErrDictRecordNotFound
-	ErrDictNotFound         = tools.ErrDictNotFound
-	ErrDuplicateDict        = tools.ErrDuplicateDict
-	ErrDuplicateDictName    = tools.ErrDuplicateDictName
-	ErrDuplicateDictCode    = tools.ErrDuplicateDictCode
-	ErrVersionInconsistency = tools.ErrVersionInconsistency
+	ErrDictRecordNotFound       = tools.ErrDictRecordNotFound
+	ErrDictNotFound             = tools.ErrDictNotFound
+	ErrDuplicateDict            = tools.ErrDuplicateDict
+	ErrDuplicateDictName        = tools.ErrDuplicateDictName
+	ErrDuplicateDictCode        = tools.ErrDuplicateDictCode
+	ErrDictVersionInconsistency = tools.ErrDictVersionInconsistency
 )
 
 type DictService interface {
 	Create(ctx context.Context, domain domainTools.Dict) error
-	Import(ctx context.Context, userId string, listMap []map[string]interface{}) _import.ImportResult
+	Import(ctx context.Context, userId string, listMap []map[string]string) _import.ImportResult
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, id string, domain domainTools.Dict) error
@@ -51,7 +52,7 @@ func NewDictService(repo tools.DictRepository) DictService {
 	return &dictService{repo: repo}
 }
 
-// Create 创建字典
+// Create 创建
 func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) error {
 	exists, err := svc.repo.CheckExistByName(ctx, domain.Name, "")
 	if err != nil {
@@ -91,8 +92,8 @@ func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) err
 	return err
 }
 
-// Import 导入字典
-func (svc *dictService) Import(ctx context.Context, userId string, listMap []map[string]interface{}) _import.ImportResult {
+// Import 导入
+func (svc *dictService) Import(ctx context.Context, userId string, listMap []map[string]string) _import.ImportResult {
 	result := _import.ImportResult{}
 
 	// 遍历数据
@@ -100,8 +101,8 @@ func (svc *dictService) Import(ctx context.Context, userId string, listMap []map
 		rowNumber := index + 2
 
 		// 数据清洗
-		name := _import.CleanInput(list["字典名称"].(string))
-		code := _import.CleanInput(list["字典编码"].(string))
+		name := _import.CleanInput(list["字典名称"])
+		code := _import.CleanInput(list["字典编码"])
 
 		// 字段校验
 		if name == "" {
@@ -134,15 +135,23 @@ func (svc *dictService) Import(ctx context.Context, userId string, listMap []map
 		}
 
 		// 类型转换
-		dictType, err := dict.ConvertDictTypeImport(list["字典类型"].(string))
+		dictType, err := dict.ConvertDictTypeImport(list["字典类型"])
 		if err != nil {
 			result.AddError(rowNumber, fmt.Sprintf("【字典类型】转换失败：%s", err.Error()))
 			continue
 		}
-		typeValue, err := dict.ConvertDictTypeValueImport(list["字典类型值"].(string))
+		typeValue, err := dict.ConvertDictTypeValueImport(list["字典类型值"])
 		if err != nil {
 			result.AddError(rowNumber, fmt.Sprintf("【字典类型值】转换失败：%s", err.Error()))
 			continue
+		}
+
+		// 处理字段
+		var sort int
+		if list["排序"] == "" {
+			sort = 1
+		} else {
+			sort, _ = strconv.Atoi(list["排序"])
 		}
 
 		// 构建领域模型
@@ -151,7 +160,8 @@ func (svc *dictService) Import(ctx context.Context, userId string, listMap []map
 				CoreModels: models.CoreModels{
 					Creator:  userId,
 					Modifier: userId,
-					Remark:   list["备注"].(string),
+					Sort:     sort,
+					Remark:   list["备注"],
 				},
 				Name:      name,
 				Code:      code,
@@ -174,7 +184,7 @@ func (svc *dictService) Import(ctx context.Context, userId string, listMap []map
 	return result
 }
 
-// Delete 删除字典
+// Delete 删除
 func (svc *dictService) Delete(ctx context.Context, id string) error {
 	rowsAffected, err := svc.repo.Delete(ctx, id)
 	if err != nil {
@@ -186,7 +196,7 @@ func (svc *dictService) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-// BatchDelete 批量删除字典
+// BatchDelete 批量删除
 func (svc *dictService) BatchDelete(ctx context.Context, ids []string) error {
 	err := svc.repo.BatchDelete(ctx, ids)
 	if err != nil {
@@ -195,7 +205,7 @@ func (svc *dictService) BatchDelete(ctx context.Context, ids []string) error {
 	return err
 }
 
-// Update 更新字典
+// Update 更新
 func (svc *dictService) Update(ctx context.Context, id string, domain domainTools.Dict) error {
 	exists, err := svc.repo.CheckExistByName(ctx, domain.Name, id)
 	if err != nil {
@@ -231,8 +241,8 @@ func (svc *dictService) Update(ctx context.Context, id string, domain domainTool
 			switch {
 			case errors.Is(err, tools.ErrDictNotFound):
 				return tools.ErrDictNotFound
-			case errors.Is(err, tools.ErrVersionInconsistency):
-				return tools.ErrVersionInconsistency
+			case errors.Is(err, tools.ErrDictVersionInconsistency):
+				return tools.ErrDictVersionInconsistency
 			default:
 				return err
 			}
@@ -241,7 +251,7 @@ func (svc *dictService) Update(ctx context.Context, id string, domain domainTool
 	return err
 }
 
-// GetById 获取字典
+// GetById 获取详情
 func (svc *dictService) GetById(ctx context.Context, id string) (domainTools.Dict, error) {
 	domain, err := svc.repo.GetById(ctx, id)
 	if errors.Is(err, tools.ErrDictRecordNotFound) {
@@ -256,7 +266,7 @@ func (svc *dictService) GetById(ctx context.Context, id string) (domainTools.Dic
 	return domain, err
 }
 
-// GetListPage 分页查询字典列表
+// GetListPage 分页查询列表
 func (svc *dictService) GetListPage(ctx context.Context, filter domainTools.DictFilter) ([]domainTools.Dict, int64, error) {
 	list, total, err := svc.repo.GetListPage(ctx, filter)
 	if err != nil {
@@ -268,7 +278,7 @@ func (svc *dictService) GetListPage(ctx context.Context, filter domainTools.Dict
 	return list, total, err
 }
 
-// GetListAll 获取所有字典
+// GetListAll 获取所有列表
 func (svc *dictService) GetListAll(ctx context.Context, filter domainTools.DictFilter) ([]domainTools.Dict, error) {
 	list, err := svc.repo.GetListAll(ctx, filter)
 	if err != nil {

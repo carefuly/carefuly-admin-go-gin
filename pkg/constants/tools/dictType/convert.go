@@ -29,3 +29,17 @@ func ConvertDictTagImport(input string) (DictTagConst, error) {
 	}
 	return "", errors.New(fmt.Sprintf("无效的类型值: %s，可选值：primary/success/warning/danger/info", input))
 }
+
+// BoolValueImportMapping 布尔值类型映射
+var BoolValueImportMapping = map[string]bool{
+	"是": true,
+	"否": false,
+}
+
+// ConvertBoolValueImport 布尔值类型转换
+func ConvertBoolValueImport(input string) (bool, error) {
+	if val, exists := BoolValueImportMapping[input]; exists {
+		return val, nil
+	}
+	return false, errors.New(fmt.Sprintf("无效的类型值: %s，可选值：是/否", input))
+}

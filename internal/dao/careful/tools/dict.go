@@ -14,17 +14,16 @@ import (
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/query/filters"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils"
 	"gorm.io/gorm"
 )
 
 var (
-	ErrDictRecordNotFound   = gorm.ErrRecordNotFound
-	ErrDictNotFound         = errors.New("记录不存在")
-	ErrDuplicateDict        = errors.New("字典已存在")
-	ErrDuplicateDictName    = errors.New("字典名称已存在")
-	ErrDuplicateDictCode    = errors.New("字典编码已存在")
-	ErrVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
+	ErrDictRecordNotFound       = gorm.ErrRecordNotFound
+	ErrDictNotFound             = errors.New("记录不存在")
+	ErrDuplicateDict            = errors.New("字典已存在")
+	ErrDuplicateDictName        = errors.New("字典名称已存在")
+	ErrDuplicateDictCode        = errors.New("字典编码已存在")
+	ErrDictVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
 )
 
 type DictDAO interface {
@@ -33,6 +32,7 @@ type DictDAO interface {
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, id string, model tools.Dict) (int64, error)
 	FindById(ctx context.Context, id string) (*tools.Dict, error)
+	FindByName(ctx context.Context, name string) (*tools.Dict, error)
 	FindListPage(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, int64, error)
 	FindListAll(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, error)
 	CheckExistByName(ctx context.Context, name, excludeId string) (bool, error)
@@ -47,7 +47,7 @@ func NewDictDao(db *gorm.DB) DictDAO {
 	return &GORMDictDAO{db: db}
 }
 
-// Insert 创建字典
+// Insert 创建
 func (dao *GORMDictDAO) Insert(ctx context.Context, model tools.Dict) error {
 	return dao.db.WithContext(ctx).Create(&model).Error
 }
@@ -63,10 +63,8 @@ func (dao *GORMDictDAO) BatchDelete(ctx context.Context, ids []string) error {
 	return dao.db.WithContext(ctx).Where("id IN ?", ids).Delete(&tools.Dict{}).Error
 }
 
-// Update 更新字典
+// Update 更新
 func (dao *GORMDictDAO) Update(ctx context.Context, id string, model tools.Dict) (int64, error) {
-	utils.JsonFormatPrint(model)
-
 	result := dao.db.WithContext(ctx).Model(&model).Where("id = ? AND version = ?", id, model.Version).
 		Updates(map[string]any{
 			"name":      model.Name,
@@ -91,7 +89,7 @@ func (dao *GORMDictDAO) Update(ctx context.Context, id string, model tools.Dict)
 		if !exists {
 			return result.RowsAffected, ErrDictNotFound
 		}
-		return result.RowsAffected, ErrVersionInconsistency
+		return result.RowsAffected, ErrDictVersionInconsistency
 	}
 	return result.RowsAffected, result.Error
 }
@@ -100,6 +98,13 @@ func (dao *GORMDictDAO) Update(ctx context.Context, id string, model tools.Dict)
 func (dao *GORMDictDAO) FindById(ctx context.Context, id string) (*tools.Dict, error) {
 	var model tools.Dict
 	err := dao.db.WithContext(ctx).Where("id = ?", id).First(&model).Error
+	return &model, err
+}
+
+// FindByName 根据Name查询
+func (dao *GORMDictDAO) FindByName(ctx context.Context, name string) (*tools.Dict, error) {
+	var model tools.Dict
+	err := dao.db.WithContext(ctx).Where("name = ?", name).First(&model).Error
 	return &model, err
 }
 
@@ -118,7 +123,7 @@ func (dao *GORMDictDAO) FindListPage(ctx context.Context, filter domainTools.Dic
 	return models, total, err
 }
 
-// FindListAll 查询所有字典(带条件)
+// FindListAll 查询所有列表
 func (dao *GORMDictDAO) FindListAll(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, error) {
 	query := dao.buildQuery(ctx, filter)
 

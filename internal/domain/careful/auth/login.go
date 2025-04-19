@@ -8,12 +8,14 @@
 
 package auth
 
-import _const "github.com/carefuly/carefuly-admin-go-gin/pkg/const"
+import (
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
+)
 
 type Login struct {
 	Id       string                `json:"id" `      // 验证码
 	Code     string                `json:"code"`     // 验证码
-	BizType  _const.BizTypeCaptcha `json:"bizType"`  // 验证码类型
+	BizType  captcha.BizTypeCaptcha `json:"bizType"`  // 验证码类型
 	Username string                `json:"username"` // 用户账号
 	Password string                `json:"password"` // 密码
 }

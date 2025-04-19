@@ -38,10 +38,10 @@ func (f *DictFilter) Apply(query *gorm.DB) *gorm.DB {
 	if f.Code != "" {
 		query = query.Where("code LIKE ?", "%"+f.Code+"%")
 	}
-	if f.Type != -1 {
+	if f.Type >= 0 {
 		query = query.Where("type = ?", f.Type)
 	}
-	if f.TypeValue != -1 {
+	if f.TypeValue >= 0 {
 		query = query.Where("typeValue = ?", f.TypeValue)
 	}
 

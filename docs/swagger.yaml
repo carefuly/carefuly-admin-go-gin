@@ -95,6 +95,26 @@ definitions:
     - TypeValueConst0
     - TypeValueConst1
     - TypeValueConst2
+  dictType.DictTagConst:
+    enum:
+    - primary
+    - success
+    - warning
+    - danger
+    - info
+    type: string
+    x-enum-comments:
+      DictTagConstDanger: danger
+      DictTagConstInfo: info
+      DictTagConstPrimary: primary
+      DictTagConstSuccess: success
+      DictTagConstWarning: warning
+    x-enum-varnames:
+    - DictTagConstPrimary
+    - DictTagConstSuccess
+    - DictTagConstWarning
+    - DictTagConstDanger
+    - DictTagConstInfo
   response.Response:
     properties:
       code:
@@ -120,7 +140,7 @@ definitions:
         description: 验证码图片
         type: string
     type: object
-  tools.Request:
+  tools.DictRequest:
     properties:
       code:
         description: 字典编码
@@ -137,16 +157,56 @@ definitions:
       type:
         allOf:
         - $ref: '#/definitions/dict.TypeConst'
+        default: 0
         description: 字典类型
       typeValue:
         allOf:
         - $ref: '#/definitions/dict.TypeValueConst'
+        default: 0
         description: 字典类型值
       version:
         description: 版本
         type: integer
     required:
     - code
+    - name
+    type: object
+  tools.DictTypeRequest:
+    properties:
+      boolValue:
+        description: 布尔-字典信息值
+        type: boolean
+      dict_id:
+        description: 字典ID
+        maxLength: 100
+        type: string
+      dictColor:
+        description: 标签颜色
+        type: string
+      dictTag:
+        allOf:
+        - $ref: '#/definitions/dictType.DictTagConst'
+        default: primary
+        description: 标签类型
+      intValue:
+        description: 整型-字典信息值
+        type: integer
+      name:
+        description: 字典名称
+        maxLength: 50
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      strValue:
+        description: 字符串-字典信息值
+        type: string
+      version:
+        description: 版本
+        type: integer
+    required:
+    - dict_id
     - name
     type: object
 host: localhost:8080
@@ -286,7 +346,7 @@ paths:
       - LoginToken: []
       summary: 批量删除字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/create:
     post:
       consumes:
@@ -295,10 +355,10 @@ paths:
       parameters:
       - description: 字典信息
         in: body
-        name: Request
+        name: DictRequest
         required: true
         schema:
-          $ref: '#/definitions/tools.Request'
+          $ref: '#/definitions/tools.DictRequest'
       produces:
       - application/json
       responses:
@@ -314,7 +374,7 @@ paths:
       - LoginToken: []
       summary: 创建字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/delete/{id}:
     delete:
       consumes:
@@ -341,7 +401,7 @@ paths:
       - LoginToken: []
       summary: 删除字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/getById/{id}:
     get:
       consumes:
@@ -368,7 +428,7 @@ paths:
       - LoginToken: []
       summary: 根据ID获取字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/import:
     post:
       consumes:
@@ -395,7 +455,7 @@ paths:
       - LoginToken: []
       summary: 导入字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/listAll:
     get:
       consumes:
@@ -448,7 +508,7 @@ paths:
       - LoginToken: []
       summary: 获取所有字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/listPage:
     get:
       consumes:
@@ -513,7 +573,7 @@ paths:
       - LoginToken: []
       summary: 分页获取字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
   /v1/tools/dict/update/{id}:
     put:
       consumes:
@@ -527,10 +587,10 @@ paths:
         type: string
       - description: 字典信息
         in: body
-        name: Request
+        name: DictRequest
         required: true
         schema:
-          $ref: '#/definitions/tools.Request'
+          $ref: '#/definitions/tools.DictRequest'
       produces:
       - application/json
       responses:
@@ -546,7 +606,287 @@ paths:
       - LoginToken: []
       summary: 更新字典
       tags:
-      - 字典管理
+      - 系统工具/字典管理
+  /v1/tools/dictType/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除字典信息
+      parameters:
+      - description: ID数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建字典信息
+      parameters:
+      - description: 字典信息
+        in: body
+        name: DictTypeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.DictTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除字典信息
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取字典信息
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 根据ID获取字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 导入字典信息
+      parameters:
+      - description: 文件(支持xlsx/csv格式)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导入字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有字典信息
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典信息名称
+        in: query
+        name: name
+        type: string
+      - default: primary
+        description: 标签类型
+        in: query
+        name: dictTag
+        type: string
+      - description: 字典ID
+        in: query
+        name: dictId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取字典信息
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典信息名称
+        in: query
+        name: name
+        type: string
+      - default: primary
+        description: 标签类型
+        in: query
+        name: dictTag
+        type: string
+      - description: 字典ID
+        in: query
+        name: dictId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 分页获取字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: 更新字典信息
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 字典信息
+        in: body
+        name: DictTypeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.DictTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新字典信息
+      tags:
+      - 系统工具/字典信息管理
 securityDefinitions:
   LoginToken:
     in: header
