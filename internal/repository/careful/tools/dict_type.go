@@ -12,6 +12,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	cacheTools "github.com/carefuly/carefuly-admin-go-gin/internal/cache/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/dao/careful/tools"
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
@@ -30,9 +31,13 @@ var (
 
 type DictTypeRepository interface {
 	Create(ctx context.Context, domain domainTools.DictType) error
-
+	Delete(ctx context.Context, id string) (int64, error)
+	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, id string, domain domainTools.DictType) (int64, error)
 	GetById(ctx context.Context, id string) (domainTools.DictType, error)
+	GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error)
+	GetListAll(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, error)
+	CheckExistByDictIdAndNameAndValue(ctx context.Context, name, strValue string, intValue int64, dictId string) (bool, error)
 }
 
 type dictTypeRepository struct {
@@ -56,6 +61,44 @@ func (repo *dictTypeRepository) Create(ctx context.Context, domain domainTools.D
 	return repo.dao.Insert(ctx, model)
 }
 
+// Delete 删除
+func (repo *dictTypeRepository) Delete(ctx context.Context, id string) (int64, error) {
+	rowsAffected, err := repo.dao.Delete(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+
+	// 删除缓存
+	err = repo.cache.Del(ctx, id)
+	if err != nil {
+		// 网络崩了，也可能是 redis 崩了
+		zap.L().Error("Redis异常", zap.Error(err))
+		return 0, err
+	}
+
+	return rowsAffected, err
+}
+
+// BatchDelete 批量删除
+func (repo *dictTypeRepository) BatchDelete(ctx context.Context, ids []string) error {
+	err := repo.dao.BatchDelete(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	// 删除缓存
+	for _, val := range ids {
+		err = repo.cache.Del(ctx, val)
+		if err != nil {
+			// 网络崩了，也可能是 redis 崩了
+			zap.L().Error("Redis异常", zap.Error(err))
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Update 更新
 func (repo *dictTypeRepository) Update(ctx context.Context, id string, domain domainTools.DictType) (int64, error) {
 	model, err := repo.toEntity(domain)
@@ -65,7 +108,7 @@ func (repo *dictTypeRepository) Update(ctx context.Context, id string, domain do
 
 	rowsAffected, err := repo.dao.Update(ctx, id, model)
 	if err != nil {
-		return rowsAffected, err
+		return 0, err
 	}
 
 	// 删除缓存
@@ -107,6 +150,45 @@ func (repo *dictTypeRepository) GetById(ctx context.Context, id string) (domainT
 	}
 
 	return toDomain, nil
+}
+
+// GetListPage 分页查询列表
+func (repo *dictTypeRepository) GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error) {
+	list, row, err := repo.dao.FindListPage(ctx, filters)
+	if err != nil {
+		return []domainTools.DictType{}, row, err
+	}
+
+	var domains []domainTools.DictType
+	for _, v := range list {
+		domains = append(domains, repo.toDomain(v))
+	}
+
+	return domains, row, nil
+}
+
+// GetListAll 查询所有列表
+func (repo *dictTypeRepository) GetListAll(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, error) {
+	list, err := repo.dao.FindListAll(ctx, filters)
+	if err != nil {
+		return []domainTools.DictType{}, err
+	}
+
+	if len(list) == 0 {
+		return []domainTools.DictType{}, nil
+	}
+
+	var domains []domainTools.DictType
+	for _, v := range list {
+		domains = append(domains, repo.toDomain(v))
+	}
+
+	return domains, nil
+}
+
+// CheckExistByDictIdAndNameAndValue 检查同一个字典下是否存在相同名称和值
+func (repo *dictTypeRepository) CheckExistByDictIdAndNameAndValue(ctx context.Context, name, strValue string, intValue int64, dictId string) (bool, error) {
+	return repo.dao.CheckExistByDictIdAndNameAndValue(ctx, name, strValue, intValue, dictId)
 }
 
 // toEntity 转换为实体模型

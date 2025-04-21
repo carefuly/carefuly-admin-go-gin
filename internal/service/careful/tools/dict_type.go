@@ -12,6 +12,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/careful/tools"
@@ -19,7 +21,6 @@ import (
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
 	_import "github.com/carefuly/carefuly-admin-go-gin/pkg/utils/import"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/jsonformat"
-	"strconv"
 )
 
 var (
@@ -33,9 +34,12 @@ var (
 type DictTypeService interface {
 	Create(ctx context.Context, domain domainTools.DictType) error
 	Import(ctx context.Context, userId string, listMap []map[string]string) _import.ImportResult
-
+	Delete(ctx context.Context, id string) error
+	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, id string, domain domainTools.DictType) error
 	GetById(ctx context.Context, id string) (domainTools.DictType, error)
+	GetListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error)
+	GetListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, error)
 }
 
 type dictTypeService struct {
@@ -171,6 +175,23 @@ func (svc *dictTypeService) Import(ctx context.Context, userId string, listMap [
 	return result
 }
 
+// Delete 删除
+func (svc *dictTypeService) Delete(ctx context.Context, id string) error {
+	rowsAffected, err := svc.repo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return tools.ErrDictTypeNotFound
+	}
+	return err
+}
+
+// BatchDelete 批量删除
+func (svc *dictTypeService) BatchDelete(ctx context.Context, ids []string) error {
+	return svc.repo.BatchDelete(ctx, ids)
+}
+
 // Update 更新
 func (svc *dictTypeService) Update(ctx context.Context, id string, domain domainTools.DictType) error {
 	// 获取字典详情
@@ -219,4 +240,14 @@ func (svc *dictTypeService) GetById(ctx context.Context, id string) (domainTools
 		return domain, tools.ErrDictTypeNotFound
 	}
 	return domain, err
+}
+
+// GetListPage 分页查询列表
+func (svc *dictTypeService) GetListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error) {
+	return svc.repo.GetListPage(ctx, filter)
+}
+
+// GetListAll 查询所有列表
+func (svc *dictTypeService) GetListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, error) {
+	return svc.repo.GetListAll(ctx, filter)
 }

@@ -61,6 +61,9 @@ func (repo *dictRepository) Create(ctx context.Context, domain domainTools.Dict)
 // Delete 删除
 func (repo *dictRepository) Delete(ctx context.Context, id string) (int64, error) {
 	rowsAffected, err := repo.dao.Delete(ctx, id)
+	if err != nil {
+		return 0, err
+	}
 
 	// 删除缓存
 	err = repo.cache.Del(ctx, id)
@@ -176,6 +179,10 @@ func (repo *dictRepository) GetListPage(ctx context.Context, filters domainTools
 	list, row, err := repo.dao.FindListPage(ctx, filters)
 	if err != nil {
 		return []domainTools.Dict{}, row, err
+	}
+
+	if len(list) == 0 {
+		return []domainTools.Dict{}, row, nil
 	}
 
 	var domain []domainTools.Dict

@@ -13,9 +13,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 var ErrDictNotExist = redis.Nil
@@ -81,5 +82,5 @@ func (c *RedisDictCache) SetNotFound(ctx context.Context, id string) error {
 }
 
 func (c *RedisDictCache) key(id string) string {
-	return fmt.Sprintf("dict:info:%s", id)
+	return fmt.Sprintf("careful:tools:dict:info:%s", id)
 }

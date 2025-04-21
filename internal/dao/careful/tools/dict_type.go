@@ -11,6 +11,7 @@ package tools
 import (
 	"context"
 	"errors"
+
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/query/filters"
@@ -19,13 +20,13 @@ import (
 
 type DictTypeDAO interface {
 	Insert(ctx context.Context, model tools.DictType) error
-	// Delete(ctx context.Context, id string) (int64, error)
-	// BatchDelete(ctx context.Context, ids []string) error
+	Delete(ctx context.Context, id string) (int64, error)
+	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, id string, model tools.DictType) (int64, error)
 	FindById(ctx context.Context, id string) (*tools.DictType, error)
-	// FindListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, int64, error)
-	// FindListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, error)
-	// CheckExistByDictIdAndNameAndValue(ctx context.Context, name, strValue string, intValue int64, dictId string) (bool, error)
+	FindListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, int64, error)
+	FindListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, error)
+	CheckExistByDictIdAndNameAndValue(ctx context.Context, name, strValue string, intValue int64, dictId string) (bool, error)
 }
 
 var (

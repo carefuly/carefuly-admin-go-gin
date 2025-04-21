@@ -192,7 +192,7 @@ definitions:
         description: 整型-字典信息值
         type: integer
       name:
-        description: 字典名称
+        description: 字典信息名称
         maxLength: 50
         type: string
       remark:
@@ -776,7 +776,7 @@ paths:
         type: string
       - description: 字典ID
         in: query
-        name: dictId
+        name: dict_id
         type: string
       produces:
       - application/json
@@ -836,7 +836,7 @@ paths:
         type: string
       - description: 字典ID
         in: query
-        name: dictId
+        name: dict_id
         type: string
       produces:
       - application/json

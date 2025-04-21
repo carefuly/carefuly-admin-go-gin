@@ -198,11 +198,7 @@ func (svc *dictService) Delete(ctx context.Context, id string) error {
 
 // BatchDelete 批量删除
 func (svc *dictService) BatchDelete(ctx context.Context, ids []string) error {
-	err := svc.repo.BatchDelete(ctx, ids)
-	if err != nil {
-		return err
-	}
-	return err
+	return svc.repo.BatchDelete(ctx, ids)
 }
 
 // Update 更新
@@ -268,23 +264,12 @@ func (svc *dictService) GetById(ctx context.Context, id string) (domainTools.Dic
 
 // GetListPage 分页查询列表
 func (svc *dictService) GetListPage(ctx context.Context, filter domainTools.DictFilter) ([]domainTools.Dict, int64, error) {
-	list, total, err := svc.repo.GetListPage(ctx, filter)
-	if err != nil {
-		return list, total, err
-	}
-	if total == 0 {
-		return []domainTools.Dict{}, total, err
-	}
-	return list, total, err
+	return svc.repo.GetListPage(ctx, filter)
 }
 
 // GetListAll 获取所有列表
 func (svc *dictService) GetListAll(ctx context.Context, filter domainTools.DictFilter) ([]domainTools.Dict, error) {
-	list, err := svc.repo.GetListAll(ctx, filter)
-	if err != nil {
-		return list, err
-	}
-	return list, err
+	return svc.repo.GetListAll(ctx, filter)
 }
 
 // IsDuplicateEntryError 分析错误消息中的索引名

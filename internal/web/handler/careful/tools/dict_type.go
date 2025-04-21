@@ -11,6 +11,12 @@ package tools
 import (
 	"errors"
 	"fmt"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/query/filters"
+	"mime/multipart"
+	"net/http"
+	"strconv"
+	"time"
+
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
@@ -22,9 +28,6 @@ import (
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"mime/multipart"
-	"net/http"
-	"time"
 )
 
 type DictTypeHandler interface {
@@ -212,19 +215,18 @@ func (h *dictTypeHandler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	response.NewResponse().SuccessResponse(ctx, "参数校验", id)
-	// err := h.svc.Delete(ctx, id)
-	//
-	// switch {
-	// case err == nil:
-	// 	response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
-	// case errors.Is(err, tools.ErrDictNotFound):
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "记录不存在", nil)
-	// default:
-	// 	ctx.Set("internal", err.Error())
-	// 	zap.L().Error("删除字典异常", zap.Error(err))
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-	// }
+	err := h.svc.Delete(ctx, id)
+
+	switch {
+	case err == nil:
+		response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
+	case errors.Is(err, tools.ErrDictNotFound):
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "记录不存在", nil)
+	default:
+		ctx.Set("internal", err.Error())
+		zap.L().Error("删除字典异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+	}
 }
 
 // BatchDelete
@@ -245,17 +247,15 @@ func (h *dictTypeHandler) BatchDelete(ctx *gin.Context) {
 		return
 	}
 
-	response.NewResponse().SuccessResponse(ctx, "参数校验", ids)
+	err := h.svc.BatchDelete(ctx, ids)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("批量删除字典异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
 
-	// err := h.svc.BatchDelete(ctx, ids)
-	// if err != nil {
-	// 	ctx.Set("internal", err.Error())
-	// 	zap.L().Error("批量删除字典异常", zap.Error(err))
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-	// 	return
-	// }
-	//
-	// response.NewResponse().SuccessResponse(ctx, "批量删除成功", nil)
+	response.NewResponse().SuccessResponse(ctx, "批量删除成功", nil)
 }
 
 // Update
@@ -392,13 +392,49 @@ func (h *dictTypeHandler) GetById(ctx *gin.Context) {
 // @Param status query bool false "状态" default(true)
 // @Param name query string false "字典信息名称"
 // @Param dictTag query string false "标签类型" default(primary)
-// @Param dictId query string false "字典ID"
+// @Param dict_id query string false "字典ID"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/tools/dictType/listPage [get]
 // @Security LoginToken
 func (h *dictTypeHandler) GetListPage(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+	name := ctx.DefaultQuery("name", "")
+	dictTag := ctx.DefaultQuery("dictTag", "")
+	dictId := ctx.DefaultQuery("dict_id", "")
 
+	list, total, err := h.svc.GetListPage(ctx, domainTools.DictTypeFilter{
+		Filters: filters.Filters{
+			Creator:  creator,
+			Modifier: modifier,
+			Status:   status,
+		},
+		Pagination: filters.Pagination{
+			Page:     page,
+			PageSize: pageSize,
+		},
+		Name:    name,
+		DictTag: dictTag,
+		DictId:  dictId,
+	})
+
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("分页查询字典信息列表异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "查询成功", gin.H{
+		"list":     list,
+		"total":    total,
+		"page":     page,
+		"pageSize": pageSize,
+	})
 }
 
 // GetListAll
@@ -412,11 +448,36 @@ func (h *dictTypeHandler) GetListPage(ctx *gin.Context) {
 // @Param status query bool false "状态" default(true)
 // @Param name query string false "字典信息名称"
 // @Param dictTag query string false "标签类型" default(primary)
-// @Param dictId query string false "字典ID"
+// @Param dict_id query string false "字典ID"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/tools/dictType/listAll [get]
 // @Security LoginToken
 func (h *dictTypeHandler) GetListAll(ctx *gin.Context) {
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+	name := ctx.DefaultQuery("name", "")
+	dictTag := ctx.DefaultQuery("dictTag", "")
+	dictId := ctx.DefaultQuery("dict_id", "")
 
+	list, err := h.svc.GetListAll(ctx, domainTools.DictTypeFilter{
+		Filters: filters.Filters{
+			Creator:  creator,
+			Modifier: modifier,
+			Status:   status,
+		},
+		Name:    name,
+		DictTag: dictTag,
+		DictId:  dictId,
+	})
+
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("查询所有字典信息列表异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "查询成功", list)
 }

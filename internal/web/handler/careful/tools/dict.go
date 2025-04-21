@@ -67,14 +67,15 @@ type ImportDictRequest struct {
 }
 
 func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
-	router.POST("/dict/create", h.Create)
-	router.POST("/dict/import", h.Import)
-	router.DELETE("/dict/delete/:id", h.Delete)
-	router.POST("/dict/batchDelete", h.BatchDelete)
-	router.PUT("/dict/update/:id", h.Update)
-	router.GET("/dict/getById/:id", h.GetById)
-	router.GET("/dict/listPage", h.GetListPage)
-	router.GET("/dict/listAll", h.GetListAll)
+	base := router.Group("/dict")
+	base.POST("/create", h.Create)
+	base.POST("/import", h.Import)
+	base.DELETE("/delete/:id", h.Delete)
+	base.POST("/batchDelete", h.BatchDelete)
+	base.PUT("/update/:id", h.Update)
+	base.GET("/getById/:id", h.GetById)
+	base.GET("/listPage", h.GetListPage)
+	base.GET("/listAll", h.GetListAll)
 }
 
 // Create

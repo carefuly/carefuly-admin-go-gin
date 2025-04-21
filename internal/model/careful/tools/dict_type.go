@@ -11,6 +11,7 @@ package tools
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/tools/dict"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/tools/dictType"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
@@ -23,17 +24,16 @@ var ErrDictTypeUniqueIndex = errors.New("违反唯一约束")
 // DictType 字典信息表
 type DictType struct {
 	models.CoreModels
-	Name        string                `gorm:"type:varchar(50);not null;index:idx_name;column:name;comment:字典信息名称" json:"name"`                // 字典信息名称
-	StrValue    sql.NullString        `gorm:"type:varchar(50);column:strValue;comment:字符串-字典信息值" json:"strValue"`                             // 字符串-字典信息值
-	IntValue    sql.NullInt64         `gorm:"type:tinyint;column:intValue;comment:整型-字典信息值" json:"intValue"`                                  // 整型-字典信息值
-	BoolValue   sql.NullBool          `gorm:"type:boolean;column:boolValue;comment:布尔-字典信息值" json:"boolValue"`                                // 布尔-字典信息值
-	DictTag     dictType.DictTagConst `gorm:"type:varchar(10);default:primary;index:idx_dict_tag;column:dictTag;comment:标签类型" json:"dictTag"` // 标签类型
-	DictColor   string                `gorm:"type:varchar(50);column:dictColor;comment:标签颜色" json:"dictColor"`                                // 标签颜色
-	DictName    string                `gorm:"type:varchar(100);column:dictName;comment:字典名称" json:"dictName"`                                 // 字典名称
-	TypeValue   dict.TypeValueConst   `gorm:"type:tinyint;default:0;index:idx_type_value;column:typeValue;comment:字典类型值" json:"typeValue"`    // 字典类型值
-	DictId      string                `gorm:"type:varchar(100);index:idx_dict_id;column:dict_id;comment:字典ID" json:"dict_id"`                 // 字典ID
-	Dict        *Dict                 `gorm:"foreignKey:DictId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"dict"`                    // 字典信息
-	UniqueValue string                `gorm:"-"`                                                                                              // 虚拟字段，不持久化
+	Name      string                `gorm:"type:varchar(50);not null;index:idx_name;column:name;comment:字典信息名称" json:"name"`                // 字典信息名称
+	StrValue  sql.NullString        `gorm:"type:varchar(50);column:strValue;comment:字符串-字典信息值" json:"strValue"`                             // 字符串-字典信息值
+	IntValue  sql.NullInt64         `gorm:"type:tinyint;column:intValue;comment:整型-字典信息值" json:"intValue"`                                  // 整型-字典信息值
+	BoolValue sql.NullBool          `gorm:"type:boolean;column:boolValue;comment:布尔-字典信息值" json:"boolValue"`                                // 布尔-字典信息值
+	DictTag   dictType.DictTagConst `gorm:"type:varchar(10);default:primary;index:idx_dict_tag;column:dictTag;comment:标签类型" json:"dictTag"` // 标签类型
+	DictColor string                `gorm:"type:varchar(50);column:dictColor;comment:标签颜色" json:"dictColor"`                                // 标签颜色
+	DictName  string                `gorm:"type:varchar(100);column:dictName;comment:字典名称" json:"dictName"`                                 // 字典名称
+	TypeValue dict.TypeValueConst   `gorm:"type:tinyint;default:0;index:idx_type_value;column:typeValue;comment:字典类型值" json:"typeValue"`    // 字典类型值
+	DictId    string                `gorm:"type:varchar(100);index:idx_dict_id;column:dict_id;comment:字典ID" json:"dict_id"`                 // 字典ID
+	Dict      *Dict                 `gorm:"foreignKey:DictId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"dict"`                    // 字典信息
 }
 
 func NewDictType() *DictType {

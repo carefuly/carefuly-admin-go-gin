@@ -895,7 +895,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "字典ID",
-                        "name": "dictId",
+                        "name": "dict_id",
                         "in": "query"
                     }
                 ],
@@ -985,7 +985,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "字典ID",
-                        "name": "dictId",
+                        "name": "dict_id",
                         "in": "query"
                     }
                 ],
@@ -1329,7 +1329,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
-                    "description": "字典名称",
+                    "description": "字典信息名称",
                     "type": "string",
                     "maxLength": 50
                 },
