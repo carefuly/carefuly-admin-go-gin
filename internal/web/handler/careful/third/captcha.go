@@ -2,7 +2,7 @@
  * Description：
  * FileName：captcha.go
  * Author：CJiaの用心
- * Create：2025/3/27 11:59:27
+ * Create：2025/5/13 00:25:22
  * Remark：
  */
 
@@ -12,9 +12,8 @@ import (
 	"errors"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
-	constantsCaptcha "github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/third/captcha"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/third/captcha"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -39,8 +38,8 @@ func NewCaptchaController(rely config.RelyConfig, svc third.CaptchaService) Capt
 }
 
 type CaptchaRequest struct {
-	Type    captcha.TypeCaptcha             `form:"type" binding:"required"`    // 验证码类型
-	BizType constantsCaptcha.BizTypeCaptcha `form:"bizType" binding:"required"` // 业务类型
+	Type    captcha.TypeCaptcha `form:"type" binding:"required"`                              // 验证码类型
+	BizType string              `form:"bizType" binding:"required" example:"BizCaptchaLogin"` // 业务类型
 }
 
 type CaptchaResponse struct {
@@ -59,7 +58,7 @@ func (h *captchaHandler) RegisterRoutes(router *gin.RouterGroup) {
 // @Tags 第三方业务管理
 // @Accept application/json
 // @Produce application/json
-// @Param CaptchaRequest query CaptchaRequest true "参数"
+// @Param CaptchaRequest query CaptchaRequest true "请求参数"
 // @Success 200 {object} CaptchaResponse
 // @Failure 400 {object} response.Response
 // @Router /v1/third/generateCaptcha [get]

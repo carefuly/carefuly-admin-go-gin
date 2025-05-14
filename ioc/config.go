@@ -22,10 +22,10 @@ import (
 
 func InitConfig(debug bool) *config.Config {
 	// 从配置文件中读取配置信息
-	configFilePrefix := "config"
-	configFileName := fmt.Sprintf(".\\config\\%s-pro.yaml", configFilePrefix)
+	configFilePrefix := ".env"
+	configFileName := fmt.Sprintf(".\\config\\%s.production.yaml", configFilePrefix)
 	if debug {
-		configFileName = fmt.Sprintf(".\\config\\%s-dev.yaml", configFilePrefix)
+		configFileName = fmt.Sprintf(".\\config\\%s.development.yaml", configFilePrefix)
 	}
 	conf := new(config.NaCosConfig)
 
@@ -95,7 +95,7 @@ func InitConfig(debug bool) *config.Config {
 	globalConfig.ServerConfig.Host = conf.ServerConfig.Host
 	globalConfig.ServerConfig.Port = conf.ServerConfig.Port
 
-	zap.L().Debug("[配置文件信息]", zap.Any("globalConfig", globalConfig))
+	zap.L().Debug("[Nacos配置文件信息]", zap.Any("globalConfig", globalConfig))
 
 	// 将配置信息返回
 	return globalConfig

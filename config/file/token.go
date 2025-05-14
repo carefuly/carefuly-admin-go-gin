@@ -9,6 +9,6 @@
 package config
 
 type TokenConfig struct {
-	ApiKeyAuth string `yaml:"apiKeyAuth" json:"apiKeyAuth"`
-	Expire     int    `yaml:"expire" json:"expire"`
+	Secret string `yaml:"secret" json:"secret"`
+	Expire int    `yaml:"expire" json:"expire"`
 }

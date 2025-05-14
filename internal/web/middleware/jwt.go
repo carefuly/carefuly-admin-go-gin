@@ -2,26 +2,26 @@
  * Description：
  * FileName：jwt.go
  * Author：CJiaの用心
- * Create：2025/4/15 14:13:48
+ * Create：2025/5/13 01:04:02
  * Remark：
  */
 
 package middleware
 
 import (
+	"errors"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/jwt"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 )
 
 var (
-	UnauthorizedNotFound = "Token信息为空，请先登录"
+	UnauthorizedNotFound = "请求未携带token，无权限访问"
 	UnauthorizedInvalid  = "无效的Token"
-	UnauthorizedNotify   = "Token认证失败"
 )
 
 // LoginJWTMiddlewareBuilder JWT 登录校验
@@ -41,6 +41,24 @@ func (l *LoginJWTMiddlewareBuilder) IgnorePaths(path string) *LoginJWTMiddleware
 	return l
 }
 
+// FailedWithStatus 响应失败并设置HTTP状态码
+func (l *LoginJWTMiddlewareBuilder) FailedWithStatus(ctx *gin.Context, httpStatus, code int, msg string) {
+	ctx.JSON(httpStatus, gin.H{
+		"code":    code,
+		"message": msg,
+		"data":    nil,
+	})
+}
+
+// Unauthorized 响应未授权
+func (l *LoginJWTMiddlewareBuilder) Unauthorized(ctx *gin.Context, msg string) {
+	if msg == "" {
+		msg = "未授权，请先登录"
+	}
+	l.FailedWithStatus(ctx, http.StatusUnauthorized, http.StatusUnauthorized, msg)
+}
+
+// Build JWT认证中间件
 func (l *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// swagger文档
@@ -54,15 +72,14 @@ func (l *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 			}
 		}
 
-		// 我现在用 JWT 来校验
-		tokenHeader := ctx.GetHeader("Authorization")
-		if tokenHeader == "" {
-			// 没登录
+		// 获取Authorization头
+		authHeader := ctx.GetHeader("Authorization")
+		if authHeader == "" {
 			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, UnauthorizedNotFound, nil)
 			ctx.Abort()
 			return
 		}
-		seg := strings.Split(tokenHeader, " ")
+		seg := strings.Split(authHeader, " ")
 		if len(seg) != 2 {
 			// 没登录，有人瞎搞
 			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, UnauthorizedInvalid, nil)
@@ -71,36 +88,84 @@ func (l *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 		}
 
 		tokenStr := seg[1]
-		claims := &system.UserClaims{}
-		// ParseWithClaims 里面，一定要传入指针
-		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-			return []byte(l.rely.Token.ApiKeyAuth), nil
-		})
+
+		// 检查token是否在黑名单中
+		tokenBlacklist := jwt.NewTokenBlacklist(l.rely.Redis)
+		blacklisted, err := tokenBlacklist.IsBlacklisted(ctx, tokenStr)
 		if err != nil {
-			// 没登录
-			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, UnauthorizedNotify, nil)
+			zap.L().Error("检查token黑名单失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器内部错误", nil)
 			ctx.Abort()
 			return
 		}
 
-		// err 为 nil，token 不为 nil
-		if token == nil || !token.Valid {
-			// 没登录
-			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, UnauthorizedNotify, nil)
+		if blacklisted {
+			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "Token已失效，请重新登录", nil)
 			ctx.Abort()
 			return
 		}
 
-		// 校验用户代理
-		// if claims.UserAgent != ctx.Request.UserAgent() {
-		// 	// 严重的安全问题
-		// 	// 你是要监控
-		// 	ctx.AbortWithStatus(http.StatusUnauthorized)
-		// 	return
-		// }
+		// 解析token
+		claims, err := jwt.ParseToken(tokenStr, l.rely.Token.Secret)
+		if err != nil {
+			switch {
+			case errors.Is(err, jwt.ErrExpiredToken):
+				response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "Token已过期", nil)
+			case errors.Is(err, jwt.ErrInvalidToken):
+				response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "Token无效", nil)
+			default:
+				response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "Token认证失败", nil)
+			}
+			ctx.Abort()
+			return
+		}
 
+		// 将用户信息存储到上下文
 		ctx.Set("claims", claims)
-		ctx.Set("userId", claims.UId)
+		ctx.Set("userId", claims.UserId)
 		ctx.Set("username", claims.Username)
+		ctx.Set("userType", claims.UserType)
+	}
+}
+
+// JWTAuthMiddleware JWT认证中间件
+func (l *LoginJWTMiddlewareBuilder) JWTAuthMiddleware(tokenConfig config.TokenConfig) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// 获取Authorization头
+		authHeader := ctx.GetHeader("Authorization")
+		if authHeader == "" {
+			l.Unauthorized(ctx, "请求未携带token，无权限访问")
+			ctx.Abort()
+			return
+		}
+
+		// 检查Bearer前缀
+		parts := strings.SplitN(authHeader, " ", 2)
+		if !(len(parts) == 2 && parts[0] == "Bearer") {
+			l.Unauthorized(ctx, "token格式错误")
+			ctx.Abort()
+			return
+		}
+
+		// 解析token
+		claims, err := jwt.ParseToken(parts[1], tokenConfig.Secret)
+		if err != nil {
+			switch {
+			case errors.Is(err, jwt.ErrExpiredToken):
+				l.Unauthorized(ctx, "token已过期")
+			case errors.Is(err, jwt.ErrInvalidToken):
+				l.Unauthorized(ctx, "token无效")
+			default:
+				l.Unauthorized(ctx, "认证失败")
+			}
+			ctx.Abort()
+			return
+		}
+
+		// 将用户信息存储到上下文
+		ctx.Set("userId", claims.UserId)
+		ctx.Set("username", claims.Username)
+
+		ctx.Next()
 	}
 }

@@ -2,7 +2,7 @@
  * Description：
  * FileName：storage.go
  * Author：CJiaの用心
- * Create：2025/4/16 11:19:09
+ * Create：2025/5/13 15:09:07
  * Remark：
  */
 
@@ -12,8 +12,8 @@ import (
 	"bytes"
 	"fmt"
 	loggerModel "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/logger"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/logger"
 	loggerMiddleware "github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/middleware/logger"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/logger"
 	_import "github.com/carefuly/carefuly-admin-go-gin/pkg/utils/import"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/requestUtils"
 	"github.com/gin-gonic/gin"

@@ -2,7 +2,7 @@
  * Description：
  * FileName：types.go
  * Author：CJiaの用心
- * Create：2025/3/27 13:58:06
+ * Create：2025/5/13 01:00:06
  * Remark：
  */
 
@@ -27,8 +27,6 @@ func NewRouter(rely config.RelyConfig, router *gin.RouterGroup) *Router {
 
 func (r *Router) RegisterRoutes() {
 	NewAuthRouter(r.rely).RegisterRouter(r.router)
-
-	NewToolsRouter(r.rely).RegisterRouter(r.router)
-
+	NewSystemRouter(r.rely).RegisterRouter(r.router)
 	NewThirdRouter(r.rely).RegisterRouter(r.router)
 }

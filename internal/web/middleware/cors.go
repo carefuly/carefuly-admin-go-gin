@@ -2,7 +2,7 @@
  * Description：
  * FileName：cors.go
  * Author：CJiaの用心
- * Create：2025/3/29 21:35:21
+ * Create：2025/5/13 01:03:47
  * Remark：
  */
 
@@ -13,7 +13,8 @@ import (
 	"net/http"
 )
 
-func Cors() gin.HandlerFunc {
+// CORSMiddleware 跨域中间件
+func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
 		origin := c.Request.Header.Get("Origin")

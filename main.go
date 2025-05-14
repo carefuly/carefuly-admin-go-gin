@@ -43,7 +43,7 @@ func main() {
 		Careful: dbPool.CarefulDB,
 	}
 
-	relyConfig.Redis = ioc.InitRedis(initConfig.RedisConfig)
+	relyConfig.Redis = ioc.InitCache(initConfig.CacheConfig)
 	relyConfig.Token = initConfig.TokenConfig
 
 	server := ioc.NewServer(relyConfig, "zh")

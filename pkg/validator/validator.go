@@ -10,7 +10,7 @@ package validate
 
 import (
 	"errors"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"

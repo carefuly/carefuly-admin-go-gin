@@ -2,7 +2,7 @@
  * Description：
  * FileName：logger.go
  * Author：CJiaの用心
- * Create：2025/4/16 11:00:56
+ * Create：2025/5/13 15:08:18
  * Remark：
  */
 
@@ -11,7 +11,7 @@ package logger
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/response"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/gin-gonic/gin"
 	"io"
 )

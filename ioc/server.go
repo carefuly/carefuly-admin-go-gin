@@ -42,11 +42,13 @@ func NewServer(rely config.RelyConfig, locale string) *Server {
 
 func (s *Server) InitGinMiddlewares(rely config.RelyConfig) []gin.HandlerFunc {
 	return []gin.HandlerFunc{
-		middleware.Cors(),
+		middleware.CORSMiddleware(),
 		middleware.NewLoginJWTMiddlewareBuilder(rely).
-			IgnorePaths("/dev-api/v1/auth/password-register").
-			IgnorePaths("/dev-api/v1/auth/password-login").
 			IgnorePaths("/dev-api/v1/third/generateCaptcha").
+			IgnorePaths("/dev-api/v1/auth/register").
+			IgnorePaths("/dev-api/v1/auth/login").
+			IgnorePaths("/dev-api/v1/auth/type-login").
+			IgnorePaths("/dev-api/v1/auth/refresh-token").
 			Build(),
 		middleware.NewLogger(rely.Logger).Logger(),
 		middleware.NewStorage().StorageLogger(rely.Db.Careful),

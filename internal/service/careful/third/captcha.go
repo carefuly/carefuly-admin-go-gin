@@ -2,7 +2,7 @@
  * Description：
  * FileName：captcha.go
  * Author：CJiaの用心
- * Create：2025/3/27 11:50:13
+ * Create：2025/5/13 00:19:56
  * Remark：
  */
 
@@ -11,9 +11,8 @@ package third
 import (
 	"context"
 	"errors"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/careful/third"
-	constantsCaptcha "github.com/carefuly/carefuly-admin-go-gin/pkg/constants/third/captcha"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/third/captcha"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/third"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/third/captcha"
 )
 
 var (
@@ -25,8 +24,8 @@ var (
 )
 
 type CaptchaService interface {
-	Generate(ctx context.Context, t captcha.TypeCaptcha, bizType constantsCaptcha.BizTypeCaptcha) (string, string, string, error)
-	Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, inputCode string) (bool, error)
+	Generate(ctx context.Context, t captcha.TypeCaptcha, bizType string) (string, string, string, error)
+	Verify(ctx context.Context, id string, biz string, inputCode string) (bool, error)
 }
 
 type captchaService struct {
@@ -40,7 +39,7 @@ func NewCaptchaService(repo third.CaptchaRepository) CaptchaService {
 	}
 }
 
-func (svc *captchaService) Generate(ctx context.Context, t captcha.TypeCaptcha, bizType constantsCaptcha.BizTypeCaptcha) (string, string, string, error) {
+func (svc *captchaService) Generate(ctx context.Context, t captcha.TypeCaptcha, bizType string) (string, string, string, error) {
 	// 根据类型生成验证码
 	svc.digit = svc.NewCaptchaGenerator(t)
 
@@ -52,7 +51,7 @@ func (svc *captchaService) Generate(ctx context.Context, t captcha.TypeCaptcha, 
 	return id, b64s, code, svc.repo.Set(ctx, id, code, bizType)
 }
 
-func (svc *captchaService) Verify(ctx context.Context, id string, biz constantsCaptcha.BizTypeCaptcha, inputCode string) (bool, error) {
+func (svc *captchaService) Verify(ctx context.Context, id string, biz string, inputCode string) (bool, error) {
 	ok, err := svc.repo.Verify(ctx, id, biz, inputCode)
 
 	switch {

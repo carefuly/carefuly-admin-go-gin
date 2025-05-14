@@ -2,7 +2,7 @@
  * Description：
  * FileName：auth.go
  * Author：CJiaの用心
- * Create：2025/3/28 11:57:48
+ * Create：2025/5/13 00:55:07
  * Remark：
  */
 
@@ -10,12 +10,13 @@ package careful
 
 import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/cache/careful/third"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/dao/careful/system"
-	systemRepository "github.com/carefuly/carefuly-admin-go-gin/internal/repository/careful/system"
-	thirdRepository "github.com/carefuly/carefuly-admin-go-gin/internal/repository/careful/third"
-	sysetmService "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
-	thirdService "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
+	cacheSystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/careful/system"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/careful/third"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/dao/careful/system"
+	repositorySystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/system"
+	repositoryThird "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/third"
+	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
+	serviceThird "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/web/handler/careful/auth"
 	"github.com/gin-gonic/gin"
 )
@@ -34,14 +35,14 @@ func (r *AuthRouter) RegisterRouter(router *gin.RouterGroup) {
 	baseRouter := router.Group("/auth")
 
 	captchaCache := third.NewCaptchaCache(r.rely.Redis)
-	captchaRepository := thirdRepository.NewCaptchaRepository(captchaCache)
-	captchaService := thirdService.NewCaptchaService(captchaRepository)
+	captchaRepository := repositoryThird.NewCaptchaRepository(captchaCache)
+	captchaService := serviceThird.NewCaptchaService(captchaRepository)
+
+	userCache := cacheSystem.NewRedisUserCache(r.rely.Redis)
 
 	userDAO := system.NewGORMUserDAO(r.rely.Db.Careful)
-	userRepository := systemRepository.NewUserRepository(userDAO)
-	userPasswordDAO := system.NewUserPasswordDAO(r.rely.Db.Careful)
-	userPasswordRepository := systemRepository.NewUserPassWordRepository(userPasswordDAO)
-	userService := sysetmService.NewUserService(userRepository, userPasswordRepository)
+	userRepository := repositorySystem.NewUserRepository(userDAO, userCache)
+	userService := serviceSystem.NewUserService(userRepository)
 
 	registerHandler := auth.NewRegisterHandler(r.rely, userService, captchaService)
 	registerHandler.RegisterRoutes(baseRouter)

@@ -2,7 +2,7 @@
  * Description：
  * FileName：operate.go
  * Author：CJiaの用心
- * Create：2025/4/16 11:23:11
+ * Create：2025/5/13 15:04:53
  * Remark：
  */
 
@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// OperateLogger 操作日志表
 type OperateLogger struct {
 	models.CoreModels
 	RequestUsername string `gorm:"type:varchar(40);column:requestUsername;comment:请求用户名" json:"requestUsername"`
@@ -44,7 +45,7 @@ func (l *OperateLogger) TableName() string {
 }
 
 func (l *OperateLogger) AutoMigrate(db *gorm.DB) {
-	err := db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&OperateLogger{})
+	err := db.Set("gorm:table_options", "ENGINE=InnoDB,COMMENT='操作日志表'").AutoMigrate(&OperateLogger{})
 	if err != nil {
 		zap.L().Error("OperateLogger表模型迁移失败", zap.Error(err))
 	}

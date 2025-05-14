@@ -1,26 +1,42 @@
 basePath: /dev-api
 definitions:
+  auth.ChangePasswordRequest:
+    properties:
+      newPassword:
+        description: 新密码
+        example: "654321"
+        maxLength: 20
+        minLength: 6
+        type: string
+      oldPassword:
+        description: 旧密码
+        example: "123456"
+        type: string
+    required:
+    - newPassword
+    - oldPassword
+    type: object
   auth.LoginRequest:
     properties:
       bizType:
-        allOf:
-        - $ref: '#/definitions/captcha.BizTypeCaptcha'
         description: 验证码类型
+        example: BizCaptchaLogin
+        type: string
       code:
         description: 验证码
+        example: "654321"
         type: string
       id:
         description: 验证码
+        example: ldqQpBjJfvPxbBzP
         type: string
       password:
         description: 密码
-        maxLength: 20
-        minLength: 3
+        example: "123456"
         type: string
       username:
-        description: 用户账号
-        maxLength: 50
-        minLength: 3
+        description: 用户名
+        example: demo
         type: string
     required:
     - bizType
@@ -31,34 +47,90 @@ definitions:
     type: object
   auth.LoginResponse:
     properties:
+      expire:
+        description: 过期时间(秒)
+        type: integer
       token:
-        description: 登录令牌
+        description: JWT令牌
         type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User'
+        description: 用户信息
+    type: object
+  auth.RefreshTokenRequest:
+    properties:
+      token:
+        description: 旧的JWT令牌
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...
+        type: string
+    required:
+    - token
     type: object
   auth.RegisterRequest:
     properties:
+      avatar:
+        description: 头像
+        example: ""
+        type: string
+      email:
+        description: 邮箱
+        example: admin@test.com
+        type: string
+      gender:
+        description: 性别
+        example: 1
+        type: integer
+      mobile:
+        description: 手机号
+        example: "13800138000"
+        type: string
+      name:
+        description: 姓名
+        example: 管理员
+        maxLength: 20
+        minLength: 2
+        type: string
       password:
         description: 密码
+        example: "123456"
         maxLength: 20
-        minLength: 3
+        minLength: 6
         type: string
+      userType:
+        description: 用户类型
+        example: 1
+        type: integer
       username:
-        description: 用户账号
+        description: 用户名
+        example: demo
         maxLength: 50
         minLength: 3
         type: string
     required:
+    - name
     - password
     - username
     type: object
-  captcha.BizTypeCaptcha:
-    enum:
-    - BizCaptchaLogin
-    type: string
-    x-enum-comments:
-      BizTypeCaptchaLogin: 验证码密码登录
-    x-enum-varnames:
-    - BizTypeCaptchaLogin
+  auth.UserTypeLoginRequest:
+    properties:
+      password:
+        description: 密码
+        example: "123456"
+        type: string
+      userType:
+        description: 用户类型
+        example: 1
+        type: integer
+      username:
+        description: 用户名
+        example: admin
+        type: string
+    required:
+    - password
+    - userType
+    - username
+    type: object
   captcha.TypeCaptcha:
     enum:
     - 1
@@ -67,54 +139,141 @@ definitions:
       DigitIotaCaptcha: 数字字母验证码
     x-enum-varnames:
     - DigitIotaCaptcha
-  dict.TypeConst:
-    enum:
-    - 0
-    - 1
-    - 2
-    type: integer
-    x-enum-comments:
-      TypeConst0: 普通字典
-      TypeConst1: 系统字典
-      TypeConst2: 枚举字典
-    x-enum-varnames:
-    - TypeConst0
-    - TypeConst1
-    - TypeConst2
-  dict.TypeValueConst:
-    enum:
-    - 0
-    - 1
-    - 2
-    type: integer
-    x-enum-comments:
-      TypeValueConst0: 字符串
-      TypeValueConst1: 整型
-      TypeValueConst2: 布尔
-    x-enum-varnames:
-    - TypeValueConst0
-    - TypeValueConst1
-    - TypeValueConst2
-  dictType.DictTagConst:
-    enum:
-    - primary
-    - success
-    - warning
-    - danger
-    - info
-    type: string
-    x-enum-comments:
-      DictTagConstDanger: danger
-      DictTagConstInfo: info
-      DictTagConstPrimary: primary
-      DictTagConstSuccess: success
-      DictTagConstWarning: warning
-    x-enum-varnames:
-    - DictTagConstPrimary
-    - DictTagConstSuccess
-    - DictTagConstWarning
-    - DictTagConstDanger
-    - DictTagConstInfo
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu:
+    properties:
+      api:
+        description: 接口地址
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      component:
+        description: 组件地址
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      icon:
+        description: 菜单图标
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      isAffix:
+        description: 是否缓存固定路由
+        type: boolean
+      isFull:
+        description: 是否缓存全屏
+        type: boolean
+      isHide:
+        description: 是否隐藏
+        type: boolean
+      isKeepAlive:
+        description: 是否页面缓存
+        type: boolean
+      isLink:
+        description: 是否外链
+        type: boolean
+      method:
+        description: 接口请求方法
+        type: integer
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 组件名称
+        type: string
+      parent_id:
+        description: 上级菜单
+        type: string
+      path:
+        description: 路由地址
+        type: string
+      permission:
+        description: 权限标识
+        type: string
+      redirect:
+        description: 重定向地址
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      title:
+        description: 菜单标题
+        type: string
+      type:
+        description: 菜单类型
+        type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User:
+    properties:
+      avatar:
+        description: 头像
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      gender:
+        description: 性别
+        type: integer
+      id:
+        description: 主键ID
+        type: string
+      mobile:
+        description: 电话
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 姓名
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+      userType:
+        description: 用户类型
+        type: integer
+      username:
+        description: 用户名
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
   response.Response:
     properties:
       code:
@@ -140,75 +299,6 @@ definitions:
         description: 验证码图片
         type: string
     type: object
-  tools.DictRequest:
-    properties:
-      code:
-        description: 字典编码
-        maxLength: 100
-        type: string
-      name:
-        description: 字典名称
-        maxLength: 100
-        type: string
-      remark:
-        description: 备注
-        maxLength: 255
-        type: string
-      type:
-        allOf:
-        - $ref: '#/definitions/dict.TypeConst'
-        default: 0
-        description: 字典类型
-      typeValue:
-        allOf:
-        - $ref: '#/definitions/dict.TypeValueConst'
-        default: 0
-        description: 字典类型值
-      version:
-        description: 版本
-        type: integer
-    required:
-    - code
-    - name
-    type: object
-  tools.DictTypeRequest:
-    properties:
-      boolValue:
-        description: 布尔-字典信息值
-        type: boolean
-      dict_id:
-        description: 字典ID
-        maxLength: 100
-        type: string
-      dictColor:
-        description: 标签颜色
-        type: string
-      dictTag:
-        allOf:
-        - $ref: '#/definitions/dictType.DictTagConst'
-        default: primary
-        description: 标签类型
-      intValue:
-        description: 整型-字典信息值
-        type: integer
-      name:
-        description: 字典信息名称
-        maxLength: 50
-        type: string
-      remark:
-        description: 备注
-        maxLength: 255
-        type: string
-      strValue:
-        description: 字符串-字典信息值
-        type: string
-      version:
-        description: 版本
-        type: integer
-    required:
-    - dict_id
-    - name
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -223,13 +313,46 @@ info:
   title: CarefulAdmin
   version: "1.0"
 paths:
-  /v1/auth/password-login:
+  /v1/auth/change-password:
     post:
       consumes:
       - application/json
-      description: 图形验证码密码登录
+      description: 修改当前登录用户的密码
       parameters:
-      - description: 参数
+      - description: 修改密码参数
+        in: body
+        name: ChangePasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 修改密码
+      tags:
+      - 认证管理
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 账号密码登录
+      parameters:
+      - description: 请求
         in: body
         name: LoginRequest
         required: true
@@ -246,16 +369,68 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 图形验证码密码登录
+      summary: 账号密码登录
       tags:
       - 认证管理
-  /v1/auth/password-register:
+  /v1/auth/logout:
     post:
       consumes:
       - application/json
-      description: 账号密码注册
+      description: 用户退出登录
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 退出登录
+      tags:
+      - 认证管理
+  /v1/auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: 使用旧的JWT令牌获取新的令牌
       parameters:
-      - description: 参数
+      - description: 刷新令牌参数
+        in: body
+        name: RefreshTokenRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 刷新令牌
+      tags:
+      - 认证管理
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册
+      parameters:
+      - description: 请求
         in: body
         name: RegisterRequest
         required: true
@@ -272,9 +447,90 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
-      summary: 账号密码注册
+      summary: 用户注册
       tags:
       - 认证管理
+  /v1/auth/type-login:
+    post:
+      consumes:
+      - application/json
+      description: 不同类型用户登录接口
+      parameters:
+      - description: 多用户类型登录参数
+        in: body
+        name: UserTypeLoginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.UserTypeLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 多用户类型登录
+      tags:
+      - 认证管理
+  /v1/auth/userinfo:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取当前登录用户信息
+      tags:
+      - 认证管理
+  /v1/system/menu/listRouter:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有菜单列表
+      parameters:
+      - default: -1
+        description: 状态
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有菜单
+      tags:
+      - 菜单管理
   /v1/third/generateCaptcha:
     get:
       consumes:
@@ -282,16 +538,11 @@ paths:
       description: 生成指定业务验证码
       parameters:
       - description: 业务类型
-        enum:
-        - BizCaptchaLogin
+        example: BizCaptchaLogin
         in: query
         name: bizType
         required: true
         type: string
-        x-enum-comments:
-          BizTypeCaptchaLogin: 验证码密码登录
-        x-enum-varnames:
-        - BizTypeCaptchaLogin
       - description: 验证码类型
         enum:
         - 1
@@ -317,576 +568,6 @@ paths:
       summary: 生成指定业务验证码
       tags:
       - 第三方业务管理
-  /v1/tools/dict/batchDelete:
-    post:
-      consumes:
-      - application/json
-      description: 批量删除字典
-      parameters:
-      - description: ID数组
-        in: body
-        name: ids
-        required: true
-        schema:
-          items:
-            type: string
-          type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 批量删除字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/create:
-    post:
-      consumes:
-      - application/json
-      description: 创建字典
-      parameters:
-      - description: 字典信息
-        in: body
-        name: DictRequest
-        required: true
-        schema:
-          $ref: '#/definitions/tools.DictRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 创建字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/delete/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: 删除字典
-      parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 删除字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/getById/{id}:
-    get:
-      consumes:
-      - application/json
-      description: 根据ID获取字典
-      parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 根据ID获取字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/import:
-    post:
-      consumes:
-      - multipart/form-data
-      description: 导入字典
-      parameters:
-      - description: 文件(支持xlsx/csv格式)
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 导入字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/listAll:
-    get:
-      consumes:
-      - application/json
-      description: 获取所有字典
-      parameters:
-      - description: 创建人
-        in: query
-        name: creator
-        type: string
-      - description: 修改人
-        in: query
-        name: modifier
-        type: string
-      - default: true
-        description: 状态
-        in: query
-        name: status
-        type: boolean
-      - description: 字典名称
-        in: query
-        name: name
-        type: string
-      - description: 字典编码
-        in: query
-        name: code
-        type: string
-      - default: -1
-        description: 字典类型
-        in: query
-        name: type
-        type: integer
-      - default: -1
-        description: 字典数据类型
-        in: query
-        name: typeValue
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 获取所有字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/listPage:
-    get:
-      consumes:
-      - application/json
-      description: 分页获取字典
-      parameters:
-      - default: 1
-        description: 页码
-        in: query
-        name: page
-        required: true
-        type: integer
-      - default: 10
-        description: 每页数量
-        in: query
-        name: pageSize
-        required: true
-        type: integer
-      - description: 创建人
-        in: query
-        name: creator
-        type: string
-      - description: 修改人
-        in: query
-        name: modifier
-        type: string
-      - default: true
-        description: 状态
-        in: query
-        name: status
-        type: boolean
-      - description: 字典名称
-        in: query
-        name: name
-        type: string
-      - description: 字典编码
-        in: query
-        name: code
-        type: string
-      - default: -1
-        description: 字典类型
-        in: query
-        name: type
-        type: integer
-      - default: -1
-        description: 字典数据类型
-        in: query
-        name: typeValue
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 分页获取字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dict/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: 更新字典
-      parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: 字典信息
-        in: body
-        name: DictRequest
-        required: true
-        schema:
-          $ref: '#/definitions/tools.DictRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 更新字典
-      tags:
-      - 系统工具/字典管理
-  /v1/tools/dictType/batchDelete:
-    post:
-      consumes:
-      - application/json
-      description: 批量删除字典信息
-      parameters:
-      - description: ID数组
-        in: body
-        name: ids
-        required: true
-        schema:
-          items:
-            type: string
-          type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 批量删除字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/create:
-    post:
-      consumes:
-      - application/json
-      description: 创建字典信息
-      parameters:
-      - description: 字典信息
-        in: body
-        name: DictTypeRequest
-        required: true
-        schema:
-          $ref: '#/definitions/tools.DictTypeRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 创建字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/delete/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: 删除字典信息
-      parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 删除字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/getById/{id}:
-    get:
-      consumes:
-      - application/json
-      description: 根据ID获取字典信息
-      parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 根据ID获取字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/import:
-    post:
-      consumes:
-      - multipart/form-data
-      description: 导入字典信息
-      parameters:
-      - description: 文件(支持xlsx/csv格式)
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 导入字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/listAll:
-    get:
-      consumes:
-      - application/json
-      description: 获取所有字典信息
-      parameters:
-      - description: 创建人
-        in: query
-        name: creator
-        type: string
-      - description: 修改人
-        in: query
-        name: modifier
-        type: string
-      - default: true
-        description: 状态
-        in: query
-        name: status
-        type: boolean
-      - description: 字典信息名称
-        in: query
-        name: name
-        type: string
-      - default: primary
-        description: 标签类型
-        in: query
-        name: dictTag
-        type: string
-      - description: 字典ID
-        in: query
-        name: dict_id
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 获取所有字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/listPage:
-    get:
-      consumes:
-      - application/json
-      description: 分页获取字典信息
-      parameters:
-      - default: 1
-        description: 页码
-        in: query
-        name: page
-        required: true
-        type: integer
-      - default: 10
-        description: 每页数量
-        in: query
-        name: pageSize
-        required: true
-        type: integer
-      - description: 创建人
-        in: query
-        name: creator
-        type: string
-      - description: 修改人
-        in: query
-        name: modifier
-        type: string
-      - default: true
-        description: 状态
-        in: query
-        name: status
-        type: boolean
-      - description: 字典信息名称
-        in: query
-        name: name
-        type: string
-      - default: primary
-        description: 标签类型
-        in: query
-        name: dictTag
-        type: string
-      - description: 字典ID
-        in: query
-        name: dict_id
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 分页获取字典信息
-      tags:
-      - 系统工具/字典信息管理
-  /v1/tools/dictType/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: 更新字典信息
-      parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: 字典信息
-        in: body
-        name: DictTypeRequest
-        required: true
-        schema:
-          $ref: '#/definitions/tools.DictTypeRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - LoginToken: []
-      summary: 更新字典信息
-      tags:
-      - 系统工具/字典信息管理
 securityDefinitions:
   LoginToken:
     in: header

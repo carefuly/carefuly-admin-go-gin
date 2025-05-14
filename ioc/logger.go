@@ -9,7 +9,7 @@
 package ioc
 
 import (
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/logger"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

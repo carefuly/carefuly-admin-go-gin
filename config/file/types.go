@@ -17,7 +17,7 @@ import (
 type Config struct {
 	ServerConfig   `yaml:"server" json:"server"`
 	DatabaseConfig map[string]DatabaseConfig `yaml:"database" json:"database"`
-	RedisConfig    `yaml:"redis" json:"redis"`
+	CacheConfig    `yaml:"cache" json:"cache"`
 	TokenConfig    `yaml:"token" json:"token"`
 }
 
