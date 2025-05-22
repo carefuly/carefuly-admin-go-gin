@@ -64,5 +64,5 @@ func (dao *GORMMenuDAO) buildQuery(ctx context.Context, filter domainSystem.Menu
 			Modifier: filter.Modifier,
 		},
 	}
-	return builder.Apply(dao.db.WithContext(ctx).Model(&system.User{}))
+	return builder.Apply(dao.db.WithContext(ctx).Model(&system.Dept{}))
 }

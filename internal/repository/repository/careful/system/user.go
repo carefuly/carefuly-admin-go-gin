@@ -181,10 +181,10 @@ func (repo *userRepository) CheckExistByUsername(ctx context.Context, username, 
 func (repo *userRepository) toEntity(domain domainSystem.User) modelSystem.User {
 	return modelSystem.User{
 		CoreModels: models.CoreModels{
-			Creator:    domain.Creator,
-			Modifier:   domain.Modifier,
-			BelongDept: domain.BelongDept,
-			Remark:     domain.Remark,
+			Creator:  domain.Creator,
+			Modifier: domain.Modifier,
+			// BelongUser: domain.BelongUser,
+			Remark: domain.Remark,
 		},
 		Username:    domain.Username,
 		Password:    domain.Password,

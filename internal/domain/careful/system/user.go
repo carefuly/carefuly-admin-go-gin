@@ -22,5 +22,6 @@ type User struct {
 type UserFilter struct {
 	filters.Filters
 	filters.Pagination
+	Status   bool   `json:"status"`   // 状态
 	Username string `json:"username"` // 用户名
 }

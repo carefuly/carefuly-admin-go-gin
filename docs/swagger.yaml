@@ -234,6 +234,13 @@ definitions:
       creator:
         description: 创建人
         type: string
+      dept:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept'
+        description: 部门
+      deptId:
+        description: 部门ID
+        type: string
       email:
         description: 邮箱
         type: string
@@ -274,6 +281,96 @@ definitions:
         description: 版本号
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 字典编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 字典名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      type:
+        description: 字典分类
+        type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+      valueType:
+        description: 字典值类型
+        type: integer
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 部门编码
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      owner:
+        description: 负责人
+        type: string
+      parent_id:
+        description: 上级部门
+        type: string
+      phone:
+        description: 联系电话
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      version:
+        description: 版本号
+        type: integer
+    type: object
   response.Response:
     properties:
       code:
@@ -287,6 +384,120 @@ definitions:
         description: 是否成功
         type: boolean
     type: object
+  system.CreateDeptRequest:
+    properties:
+      code:
+        description: 部门编码
+        example: CARE_TEST
+        maxLength: 100
+        type: string
+      email:
+        description: 邮箱
+        example: admin@test.com
+        type: string
+      name:
+        description: 部门名称
+        example: 测试部门
+        maxLength: 100
+        type: string
+      owner:
+        description: 负责人
+        example: admin
+        type: string
+      parent_id:
+        description: 上级部门
+        example: "1"
+        type: string
+      phone:
+        description: 联系电话
+        example: "18566666666"
+        type: string
+      remark:
+        description: 备注
+        example: 测试部门
+        maxLength: 255
+        type: string
+      status:
+        description: 状态
+        example: true
+        type: boolean
+    required:
+    - code
+    - name
+    type: object
+  system.DeptTree:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      children:
+        description: 子部门列表
+        items:
+          $ref: '#/definitions/system.DeptTree'
+        type: array
+      code:
+        description: 部门编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      owner:
+        description: 负责人
+        type: string
+      parent_id:
+        description: 上级部门
+        type: string
+      phone:
+        description: 联系电话
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  system.UserListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
   third.CaptchaResponse:
     properties:
       code:
@@ -298,6 +509,85 @@ definitions:
       img:
         description: 验证码图片
         type: string
+    type: object
+  tools.CreateDictRequest:
+    properties:
+      code:
+        description: 字典编码
+        maxLength: 100
+        type: string
+      name:
+        description: 字典名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      type:
+        default: 1
+        description: 字典分类
+        type: integer
+      valueType:
+        default: 1
+        description: 字典值类型
+        type: integer
+    required:
+    - code
+    - name
+    type: object
+  tools.DictListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
+  tools.UpdateDictRequest:
+    properties:
+      code:
+        description: 字典编码
+        maxLength: 100
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      name:
+        description: 字典名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: |-
+          Type      int    `json:"type" binding:"omitempty" default:"1"`      // 字典分类
+          ValueType int    `json:"valueType" binding:"omitempty" default:"1"` // 字典值类型
+          Status  bool   `json:"status" binding:"omitempty" default:"true"` // 状态
+        type: integer
+      version:
+        description: 版本
+        type: integer
+    required:
+    - code
+    - id
+    - name
     type: object
 host: localhost:8080
 info:
@@ -502,6 +792,79 @@ paths:
       summary: 获取当前登录用户信息
       tags:
       - 认证管理
+  /v1/system/dept/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建部门
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateDeptRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateDeptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/listTree:
+    get:
+      consumes:
+      - application/json
+      description: 获取部门树形结构
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - description: 数据归属部门
+        in: query
+        name: belongDept
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 部门名称
+        in: query
+        name: name
+        type: string
+      - description: 部门编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.DeptTree'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取部门树形结构
+      tags:
+      - 系统管理/部门管理
   /v1/system/menu/listRouter:
     get:
       consumes:
@@ -531,6 +894,61 @@ paths:
       summary: 获取所有菜单
       tags:
       - 菜单管理
+  /v1/system/user/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - description: 数据归属部门
+        in: query
+        name: belongDept
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 用户名
+        in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.UserListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取用户分页列表
+      tags:
+      - 系统管理/用户管理
   /v1/third/generateCaptcha:
     get:
       consumes:
@@ -568,6 +986,242 @@ paths:
       summary: 生成指定业务验证码
       tags:
       - 第三方业务管理
+  /v1/tools/dict/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建字典
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateDictRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.CreateDictRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id字典
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id字典信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有字典列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典名称
+        in: query
+        name: name
+        type: string
+      - description: 字典编码
+        in: query
+        name: code
+        type: string
+      - default: 0
+        description: 字典分类
+        in: query
+        name: type
+        required: true
+        type: integer
+      - default: 0
+        description: 字典值类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取字典分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典名称
+        in: query
+        name: name
+        type: string
+      - description: 字典编码
+        in: query
+        name: code
+        type: string
+      - default: 0
+        description: 字典分类
+        in: query
+        name: type
+        required: true
+        type: integer
+      - default: 0
+        description: 字典值类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.DictListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取字典分页列表
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新字典信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateDictRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.UpdateDictRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新字典
+      tags:
+      - 系统工具/字典管理
 securityDefinitions:
   LoginToken:
     in: header

@@ -202,7 +202,7 @@ func (h *authHandler) LoginHandler(ctx *gin.Context) {
 		}
 
 		// 生成JWT令牌
-		token, err := jwt.GenerateToken(ctx, user.Id, user.Username, int(user.UserType), h.rely.Token.Secret, h.rely.Token.Expire)
+		token, err := jwt.GenerateToken(ctx, user.Id, user.Username, user.UserType, h.rely.Token.Secret, h.rely.Token.Expire)
 		if err != nil {
 			zap.S().Errorf("生成令牌失败: %v", err)
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "生成令牌失败: "+err.Error(), nil)

@@ -27,6 +27,8 @@ type User struct {
 	Email       string `gorm:"type:varchar(50);index:idx_search;column:email;comment:邮箱" json:"email"`       // 邮箱
 	Mobile      string `gorm:"type:varchar(20);index:idx_search;column:mobile;comment:电话" json:"mobile"`     // 电话
 	Avatar      string `gorm:"type:text;column:avatar;comment:头像" json:"avatar"`                             // 头像
+	DeptId      string `gorm:"type:varchar(100);index;column:dept_id;comment:部门ID" json:"deptId"`            // 部门ID
+	Dept        *Dept  `gorm:"foreignKey:DeptId;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`              // 部门
 }
 
 func NewUser() *User {
