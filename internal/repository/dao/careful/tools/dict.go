@@ -28,6 +28,7 @@ var (
 type DictDAO interface {
 	Insert(ctx context.Context, model tools.Dict) error
 	Delete(ctx context.Context, id string) (int64, error)
+	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, model tools.Dict) error
 
 	FindById(ctx context.Context, id string) (*tools.Dict, error)
@@ -58,6 +59,11 @@ func (dao *GORMDictDAO) Insert(ctx context.Context, model tools.Dict) error {
 func (dao *GORMDictDAO) Delete(ctx context.Context, id string) (int64, error) {
 	result := dao.db.WithContext(ctx).Where("id = ?", id).Delete(&tools.Dict{})
 	return result.RowsAffected, result.Error
+}
+
+// BatchDelete 批量删除
+func (dao *GORMDictDAO) BatchDelete(ctx context.Context, ids []string) error {
+	return dao.db.WithContext(ctx).Where("id IN ?", ids).Delete(&tools.Dict{}).Error
 }
 
 // Update 更新

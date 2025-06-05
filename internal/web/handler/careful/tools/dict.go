@@ -10,30 +10,41 @@ package tools
 
 import (
 	"errors"
+	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
 	serviceTools "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/tools/dict"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/enumconv"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/xlsx"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"mime/multipart"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // CreateDictRequest 创建
 type CreateDictRequest struct {
-	Name      string `json:"name" binding:"required,max=100"`           // 字典名称
-	Code      string `json:"code" binding:"required,max=100"`           // 字典编码
-	Type      int    `json:"type" binding:"omitempty" default:"1"`      // 字典分类
-	ValueType int    `json:"valueType" binding:"omitempty" default:"1"` // 字典值类型
-	Sort      int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
-	Remark    string `json:"remark" binding:"omitempty,max=255"`        // 备注
+	Name      string              `json:"name" binding:"required,max=100"`           // 字典名称
+	Code      string              `json:"code" binding:"required,max=100"`           // 字典编码
+	Type      dict.TypeConst      `json:"type" binding:"omitempty" default:"1"`      // 字典分类
+	ValueType dict.TypeValueConst `json:"valueType" binding:"omitempty" default:"1"` // 字典值类型
+	Sort      int                 `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Remark    string              `json:"remark" binding:"omitempty,max=255"`        // 备注
+}
+
+// ImportDictRequest 导入
+type ImportDictRequest struct {
+	File *multipart.FileHeader `form:"file" binding:"required"`
 }
 
 // UpdateDictRequest 更新
@@ -56,7 +67,9 @@ type DictListPageResponse struct {
 type DictHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
+	Import(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
@@ -81,7 +94,9 @@ func NewDictHandler(rely config.RelyConfig, svc tools.DictService, userSvc syste
 func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base := router.Group("/dict")
 	base.POST("/create", h.Create)
+	base.POST("/import", h.Import)
 	base.DELETE("/delete/:id", h.Delete)
+	base.POST("/delete/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
 	base.GET("/listPage", h.GetListPage)
@@ -119,6 +134,22 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 	var req CreateDictRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	// 校验参数
+	typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
+	converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+	_, err = converter.FromEnum(req.Type)
+	if err != nil {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	typeValueValidValues := []string{"字符串", "整型", "布尔"}
+	typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "字典值类型")
+	_, err = typeValueConverter.FromEnum(req.ValueType)
+	if err != nil {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -160,6 +191,61 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 	response.NewResponse().SuccessResponse(ctx, "新增成功", nil)
 }
 
+// Import
+// @Summary 导入字典
+// @Description 导入字典
+// @Tags 系统工具/字典管理
+// @Accept multipart/form-data
+// @Produce application/json
+// @Param file formData file true "文件(支持xlsx/csv格式)"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/tools/dict/import [post]
+// @Security LoginToken
+func (h *dictHandler) Import(ctx *gin.Context) {
+	uid, ok := ctx.MustGet("userId").(string)
+	if !ok {
+		ctx.Set("internal", uid)
+		zap.S().Error("用户ID获取失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", uid)
+		zap.S().Error("获取用户失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	var req ImportDictRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	// 保存导入的文件信息
+	format := time.Now().Format("2006-01-02")
+	filePath := "./uploads/" + format + "/" + req.File.Filename
+	if err := ctx.SaveUploadedFile(req.File, filePath); err != nil {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "保存文件失败", nil)
+		return
+	}
+
+	// 读取Excel文件
+	read, err := xlsx.NewXlsxFile(filePath).ReadBySheet("字典模板")
+	if err != nil {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, xlsx.ErrOpenFile, nil)
+		return
+	}
+
+	result := h.svc.Import(ctx, uid, user.DeptId, read)
+	msg := fmt.Sprintf("导入成功【成功导入【%d】条数据, 失败【%d】条数据】", result.SuccessCount, result.FailCount)
+
+	response.NewResponse().SuccessResponse(ctx, msg, result)
+}
+
 // Delete
 // @Summary 删除字典
 // @Description 删除指定id字典
@@ -189,6 +275,35 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
+}
+
+// BatchDelete
+// @Summary 批量删除字典
+// @Description 批量删除字典
+// @Tags 系统工具/字典管理
+// @Accept application/json
+// @Produce application/json
+// @Param ids body []string true "id数组"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/tools/dict/delete/batchDelete [post]
+// @Security LoginToken
+func (h *dictHandler) BatchDelete(ctx *gin.Context) {
+	var ids []string
+	if err := ctx.ShouldBindJSON(&ids); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	err := h.svc.BatchDelete(ctx, ids)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("批量删除字典异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "批量删除成功", nil)
 }
 
 // Update
@@ -250,6 +365,9 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 			return
 		case errors.Is(err, serviceTools.ErrDictDuplicate):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典信息已存在", nil)
+			return
+		case errors.Is(err, serviceTools.ErrDictVersionInconsistency):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
 			zap.L().Error("创建字典失败", zap.Error(err))
@@ -352,8 +470,8 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 		Status:    status,
 		Name:      name,
 		Code:      code,
-		Type:      dictType,
-		ValueType: valueType,
+		Type:      dict.TypeConst(dictType),
+		ValueType: dict.TypeValueConst(valueType),
 	}
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
@@ -422,8 +540,8 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 		Status:    status,
 		Name:      name,
 		Code:      code,
-		Type:      dictType,
-		ValueType: valueType,
+		Type:      dict.TypeConst(dictType),
+		ValueType: dict.TypeValueConst(valueType),
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)

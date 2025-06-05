@@ -660,6 +660,54 @@
                 }
             }
         },
+        "/v1/tools/dict/delete/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除字典",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典管理"
+                ],
+                "summary": "批量删除字典",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tools/dict/delete/{id}": {
             "delete": {
                 "security": [
@@ -735,6 +783,49 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dict/import": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导入字典",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典管理"
+                ],
+                "summary": "导入字典",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "文件(支持xlsx/csv格式)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
@@ -1166,6 +1257,42 @@
                 "DigitIotaCaptcha"
             ]
         },
+        "dict.TypeConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ],
+            "x-enum-comments": {
+                "TypeConstEnum": "枚举字典",
+                "TypeConstOrdinary": "普通字典",
+                "TypeConstSystem": "系统字典"
+            },
+            "x-enum-varnames": [
+                "TypeConstOrdinary",
+                "TypeConstSystem",
+                "TypeConstEnum"
+            ]
+        },
+        "dict.TypeValueConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ],
+            "x-enum-comments": {
+                "TypeValueConstBool": "布尔",
+                "TypeValueConstInt": "整型",
+                "TypeValueConstStr": "字符串"
+            },
+            "x-enum-varnames": [
+                "TypeValueConstStr",
+                "TypeValueConstInt",
+                "TypeValueConstBool"
+            ]
+        },
         "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu": {
             "type": "object",
             "properties": {
@@ -1405,7 +1532,11 @@
                 },
                 "type": {
                     "description": "字典分类",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeConst"
+                        }
+                    ]
                 },
                 "updateTime": {
                     "description": "更新时间",
@@ -1413,7 +1544,11 @@
                 },
                 "valueType": {
                     "description": "字典值类型",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeValueConst"
+                        }
+                    ]
                 },
                 "version": {
                     "description": "版本号",
@@ -1699,13 +1834,21 @@
                 },
                 "type": {
                     "description": "字典分类",
-                    "type": "integer",
-                    "default": 1
+                    "default": 1,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeConst"
+                        }
+                    ]
                 },
                 "valueType": {
                     "description": "字典值类型",
-                    "type": "integer",
-                    "default": 1
+                    "default": 1,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeValueConst"
+                        }
+                    ]
                 }
             }
         },
@@ -1737,8 +1880,7 @@
             "type": "object",
             "required": [
                 "code",
-                "id",
-                "name"
+                "id"
             ],
             "properties": {
                 "code": {
@@ -1750,18 +1892,13 @@
                     "description": "主键ID",
                     "type": "string"
                 },
-                "name": {
-                    "description": "字典名称",
-                    "type": "string",
-                    "maxLength": 100
-                },
                 "remark": {
                     "description": "备注",
                     "type": "string",
                     "maxLength": 255
                 },
                 "sort": {
-                    "description": "Type      int    `json:\"type\" binding:\"omitempty\" default:\"1\"`      // 字典分类\nValueType int    `json:\"valueType\" binding:\"omitempty\" default:\"1\"` // 字典值类型\nStatus  bool   `json:\"status\" binding:\"omitempty\" default:\"true\"` // 状态",
+                    "description": "排序",
                     "type": "integer",
                     "default": 1
                 },

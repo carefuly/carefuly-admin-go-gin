@@ -139,6 +139,34 @@ definitions:
       DigitIotaCaptcha: 数字字母验证码
     x-enum-varnames:
     - DigitIotaCaptcha
+  dict.TypeConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      TypeConstEnum: 枚举字典
+      TypeConstOrdinary: 普通字典
+      TypeConstSystem: 系统字典
+    x-enum-varnames:
+    - TypeConstOrdinary
+    - TypeConstSystem
+    - TypeConstEnum
+  dict.TypeValueConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      TypeValueConstBool: 布尔
+      TypeValueConstInt: 整型
+      TypeValueConstStr: 字符串
+    x-enum-varnames:
+    - TypeValueConstStr
+    - TypeValueConstInt
+    - TypeValueConstBool
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu:
     properties:
       api:
@@ -314,14 +342,16 @@ definitions:
         description: 状态
         type: boolean
       type:
+        allOf:
+        - $ref: '#/definitions/dict.TypeConst'
         description: 字典分类
-        type: integer
       updateTime:
         description: 更新时间
         type: string
       valueType:
+        allOf:
+        - $ref: '#/definitions/dict.TypeValueConst'
         description: 字典值类型
-        type: integer
       version:
         description: 版本号
         type: integer
@@ -529,13 +559,15 @@ definitions:
         description: 排序
         type: integer
       type:
+        allOf:
+        - $ref: '#/definitions/dict.TypeConst'
         default: 1
         description: 字典分类
-        type: integer
       valueType:
+        allOf:
+        - $ref: '#/definitions/dict.TypeValueConst'
         default: 1
         description: 字典值类型
-        type: integer
     required:
     - code
     - name
@@ -566,20 +598,13 @@ definitions:
       id:
         description: 主键ID
         type: string
-      name:
-        description: 字典名称
-        maxLength: 100
-        type: string
       remark:
         description: 备注
         maxLength: 255
         type: string
       sort:
         default: 1
-        description: |-
-          Type      int    `json:"type" binding:"omitempty" default:"1"`      // 字典分类
-          ValueType int    `json:"valueType" binding:"omitempty" default:"1"` // 字典值类型
-          Status  bool   `json:"status" binding:"omitempty" default:"true"` // 状态
+        description: 排序
         type: integer
       version:
         description: 版本
@@ -587,7 +612,6 @@ definitions:
     required:
     - code
     - id
-    - name
     type: object
 host: localhost:8080
 info:
@@ -1041,6 +1065,36 @@ paths:
       summary: 删除字典
       tags:
       - 系统工具/字典管理
+  /v1/tools/dict/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除字典
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除字典
+      tags:
+      - 系统工具/字典管理
   /v1/tools/dict/getById/{id}:
     get:
       consumes:
@@ -1066,6 +1120,33 @@ paths:
       security:
       - LoginToken: []
       summary: 获取字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 导入字典
+      parameters:
+      - description: 文件(支持xlsx/csv格式)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导入字典
       tags:
       - 系统工具/字典管理
   /v1/tools/dict/listAll:

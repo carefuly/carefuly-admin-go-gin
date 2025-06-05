@@ -30,6 +30,7 @@ var (
 type DictRepository interface {
 	Create(ctx context.Context, domain domainTools.Dict) error
 	Delete(ctx context.Context, id string) (int64, error)
+	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, domain domainTools.Dict) error
 
 	GetById(ctx context.Context, id string) (domainTools.Dict, error)
@@ -71,6 +72,26 @@ func (repo *dictRepository) Delete(ctx context.Context, id string) (int64, error
 	}
 
 	return rowsAffected, err
+}
+
+// BatchDelete 批量删除
+func (repo *dictRepository) BatchDelete(ctx context.Context, ids []string) error {
+	err := repo.dao.BatchDelete(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	// 删除缓存
+	for _, val := range ids {
+		err = repo.cache.Del(ctx, val)
+		if err != nil {
+			// 网络崩了，也可能是 redis 崩了
+			zap.L().Error("Redis异常", zap.Error(err))
+			return err
+		}
+	}
+
+	return err
 }
 
 // Update 更新
@@ -184,8 +205,8 @@ func (repo *dictRepository) toEntity(domain domainTools.Dict) modelTools.Dict {
 		CoreModels: models.CoreModels{
 			Id:         domain.Id,
 			Sort:       domain.Sort,
-			Creator:    domain.Creator,
 			Version:    domain.Version,
+			Creator:    domain.Creator,
 			Modifier:   domain.Modifier,
 			BelongDept: domain.BelongDept,
 			Remark:     domain.Remark,
