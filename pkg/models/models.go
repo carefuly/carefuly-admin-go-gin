@@ -19,7 +19,7 @@ import (
 // 核心标准抽象模型模型,可直接继承使用
 // 增加审计字段, 覆盖字段时, 字段名称请勿修改, 必须统一审计字段名称
 type CoreModels struct {
-	Id         string `gorm:"type:varchar(100);primary_key;column:id;comment:主键ID" json:"id"`              // 主键ID
+	Id         string `gorm:"type:varchar(100);primaryKey;column:id;comment:主键ID" json:"id"`               // 主键ID
 	Sort       int    `gorm:"type:int;default:1;column:sort;comment:显示排序" json:"sort"`                     // 显示排序
 	Version    int    `gorm:"type:int;default:1;column:version;comment:版本号" json:"version"`                // 版本号
 	Creator    string `gorm:"type:varchar(100);index;column:creator;comment:创建人" json:"creator"`           // 创建人

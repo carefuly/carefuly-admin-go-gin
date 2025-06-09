@@ -45,7 +45,8 @@ func (d *DictType) TableName() string {
 }
 
 func (d *DictType) AutoMigrate(db *gorm.DB) {
-	if err := db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&DictType{}); err != nil {
+	err := db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&DictType{})
+	if err != nil {
 		zap.L().Error("DictType表模型迁移失败", zap.Error(err))
 	}
 }
@@ -57,12 +58,14 @@ func (d *DictType) BeforeSave(tx *gorm.DB) error {
 
 	// 根据类型添加不同的条件
 	switch d.TypeValue {
-	case 0:
-		query = query.Where("strValue = ? OR name = ?", d.StrValue.String, d.Name)
 	case 1:
-		query = query.Where("intValue = ? OR name = ?", d.IntValue.Int64, d.Name)
+		query = query.Where("strValue = ? OR name = ?", d.StrValue.String, d.Name)
 	case 2:
+		query = query.Where("intValue = ? OR name = ?", d.IntValue.Int64, d.Name)
+	case 3:
 		query = query.Where("boolValue = ? OR name = ?", d.BoolValue.Bool, d.Name)
+	default:
+		panic("unhandled default case")
 	}
 
 	// 排除自身（更新时用）

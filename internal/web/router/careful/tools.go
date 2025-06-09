@@ -46,4 +46,11 @@ func (r *ToolsRouter) RegisterRouter(router *gin.RouterGroup) {
 	dictService := serviceTools.NewDictService(dictRepository)
 	dictHandler := handlerTools.NewDictHandler(r.rely, dictService, userService)
 	dictHandler.RegisterRoutes(baseRouter)
+
+	dictTypeCache := cacheTools.NewRedisDictTypeCache(r.rely.Redis)
+	dictTypeDAO := daoTools.NewGORMDictTypeDAO(r.rely.Db.Careful)
+	dictTypeRepository := repositoryTools.NewDictTypeRepository(dictTypeDAO, dictTypeCache)
+	dictTypeService := serviceTools.NewDictTypeService(dictTypeRepository, dictRepository)
+	dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService)
+	dictTypeHandler.RegisterRoutes(baseRouter)
 }

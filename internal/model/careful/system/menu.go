@@ -17,7 +17,7 @@ import (
 // Menu 菜单表
 type Menu struct {
 	models.CoreModels
-	Status      bool   `gorm:"type:bool;index;default:true;column:status;comment:状态【true-启用 false-禁用】" json:"status"`                              // 状态
+	Status      bool   `gorm:"type:boolean;index:idx_status;default:true;column:status;comment:状态【true-启用 false-停用】" json:"status"`                // 状态
 	Type        int    `gorm:"type:tinyint;uniqueIndex:uni_menu_title_unique;column:type;comment:菜单类型" json:"type"`                                // 菜单类型
 	Icon        string `gorm:"type:varchar(64);default:HomeFilled;column:icon;comment:菜单图标" json:"icon"`                                           // 菜单图标
 	Title       string `gorm:"type:varchar(64);not null;uniqueIndex:uni_menu_title_unique;index:idx_title;column:title;comment:菜单标题" json:"title"` // 菜单标题

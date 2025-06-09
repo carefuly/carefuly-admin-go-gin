@@ -38,7 +38,7 @@ type GORMDictTypeDAO struct {
 	db *gorm.DB
 }
 
-func NewDictTypeDao(db *gorm.DB) DictTypeDAO {
+func NewGORMDictTypeDAO(db *gorm.DB) DictTypeDAO {
 	return &GORMDictTypeDAO{db: db}
 }
 
@@ -63,14 +63,11 @@ func (dao *GORMDictTypeDAO) Update(ctx context.Context, model tools.DictType) er
 	result := dao.db.WithContext(ctx).Model(&model).
 		Where("id = ? AND version = ?", model.Id, model.Version).
 		Updates(map[string]any{
-			"name":      model.Name,
-			"strValue":  model.StrValue,
-			"intValue":  model.IntValue,
-			"boolValue": model.BoolValue,
+			// "strValue":  model.StrValue,
+			// "intValue":  model.IntValue,
+			// "boolValue": model.BoolValue,
 			"dictTag":   model.DictTag,
 			"dictColor": model.DictColor,
-			"dictName":  model.DictName,
-			"typeValue": model.TypeValue,
 			"sort":      model.Sort,
 			"version":   gorm.Expr("version + 1"),
 			"modifier":  model.Modifier,
@@ -147,10 +144,11 @@ func (dao *GORMDictTypeDAO) buildQuery(ctx context.Context, filter domainTools.D
 			Modifier:   filter.Modifier,
 			BelongDept: filter.BelongDept,
 		},
-		Status:  filter.Status,
-		Name:    filter.Name,
-		DictTag: filter.DictTag,
-		DictId:  filter.DictId,
+		Status:   filter.Status,
+		Name:     filter.Name,
+		DictTag:  filter.DictTag,
+		DictName: filter.DictName,
+		DictId:   filter.DictId,
 	}
 	return builder.Apply(dao.db.WithContext(ctx).Model(&tools.DictType{}))
 }

@@ -125,8 +125,8 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", uid)
-		zap.S().Error("获取用户失败", uid)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -179,10 +179,10 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典编码已存在", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictDuplicate):
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典信息已存在", nil)
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据字典已存在", nil)
 			return
 		default:
-			zap.L().Error("创建字典失败", zap.Error(err))
+			zap.L().Error("创建数据字典失败", zap.Error(err))
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -213,8 +213,8 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", uid)
-		zap.S().Error("获取用户失败", uid)
+		ctx.Set("internal", err)
+		zap.S().Error("获取用户失败", err)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -259,7 +259,7 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 // @Security LoginToken
 func (h *dictHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	if id == "" {
+	if id == "" || len(id) == 0 {
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
 		return
 	}
@@ -269,6 +269,7 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典不存在", nil)
 			return
 		}
+		ctx.Set("internal", err.Error())
 		zap.L().Error("删除字典失败", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
@@ -328,8 +329,8 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", uid)
-		zap.S().Error("获取用户失败", uid)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -364,13 +365,13 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典编码已存在", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictDuplicate):
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典信息已存在", nil)
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据字典已存在", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictVersionInconsistency):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			zap.L().Error("创建字典失败", zap.Error(err))
+			zap.L().Error("更新数据字典失败", zap.Error(err))
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -397,7 +398,7 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 		return
 	}
 
-	user, err := h.svc.GetById(ctx, id)
+	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, serviceTools.ErrDictNotFound) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典不存在", nil)
@@ -408,7 +409,7 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 		return
 	}
 
-	response.NewResponse().SuccessResponse(ctx, "获取成功", user)
+	response.NewResponse().SuccessResponse(ctx, "获取成功", detail)
 }
 
 // GetListPage
@@ -441,8 +442,8 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", uid)
-		zap.S().Error("获取用户失败", uid)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -452,6 +453,7 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
 	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
 	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
@@ -517,8 +519,8 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", uid)
-		zap.S().Error("获取用户失败", uid)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

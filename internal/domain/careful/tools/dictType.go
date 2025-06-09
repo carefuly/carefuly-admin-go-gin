@@ -26,10 +26,11 @@ type DictType struct {
 type DictTypeFilter struct {
 	filters.Filters
 	filters.Pagination
-	Status  bool   `json:"status"`  // 状态
-	Name    string `json:"name"`    // 字典信息名称
-	DictTag string `json:"dictTag"` // 标签类型
-	DictId  string `json:"dict_id"` // 字典ID
+	Status   bool   `json:"status"`   // 状态
+	Name     string `json:"name"`     // 字典信息名称
+	DictTag  string `json:"dictTag"`  // 标签类型
+	DictName string `json:"dictName"` // 字典名称
+	DictId   string `json:"dict_id"`  // 字典ID
 }
 
 func (f *DictTypeFilter) Apply(query *gorm.DB) *gorm.DB {
@@ -42,6 +43,9 @@ func (f *DictTypeFilter) Apply(query *gorm.DB) *gorm.DB {
 	}
 	if f.DictTag != "" {
 		query = query.Where("dictTag LIKE ?", "%"+f.DictTag+"%")
+	}
+	if f.DictName != "" {
+		query = query.Where("dictName LIKE ?", "%"+f.DictName+"%")
 	}
 	if f.DictId != "" {
 		query = query.Where("dict_id = ?", f.DictId)
