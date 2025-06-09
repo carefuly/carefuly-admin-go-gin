@@ -290,7 +290,7 @@ func (h *menuColumnHandler) Update(ctx *gin.Context) {
 func (h *menuColumnHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户ID不能为空", nil)
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
 		return
 	}
 

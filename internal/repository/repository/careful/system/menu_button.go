@@ -197,16 +197,16 @@ func (repo *menuButtonRepository) toEntity(domain domainSystem.MenuButton) model
 
 // toDomain 转换为领域模型
 func (repo *menuButtonRepository) toDomain(entity *modelSystem.MenuButton) domainSystem.MenuButton {
-	model := domainSystem.MenuButton{
+	domain := domainSystem.MenuButton{
 		MenuButton: *entity,
 	}
 
 	if entity.CreateTime != nil {
-		model.CreateTime = entity.CreateTime.Format("2006-01-02 15:04:05")
+		domain.CreateTime = entity.CreateTime.Format("2006-01-02 15:04:05")
 	}
 	if entity.UpdateTime != nil {
-		model.UpdateTime = entity.UpdateTime.Format("2006-01-02 15:04:05")
+		domain.UpdateTime = entity.UpdateTime.Format("2006-01-02 15:04:05")
 	}
 
-	return model
+	return domain
 }

@@ -13,7 +13,6 @@ import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 	modelSystem "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/system"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/system/menu"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
@@ -71,11 +70,11 @@ type MenuButtonHandler interface {
 
 type menuButtonHandler struct {
 	rely    config.RelyConfig
-	svc     system.MenuButtonService
-	userSvc system.UserService
+	svc     serviceSystem.MenuButtonService
+	userSvc serviceSystem.UserService
 }
 
-func NewMenuButtonHandler(rely config.RelyConfig, svc system.MenuButtonService, userSvc system.UserService) MenuButtonHandler {
+func NewMenuButtonHandler(rely config.RelyConfig, svc serviceSystem.MenuButtonService, userSvc serviceSystem.UserService) MenuButtonHandler {
 	return &menuButtonHandler{
 		rely:    rely,
 		svc:     svc,
@@ -307,7 +306,7 @@ func (h *menuButtonHandler) Update(ctx *gin.Context) {
 func (h *menuButtonHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户ID不能为空", nil)
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
 		return
 	}
 

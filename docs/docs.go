@@ -437,6 +437,185 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/menu/create": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建菜单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "创建菜单",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreateMenuRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.CreateMenuRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menu/delete/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除菜单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "批量删除菜单",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menu/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id菜单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "删除菜单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menu/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id菜单信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "获取菜单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/menu/listRouter": {
             "get": {
                 "security": [
@@ -452,15 +631,33 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "菜单管理"
+                    "系统管理/菜单管理"
                 ],
                 "summary": "获取所有菜单",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "default": -1,
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
                         "description": "状态",
                         "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "菜单标题",
+                        "name": "title",
                         "in": "query"
                     }
                 ],
@@ -470,8 +667,56 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu"
+                                }
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menu/update": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新菜单信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "更新菜单",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateMenuRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.UpdateMenuRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
@@ -2086,10 +2331,6 @@ const docTemplate = `{
         "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu": {
             "type": "object",
             "properties": {
-                "api": {
-                    "description": "接口地址",
-                    "type": "string"
-                },
                 "belongDept": {
                     "description": "数据归属部门",
                     "type": "string"
@@ -2132,11 +2373,7 @@ const docTemplate = `{
                 },
                 "isLink": {
                     "description": "是否外链",
-                    "type": "boolean"
-                },
-                "method": {
-                    "description": "接口请求方法",
-                    "type": "integer"
+                    "type": "string"
                 },
                 "modifier": {
                     "description": "修改人",
@@ -2152,10 +2389,6 @@ const docTemplate = `{
                 },
                 "path": {
                     "description": "路由地址",
-                    "type": "string"
-                },
-                "permission": {
-                    "description": "权限标识",
                     "type": "string"
                 },
                 "redirect": {
@@ -2180,7 +2413,11 @@ const docTemplate = `{
                 },
                 "type": {
                     "description": "菜单类型",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
                 },
                 "updateTime": {
                     "description": "更新时间",
@@ -2556,10 +2793,6 @@ const docTemplate = `{
         "github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu": {
             "type": "object",
             "properties": {
-                "api": {
-                    "description": "接口地址",
-                    "type": "string"
-                },
                 "belongDept": {
                     "description": "数据归属部门",
                     "type": "string"
@@ -2598,11 +2831,7 @@ const docTemplate = `{
                 },
                 "isLink": {
                     "description": "是否外链",
-                    "type": "boolean"
-                },
-                "method": {
-                    "description": "接口请求方法",
-                    "type": "integer"
+                    "type": "string"
                 },
                 "modifier": {
                     "description": "修改人",
@@ -2618,10 +2847,6 @@ const docTemplate = `{
                 },
                 "path": {
                     "description": "路由地址",
-                    "type": "string"
-                },
-                "permission": {
-                    "description": "权限标识",
                     "type": "string"
                 },
                 "redirect": {
@@ -2646,7 +2871,11 @@ const docTemplate = `{
                 },
                 "type": {
                     "description": "菜单类型",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
                 },
                 "version": {
                     "description": "版本号",
@@ -2673,6 +2902,21 @@ const docTemplate = `{
                 "MethodConstPOST",
                 "MethodConstPUT",
                 "MethodConstDELETE"
+            ]
+        },
+        "menu.TypeConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ],
+            "x-enum-comments": {
+                "TypeConstDir": "目录",
+                "TypeConstMenu": "菜单"
+            },
+            "x-enum-varnames": [
+                "TypeConstDir",
+                "TypeConstMenu"
             ]
         },
         "response.Response": {
@@ -2835,6 +3079,96 @@ const docTemplate = `{
                     "description": "宽度",
                     "type": "integer",
                     "default": 150
+                }
+            }
+        },
+        "system.CreateMenuRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "path",
+                "title"
+            ],
+            "properties": {
+                "component": {
+                    "description": "组件名称",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "icon": {
+                    "description": "菜单图标",
+                    "type": "string",
+                    "default": "HomeFilled",
+                    "maxLength": 64
+                },
+                "isAffix": {
+                    "description": "是否缓存固定路由",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isFull": {
+                    "description": "是否缓存全屏",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isHide": {
+                    "description": "是否隐藏",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isKeepAlive": {
+                    "description": "是否页面缓存",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isLink": {
+                    "description": "是否外链【不填写默认没有外链】",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "name": {
+                    "description": "组件名称",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "parentID": {
+                    "description": "上级菜单",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "path": {
+                    "description": "路由地址",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "redirect": {
+                    "description": "重定向地址",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "title": {
+                    "description": "菜单标题",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "type": {
+                    "description": "菜单类型",
+                    "default": 2,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
                 }
             }
         },
@@ -3057,6 +3391,105 @@ const docTemplate = `{
                     "description": "宽度",
                     "type": "integer",
                     "default": 150
+                }
+            }
+        },
+        "system.UpdateMenuRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "path",
+                "title"
+            ],
+            "properties": {
+                "component": {
+                    "description": "组件名称",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "icon": {
+                    "description": "菜单图标",
+                    "type": "string",
+                    "default": "HomeFilled",
+                    "maxLength": 64
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "isAffix": {
+                    "description": "是否缓存固定路由",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isFull": {
+                    "description": "是否缓存全屏",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isHide": {
+                    "description": "是否隐藏",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isKeepAlive": {
+                    "description": "是否页面缓存",
+                    "type": "boolean",
+                    "default": false
+                },
+                "isLink": {
+                    "description": "是否外链【不填写默认没有外链】",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "name": {
+                    "description": "组件名称",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "parentID": {
+                    "description": "上级菜单",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "path": {
+                    "description": "路由地址",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "redirect": {
+                    "description": "重定向地址",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "title": {
+                    "description": "菜单标题",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "type": {
+                    "description": "菜单类型",
+                    "default": 2,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
+                },
+                "version": {
+                    "description": "版本",
+                    "type": "integer"
                 }
             }
         },

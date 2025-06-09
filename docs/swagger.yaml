@@ -169,9 +169,6 @@ definitions:
     - TypeValueConstBool
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu:
     properties:
-      api:
-        description: 接口地址
-        type: string
       belongDept:
         description: 数据归属部门
         type: string
@@ -204,10 +201,7 @@ definitions:
         type: boolean
       isLink:
         description: 是否外链
-        type: boolean
-      method:
-        description: 接口请求方法
-        type: integer
+        type: string
       modifier:
         description: 修改人
         type: string
@@ -219,9 +213,6 @@ definitions:
         type: string
       path:
         description: 路由地址
-        type: string
-      permission:
-        description: 权限标识
         type: string
       redirect:
         description: 重定向地址
@@ -239,8 +230,9 @@ definitions:
         description: 菜单标题
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
         description: 菜单类型
-        type: integer
       updateTime:
         description: 更新时间
         type: string
@@ -505,9 +497,6 @@ definitions:
     type: object
   github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu:
     properties:
-      api:
-        description: 接口地址
-        type: string
       belongDept:
         description: 数据归属部门
         type: string
@@ -537,10 +526,7 @@ definitions:
         type: boolean
       isLink:
         description: 是否外链
-        type: boolean
-      method:
-        description: 接口请求方法
-        type: integer
+        type: string
       modifier:
         description: 修改人
         type: string
@@ -552,9 +538,6 @@ definitions:
         type: string
       path:
         description: 路由地址
-        type: string
-      permission:
-        description: 权限标识
         type: string
       redirect:
         description: 重定向地址
@@ -572,8 +555,9 @@ definitions:
         description: 菜单标题
         type: string
       type:
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
         description: 菜单类型
-        type: integer
       version:
         description: 版本号
         type: integer
@@ -595,6 +579,17 @@ definitions:
     - MethodConstPOST
     - MethodConstPUT
     - MethodConstDELETE
+  menu.TypeConst:
+    enum:
+    - 1
+    - 2
+    type: integer
+    x-enum-comments:
+      TypeConstDir: 目录
+      TypeConstMenu: 菜单
+    x-enum-varnames:
+    - TypeConstDir
+    - TypeConstMenu
   response.Response:
     properties:
       code:
@@ -718,6 +713,75 @@ definitions:
     - menuId
     - title
     - width
+    type: object
+  system.CreateMenuRequest:
+    properties:
+      component:
+        description: 组件名称
+        maxLength: 128
+        type: string
+      icon:
+        default: HomeFilled
+        description: 菜单图标
+        maxLength: 64
+        type: string
+      isAffix:
+        default: false
+        description: 是否缓存固定路由
+        type: boolean
+      isFull:
+        default: false
+        description: 是否缓存全屏
+        type: boolean
+      isHide:
+        default: false
+        description: 是否隐藏
+        type: boolean
+      isKeepAlive:
+        default: false
+        description: 是否页面缓存
+        type: boolean
+      isLink:
+        description: 是否外链【不填写默认没有外链】
+        maxLength: 255
+        type: string
+      name:
+        description: 组件名称
+        maxLength: 64
+        type: string
+      parentID:
+        description: 上级菜单
+        maxLength: 100
+        type: string
+      path:
+        description: 路由地址
+        maxLength: 128
+        type: string
+      redirect:
+        description: 重定向地址
+        maxLength: 128
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      title:
+        description: 菜单标题
+        maxLength: 64
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
+        default: 2
+        description: 菜单类型
+    required:
+    - name
+    - path
+    - title
     type: object
   system.DeptTree:
     properties:
@@ -882,6 +946,82 @@ definitions:
     - id
     - title
     - width
+    type: object
+  system.UpdateMenuRequest:
+    properties:
+      component:
+        description: 组件名称
+        maxLength: 128
+        type: string
+      icon:
+        default: HomeFilled
+        description: 菜单图标
+        maxLength: 64
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      isAffix:
+        default: false
+        description: 是否缓存固定路由
+        type: boolean
+      isFull:
+        default: false
+        description: 是否缓存全屏
+        type: boolean
+      isHide:
+        default: false
+        description: 是否隐藏
+        type: boolean
+      isKeepAlive:
+        default: false
+        description: 是否页面缓存
+        type: boolean
+      isLink:
+        description: 是否外链【不填写默认没有外链】
+        maxLength: 255
+        type: string
+      name:
+        description: 组件名称
+        maxLength: 64
+        type: string
+      parentID:
+        description: 上级菜单
+        maxLength: 100
+        type: string
+      path:
+        description: 路由地址
+        maxLength: 128
+        type: string
+      redirect:
+        description: 重定向地址
+        maxLength: 128
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      title:
+        description: 菜单标题
+        maxLength: 64
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
+        default: 2
+        description: 菜单类型
+      version:
+        description: 版本
+        type: integer
+    required:
+    - id
+    - name
+    - path
+    - title
     type: object
   system.UserListPageResponse:
     properties:
@@ -1261,17 +1401,141 @@ paths:
       summary: 获取部门树形结构
       tags:
       - 系统管理/部门管理
+  /v1/system/menu/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建菜单
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateMenuRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id菜单
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除菜单
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id菜单信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取菜单
+      tags:
+      - 系统管理/菜单管理
   /v1/system/menu/listRouter:
     get:
       consumes:
       - application/json
       description: 获取所有菜单列表
       parameters:
-      - default: -1
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
         description: 状态
         in: query
         name: status
-        type: integer
+        type: boolean
+      - description: 菜单标题
+        in: query
+        name: title
+        type: string
       produces:
       - application/json
       responses:
@@ -1279,7 +1543,9 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu'
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu'
+              type: array
             type: array
         "400":
           description: Bad Request
@@ -1289,7 +1555,35 @@ paths:
       - LoginToken: []
       summary: 获取所有菜单
       tags:
-      - 菜单管理
+      - 系统管理/菜单管理
+  /v1/system/menu/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新菜单信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateMenuRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新菜单
+      tags:
+      - 系统管理/菜单管理
   /v1/system/menuButton/create:
     post:
       consumes:

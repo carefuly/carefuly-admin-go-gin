@@ -25,6 +25,7 @@ type MenuButtonService interface {
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, domain domainSystem.MenuButton) error
+
 	GetById(ctx context.Context, id string) (domainSystem.MenuButton, error)
 	GetListPage(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, int64, error)
 	GetListAll(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, error)
