@@ -23,7 +23,6 @@ import (
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 )
@@ -37,11 +36,6 @@ type CreateMenuButtonRequest struct {
 	MenuId string           `json:"menuId" binding:"required,max=100"`     // 菜单ID
 	Sort   int              `json:"sort" binding:"omitempty" default:"1"`  // 排序
 	Remark string           `json:"remark" binding:"omitempty,max=255"`    // 备注
-}
-
-// ImportDictRequest 导入
-type ImportDictRequest struct {
-	File *multipart.FileHeader `form:"file" binding:"required"`
 }
 
 // UpdateMenuButtonRequest 更新
@@ -254,8 +248,8 @@ func (h *menuButtonHandler) Update(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", err)
-		zap.S().Error("获取用户失败", err)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -360,8 +354,8 @@ func (h *menuButtonHandler) GetListPage(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", err)
-		zap.S().Error("获取用户失败", err)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -434,8 +428,8 @@ func (h *menuButtonHandler) GetListAll(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", err)
-		zap.S().Error("获取用户失败", err)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

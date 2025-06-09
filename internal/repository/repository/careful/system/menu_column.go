@@ -189,6 +189,7 @@ func (repo *menuColumnRepository) toEntity(domain domainSystem.MenuColumn) model
 		Title:  domain.Title,
 		Field:  domain.Field,
 		Width:  domain.Width,
+		MenuId: domain.MenuId,
 	}
 }
 

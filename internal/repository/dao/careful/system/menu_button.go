@@ -95,7 +95,9 @@ func (dao *GORMMenuButtonDAO) Update(ctx context.Context, model system.MenuButto
 // FindById 根据id获取详情
 func (dao *GORMMenuButtonDAO) FindById(ctx context.Context, id string) (*system.MenuButton, error) {
 	var model system.MenuButton
-	err := dao.db.WithContext(ctx).Where("id = ?", id).First(&model).Error
+	err := dao.db.WithContext(ctx).Where("id = ?", id).
+		Preload("Menu").
+		First(&model).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &model, ErrMenuButtonNotFound

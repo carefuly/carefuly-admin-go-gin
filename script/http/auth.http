@@ -1,0 +1,14 @@
+### 验证码
+GET http://localhost:8080/dev-api/v1/third/generateCaptcha
+    ?bizType=BizCaptchaLogin&type=1
+
+### 登录
+POST http://localhost:8080/dev-api/v1/auth/login
+
+{
+    "username": "careful",
+    "password": "123456",
+    "id": "yt96JXOCcxobebR0DyN9",
+    "code": "920381",
+    "bizType": "BizCaptchaLogin"
+}

@@ -21,8 +21,8 @@ type MenuColumn struct {
 	Title  string `gorm:"type:varchar(64);not null;column:title;comment:标题" json:"title"`                                      // 标题
 	Field  string `gorm:"type:varchar(64);not null;column:field;comment:字段名" json:"field"`                                     // 字段名
 	Width  int    `gorm:"type:int;default:150;column:width;comment:宽度" json:"width"`                                           // 宽度
-	MenuId string `gorm:"type:varchar(64);column:menu_id;comment:关联菜单" json:"menu_id"`                                         // 关联菜单
-	Menu   Menu   `gorm:"foreignKey:menu_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"menu"`                        // 菜单
+	MenuId string `gorm:"type:varchar(100);column:menu_id;comment:关联菜单" json:"menu_id"`                                        // 关联菜单
+	Menu   *Menu  `gorm:"foreignKey:menu_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"menu"`                        // 菜单
 }
 
 func NewMenuColumn() *MenuColumn {

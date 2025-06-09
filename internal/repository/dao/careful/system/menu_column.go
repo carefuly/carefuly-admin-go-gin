@@ -94,7 +94,9 @@ func (dao *GORMMenuColumnDAO) Update(ctx context.Context, model system.MenuColum
 // FindById 根据id获取详情
 func (dao *GORMMenuColumnDAO) FindById(ctx context.Context, id string) (*system.MenuColumn, error) {
 	var model system.MenuColumn
-	err := dao.db.WithContext(ctx).Where("id = ?", id).First(&model).Error
+	err := dao.db.WithContext(ctx).Where("id = ?", id).
+		Preload("Menu").
+		First(&model).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &model, ErrMenuColumnNotFound

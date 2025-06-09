@@ -248,6 +248,108 @@ definitions:
         description: 版本号
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuButton:
+    properties:
+      api:
+        description: 接口地址
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 权限值
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      menu:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu'
+        description: 菜单
+      menu_id:
+        description: 关联菜单
+        type: string
+      method:
+        allOf:
+        - $ref: '#/definitions/menu.MethodConst'
+        description: 请求方式
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      field:
+        description: 字段名
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      menu:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu'
+        description: 菜单
+      menu_id:
+        description: 关联菜单
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      title:
+        description: 标题
+        type: string
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+      width:
+        description: 宽度
+        type: integer
+    type: object
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User:
     properties:
       avatar:
@@ -401,6 +503,98 @@ definitions:
         description: 版本号
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu:
+    properties:
+      api:
+        description: 接口地址
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      component:
+        description: 组件地址
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      icon:
+        description: 菜单图标
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      isAffix:
+        description: 是否缓存固定路由
+        type: boolean
+      isFull:
+        description: 是否缓存全屏
+        type: boolean
+      isHide:
+        description: 是否隐藏
+        type: boolean
+      isKeepAlive:
+        description: 是否页面缓存
+        type: boolean
+      isLink:
+        description: 是否外链
+        type: boolean
+      method:
+        description: 接口请求方法
+        type: integer
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 组件名称
+        type: string
+      parent_id:
+        description: 上级菜单
+        type: string
+      path:
+        description: 路由地址
+        type: string
+      permission:
+        description: 权限标识
+        type: string
+      redirect:
+        description: 重定向地址
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      title:
+        description: 菜单标题
+        type: string
+      type:
+        description: 菜单类型
+        type: integer
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  menu.MethodConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-comments:
+      MethodConstDELETE: DELETE
+      MethodConstGET: GET
+      MethodConstPOST: POST
+      MethodConstPUT: PUT
+    x-enum-varnames:
+    - MethodConstGET
+    - MethodConstPOST
+    - MethodConstPUT
+    - MethodConstDELETE
   response.Response:
     properties:
       code:
@@ -454,6 +648,76 @@ definitions:
     required:
     - code
     - name
+    type: object
+  system.CreateMenuButtonRequest:
+    properties:
+      api:
+        description: 接口地址
+        maxLength: 255
+        type: string
+      code:
+        description: 权限值
+        maxLength: 64
+        type: string
+      menuId:
+        description: 菜单ID
+        maxLength: 100
+        type: string
+      method:
+        allOf:
+        - $ref: '#/definitions/menu.MethodConst'
+        default: 1
+        description: 请求方式
+      name:
+        description: 名称
+        maxLength: 64
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+    required:
+    - api
+    - code
+    - menuId
+    - method
+    - name
+    type: object
+  system.CreateMenuColumnRequest:
+    properties:
+      field:
+        description: 字段名
+        maxLength: 64
+        type: string
+      menuId:
+        description: 菜单ID
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      title:
+        description: 标题
+        maxLength: 64
+        type: string
+      width:
+        default: 150
+        description: 宽度
+        type: integer
+    required:
+    - field
+    - menuId
+    - title
+    - width
     type: object
   system.DeptTree:
     properties:
@@ -510,6 +774,114 @@ definitions:
       version:
         description: 版本号
         type: integer
+    type: object
+  system.MenuButtonListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuButton'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
+  system.MenuColumnListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
+  system.UpdateMenuButtonRequest:
+    properties:
+      api:
+        description: 接口地址
+        maxLength: 255
+        type: string
+      code:
+        description: 权限值
+        maxLength: 64
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      method:
+        allOf:
+        - $ref: '#/definitions/menu.MethodConst'
+        default: 1
+        description: 请求方式
+      name:
+        description: 名称
+        maxLength: 64
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      version:
+        description: 版本
+        type: integer
+    required:
+    - api
+    - code
+    - id
+    - method
+    - name
+    type: object
+  system.UpdateMenuColumnRequest:
+    properties:
+      field:
+        description: 字段名
+        maxLength: 64
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      title:
+        description: 标题
+        maxLength: 64
+        type: string
+      version:
+        description: 版本
+        type: integer
+      width:
+        default: 150
+        description: 宽度
+        type: integer
+    required:
+    - field
+    - id
+    - title
+    - width
     type: object
   system.UserListPageResponse:
     properties:
@@ -918,6 +1290,506 @@ paths:
       summary: 获取所有菜单
       tags:
       - 菜单管理
+  /v1/system/menuButton/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建菜单权限
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateMenuButtonRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateMenuButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建菜单权限
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuButton/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id菜单权限
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除菜单权限
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuButton/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除菜单权限
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除菜单权限
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuButton/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id菜单权限信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuButton'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取菜单权限
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuButton/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有菜单权限列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 名称
+        in: query
+        name: name
+        type: string
+      - description: 权限值
+        in: query
+        name: code
+        type: string
+      - description: 菜单ID
+        in: query
+        name: menu_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuButton'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有菜单权限
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuButton/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取菜单权限分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 名称
+        in: query
+        name: name
+        type: string
+      - description: 权限值
+        in: query
+        name: code
+        type: string
+      - description: 菜单ID
+        in: query
+        name: menu_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.MenuButtonListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取菜单权限分页列表
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuButton/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新菜单权限信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateMenuButtonRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateMenuButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新菜单权限
+      tags:
+      - 系统管理/菜单权限管理
+  /v1/system/menuColumn/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建菜单数据列
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateMenuColumnRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateMenuColumnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建菜单数据列
+      tags:
+      - 系统管理/菜单数据列管理
+  /v1/system/menuColumn/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id菜单数据列
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除菜单数据列
+      tags:
+      - 系统管理/菜单数据列管理
+  /v1/system/menuColumn/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除菜单数据列
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除菜单数据列
+      tags:
+      - 系统管理/菜单数据列管理
+  /v1/system/menuColumn/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id菜单数据列信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取菜单数据列
+      tags:
+      - 系统管理/菜单数据列管理
+  /v1/system/menuColumn/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有菜单数据列列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 标题
+        in: query
+        name: title
+        type: string
+      - description: 字段名
+        in: query
+        name: field
+        type: string
+      - description: 菜单ID
+        in: query
+        name: menu_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有菜单数据列
+      tags:
+      - 系统管理/菜单数据列管理
+  /v1/system/menuColumn/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取菜单数据列分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 标题
+        in: query
+        name: title
+        type: string
+      - description: 字段名
+        in: query
+        name: field
+        type: string
+      - description: 菜单ID
+        in: query
+        name: menu_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.MenuColumnListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取菜单数据列分页列表
+      tags:
+      - 系统管理/菜单数据列管理
+  /v1/system/menuColumn/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新菜单数据列信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateMenuColumnRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateMenuColumnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新菜单数据列
+      tags:
+      - 系统管理/菜单数据列管理
   /v1/system/user/listPage:
     get:
       consumes:
