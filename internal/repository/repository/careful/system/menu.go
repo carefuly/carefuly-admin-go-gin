@@ -57,6 +57,14 @@ func (repo *menuRepository) Create(ctx context.Context, domain domainSystem.Menu
 
 // Delete 删除
 func (repo *menuRepository) Delete(ctx context.Context, id string) (int64, error) {
+	exists, err := repo.dao.CheckExistByIdAndParentId(ctx, id)
+	if exists {
+		return 0, daoSystem.ErrMenuChildNodes
+	}
+	if err != nil {
+		return 0, err
+	}
+
 	rowsAffected, err := repo.dao.Delete(ctx, id)
 
 	// 删除缓存

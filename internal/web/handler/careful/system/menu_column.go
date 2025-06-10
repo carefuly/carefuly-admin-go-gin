@@ -29,7 +29,7 @@ type CreateMenuColumnRequest struct {
 	Title  string `json:"title" binding:"required,max=64"`        // 标题
 	Field  string `json:"field" binding:"required,max=64"`        // 字段名
 	Width  int    `json:"width" binding:"required" default:"150"` // 宽度
-	MenuId string `json:"menuId" binding:"required,max=100"`      // 菜单ID
+	MenuId string `json:"menu_id" binding:"required,max=100"`     // 菜单ID
 	Sort   int    `json:"sort" binding:"omitempty" default:"1"`   // 排序
 	Remark string `json:"remark" binding:"omitempty,max=255"`     // 备注
 }

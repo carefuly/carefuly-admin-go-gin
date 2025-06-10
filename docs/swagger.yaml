@@ -654,7 +654,7 @@ definitions:
         description: 权限值
         maxLength: 64
         type: string
-      menuId:
+      menu_id:
         description: 菜单ID
         maxLength: 100
         type: string
@@ -678,7 +678,7 @@ definitions:
     required:
     - api
     - code
-    - menuId
+    - menu_id
     - method
     - name
     type: object
@@ -688,7 +688,7 @@ definitions:
         description: 字段名
         maxLength: 64
         type: string
-      menuId:
+      menu_id:
         description: 菜单ID
         maxLength: 100
         type: string
@@ -710,7 +710,7 @@ definitions:
         type: integer
     required:
     - field
-    - menuId
+    - menu_id
     - title
     - width
     type: object
@@ -749,7 +749,7 @@ definitions:
         description: 组件名称
         maxLength: 64
         type: string
-      parentID:
+      parent_id:
         description: 上级菜单
         maxLength: 100
         type: string
@@ -985,7 +985,7 @@ definitions:
         description: 组件名称
         maxLength: 64
         type: string
-      parentID:
+      parent_id:
         description: 上级菜单
         maxLength: 100
         type: string

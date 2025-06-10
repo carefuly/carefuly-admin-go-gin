@@ -40,7 +40,7 @@ type CreateMenuRequest struct {
 	IsKeepAlive bool           `json:"isKeepAlive" binding:"omitempty" default:"false"`      // 是否页面缓存
 	IsFull      bool           `json:"isFull" binding:"omitempty" default:"false"`           // 是否缓存全屏
 	IsAffix     bool           `json:"isAffix" binding:"omitempty" default:"false"`          // 是否缓存固定路由
-	ParentID    string         `json:"parentID" binding:"omitempty,max=100"`                 // 上级菜单
+	ParentID    string         `json:"parent_id" binding:"omitempty,max=100"`                // 上级菜单
 	Sort        int            `json:"sort" binding:"omitempty" default:"1"`                 // 排序
 	Remark      string         `json:"remark" binding:"omitempty,max=255"`                   // 备注
 }
@@ -60,7 +60,7 @@ type UpdateMenuRequest struct {
 	IsKeepAlive bool           `json:"isKeepAlive" binding:"omitempty" default:"false"`      // 是否页面缓存
 	IsFull      bool           `json:"isFull" binding:"omitempty" default:"false"`           // 是否缓存全屏
 	IsAffix     bool           `json:"isAffix" binding:"omitempty" default:"false"`          // 是否缓存固定路由
-	ParentID    string         `json:"parentID" binding:"omitempty,max=100"`                 // 上级菜单
+	ParentID    string         `json:"parent_id" binding:"omitempty,max=100"`                // 上级菜单
 	Sort        int            `json:"sort" binding:"omitempty" default:"1"`                 // 排序
 	Version     int            `json:"version" binding:"omitempty"`                          // 版本
 	Remark      string         `json:"remark" binding:"omitempty,max=255"`                   // 备注
@@ -81,7 +81,7 @@ type MenuHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
-	GetList(ctx *gin.Context)
+	GetListRouter(ctx *gin.Context)
 }
 
 type menuHandler struct {
@@ -106,7 +106,7 @@ func (h *menuHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/delete/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
-	base.GET("/listRouter", h.GetList)
+	base.GET("/listRouter", h.GetListRouter)
 }
 
 // Create
@@ -365,7 +365,7 @@ func (h *menuHandler) GetById(ctx *gin.Context) {
 	response.NewResponse().SuccessResponse(ctx, "获取成功", detail)
 }
 
-// GetList
+// GetListRouter
 // @Summary 获取所有菜单
 // @Description 获取所有菜单列表
 // @Tags 系统管理/菜单管理
@@ -379,7 +379,7 @@ func (h *menuHandler) GetById(ctx *gin.Context) {
 // @Failure 400 {object} response.Response
 // @Router /v1/system/menu/listRouter [get]
 // @Security LoginToken
-func (h *menuHandler) GetList(ctx *gin.Context) {
+func (h *menuHandler) GetListRouter(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)

@@ -2995,7 +2995,7 @@ const docTemplate = `{
             "required": [
                 "api",
                 "code",
-                "menuId",
+                "menu_id",
                 "method",
                 "name"
             ],
@@ -3010,7 +3010,7 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 64
                 },
-                "menuId": {
+                "menu_id": {
                     "description": "菜单ID",
                     "type": "string",
                     "maxLength": 100
@@ -3045,7 +3045,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "field",
-                "menuId",
+                "menu_id",
                 "title",
                 "width"
             ],
@@ -3055,7 +3055,7 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 64
                 },
-                "menuId": {
+                "menu_id": {
                     "description": "菜单ID",
                     "type": "string",
                     "maxLength": 100
@@ -3131,7 +3131,7 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 64
                 },
-                "parentID": {
+                "parent_id": {
                     "description": "上级菜单",
                     "type": "string",
                     "maxLength": 100
@@ -3448,7 +3448,7 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 64
                 },
-                "parentID": {
+                "parent_id": {
                     "description": "上级菜单",
                     "type": "string",
                     "maxLength": 100

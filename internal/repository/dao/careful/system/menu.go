@@ -22,6 +22,7 @@ var (
 	ErrMenuNameDuplicate        = errors.New("菜单名称已存在")
 	ErrMenuDuplicate            = errors.New("菜单已存在")
 	ErrMenuVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
+	ErrMenuChildNodes           = errors.New("请先删除当前节点下的子节点")
 )
 
 type MenuDAO interface {
@@ -33,6 +34,7 @@ type MenuDAO interface {
 	FindById(ctx context.Context, id string) (*system.Menu, error)
 	FindListAll(ctx context.Context, filter domainSystem.MenuFilter) ([]*system.Menu, error)
 
+	CheckExistByIdAndParentId(ctx context.Context, id string) (bool, error)
 	CheckExistByTypeAndTitleAndParentId(ctx context.Context, menuType int, title, parentId, excludeId string) (bool, error)
 }
 
@@ -78,6 +80,7 @@ func (dao *GORMMenuDAO) Update(ctx context.Context, model system.Menu) error {
 			"isLink":      model.IsLink,
 			"isKeepAlive": model.IsKeepAlive,
 			"isFull":      model.IsFull,
+			"isAffix":     model.IsAffix,
 			"parent_id":   model.ParentID,
 			"sort":        model.Sort,
 			"version":     gorm.Expr("version + 1"),
@@ -134,12 +137,30 @@ func (dao *GORMMenuDAO) FindListAll(ctx context.Context, filter domainSystem.Men
 func (dao *GORMMenuDAO) buildQuery(ctx context.Context, filter domainSystem.MenuFilter) *gorm.DB {
 	builder := &domainSystem.MenuFilter{
 		Filters: filters.Filters{
-			Creator:  filter.Creator,
-			Modifier: filter.Modifier,
+			Creator:    filter.Creator,
+			Modifier:   filter.Modifier,
+			BelongDept: filter.BelongDept,
 		},
-		Title: filter.Title,
+		Status: filter.Status,
+		Title:  filter.Title,
 	}
 	return builder.Apply(dao.db.WithContext(ctx).Model(&system.Menu{}))
+}
+
+// CheckExistByIdAndParentId 检查当前id是否存在子节点
+func (dao *GORMMenuDAO) CheckExistByIdAndParentId(ctx context.Context, id string) (bool, error) {
+	var model system.Menu
+	query := dao.db.WithContext(ctx).Model(&system.Menu{}).
+		Select("id"). // 只查询必要的字段
+		Where("parent_id = ?", id)
+
+	// 使用 LIMIT 1 快速判断是否存在
+	err := query.Limit(1).First(&model).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil // 不存在
+	}
+	return err == nil, err // 存在或查询出错
 }
 
 // CheckExistByTypeAndTitleAndParentId 检查type、title和parentId是否同时存在

@@ -32,7 +32,7 @@ type CreateMenuButtonRequest struct {
 	Code   string           `json:"code" binding:"required,max=64"`        // 权限值
 	Api    string           `json:"api" binding:"required,max=255"`        // 接口地址
 	Method menu.MethodConst `json:"method" binding:"required" default:"1"` // 请求方式
-	MenuId string           `json:"menuId" binding:"required,max=100"`     // 菜单ID
+	MenuId string           `json:"menu_id" binding:"required,max=100"`     // 菜单ID
 	Sort   int              `json:"sort" binding:"omitempty" default:"1"`  // 排序
 	Remark string           `json:"remark" binding:"omitempty,max=255"`    // 备注
 }
