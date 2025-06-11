@@ -369,8 +369,147 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/dept/delete/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除部门",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "批量删除部门",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id部门",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "删除部门",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "获取部门",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Dept"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/dept/listTree": {
             "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
                 "description": "获取部门树形结构",
                 "consumes": [
                     "application/json"
@@ -426,6 +565,51 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/system.DeptTree"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/update": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "更新部门",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateDeptRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.UpdateDeptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
@@ -2328,6 +2512,75 @@ const docTemplate = `{
                 "TypeValueConstBool"
             ]
         },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Dept": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "部门编码",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string"
+                },
+                "owner": {
+                    "description": "负责人",
+                    "type": "string"
+                },
+                "parent_id": {
+                    "description": "上级部门",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "联系电话",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu": {
             "type": "object",
             "properties": {
@@ -2948,45 +3201,38 @@ const docTemplate = `{
                 "code": {
                     "description": "部门编码",
                     "type": "string",
-                    "maxLength": 100,
-                    "example": "CARE_TEST"
+                    "maxLength": 100
                 },
                 "email": {
                     "description": "邮箱",
-                    "type": "string",
-                    "example": "admin@test.com"
+                    "type": "string"
                 },
                 "name": {
                     "description": "部门名称",
                     "type": "string",
-                    "maxLength": 100,
-                    "example": "测试部门"
+                    "maxLength": 100
                 },
                 "owner": {
                     "description": "负责人",
-                    "type": "string",
-                    "example": "admin"
+                    "type": "string"
                 },
                 "parent_id": {
                     "description": "上级部门",
-                    "type": "string",
-                    "example": "1"
+                    "type": "string"
                 },
                 "phone": {
                     "description": "联系电话",
-                    "type": "string",
-                    "example": "18566666666"
+                    "type": "string"
                 },
                 "remark": {
                     "description": "备注",
                     "type": "string",
-                    "maxLength": 255,
-                    "example": "测试部门"
+                    "maxLength": 255
                 },
-                "status": {
-                    "description": "状态",
-                    "type": "boolean",
-                    "example": true
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
                 }
             }
         },
@@ -3292,6 +3538,60 @@ const docTemplate = `{
                 },
                 "total": {
                     "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "system.UpdateDeptRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "部门编码",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "owner": {
+                    "description": "负责人",
+                    "type": "string"
+                },
+                "parent_id": {
+                    "description": "上级部门",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "联系电话",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "version": {
+                    "description": "版本",
                     "type": "integer"
                 }
             }

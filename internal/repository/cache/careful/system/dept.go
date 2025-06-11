@@ -1,8 +1,8 @@
 /**
  * Description：
- * FileName：menu.go
+ * FileName：dept.go
  * Author：CJiaの用心
- * Create：2025/6/9 22:29:32
+ * Create：2025/6/11 15:45:53
  * Remark：
  */
 
@@ -18,34 +18,34 @@ import (
 	"time"
 )
 
-var ErrMenuNotExist = redis.Nil
+var ErrDeptNotExist = redis.Nil
 
-type MenuCache interface {
-	Get(ctx context.Context, id string) (*domainSystem.Menu, error)
-	Set(ctx context.Context, domain domainSystem.Menu) error
+type DeptCache interface {
+	Get(ctx context.Context, id string) (*domainSystem.Dept, error)
+	Set(ctx context.Context, domain domainSystem.Dept) error
 	Del(ctx context.Context, id string) error
 	SetNotFound(ctx context.Context, id string) error // 防止缓存穿透
 }
 
-type RedisMenuCache struct {
+type RedisDeptCache struct {
 	cmd        redis.Cmdable
 	expiration time.Duration
 }
 
-func NewRedisMenuCache(cmd redis.Cmdable) MenuCache {
-	return &RedisMenuCache{
+func NewRedisDeptCache(cmd redis.Cmdable) DeptCache {
+	return &RedisDeptCache{
 		cmd:        cmd,
 		expiration: time.Minute * 15,
 	}
 }
 
-func (c *RedisMenuCache) Get(ctx context.Context, id string) (*domainSystem.Menu, error) {
+func (c *RedisDeptCache) Get(ctx context.Context, id string) (*domainSystem.Dept, error) {
 	key := c.key(id)
 
 	data, err := c.cmd.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, ErrMenuNotExist
+			return nil, ErrDeptNotExist
 		}
 		return nil, err
 	}
@@ -55,12 +55,12 @@ func (c *RedisMenuCache) Get(ctx context.Context, id string) (*domainSystem.Menu
 		return nil, nil
 	}
 
-	var doMain domainSystem.Menu
+	var doMain domainSystem.Dept
 	err = json.Unmarshal([]byte(data), &doMain)
 	return &doMain, err
 }
 
-func (c *RedisMenuCache) Set(ctx context.Context, domain domainSystem.Menu) error {
+func (c *RedisDeptCache) Set(ctx context.Context, domain domainSystem.Dept) error {
 	key := c.key(domain.Id)
 	data, err := json.Marshal(domain)
 	if err != nil {
@@ -69,17 +69,17 @@ func (c *RedisMenuCache) Set(ctx context.Context, domain domainSystem.Menu) erro
 	return c.cmd.Set(ctx, key, data, c.expiration).Err()
 }
 
-func (c *RedisMenuCache) Del(ctx context.Context, id string) error {
+func (c *RedisDeptCache) Del(ctx context.Context, id string) error {
 	key := c.key(id)
 	return c.cmd.Del(ctx, key).Err()
 }
 
-func (c *RedisMenuCache) SetNotFound(ctx context.Context, id string) error {
+func (c *RedisDeptCache) SetNotFound(ctx context.Context, id string) error {
 	key := c.key(id)
 	// 设置短暂的有效期防止缓存穿透
 	return c.cmd.Set(ctx, key, "not_found", time.Minute).Err()
 }
 
-func (c *RedisMenuCache) key(id string) string {
-	return fmt.Sprintf("careful:system:menu:info:%s", id)
+func (c *RedisDeptCache) key(id string) string {
+	return fmt.Sprintf("careful:system:dept:info:%s", id)
 }

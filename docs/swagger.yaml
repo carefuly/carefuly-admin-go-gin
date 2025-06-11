@@ -167,6 +167,57 @@ definitions:
     - TypeValueConstStr
     - TypeValueConstInt
     - TypeValueConstBool
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Dept:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 部门编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      owner:
+        description: 负责人
+        type: string
+      parent_id:
+        description: 上级部门
+        type: string
+      phone:
+        description: 联系电话
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Menu:
     properties:
       belongDept:
@@ -607,39 +658,32 @@ definitions:
     properties:
       code:
         description: 部门编码
-        example: CARE_TEST
         maxLength: 100
         type: string
       email:
         description: 邮箱
-        example: admin@test.com
         type: string
       name:
         description: 部门名称
-        example: 测试部门
         maxLength: 100
         type: string
       owner:
         description: 负责人
-        example: admin
         type: string
       parent_id:
         description: 上级部门
-        example: "1"
         type: string
       phone:
         description: 联系电话
-        example: "18566666666"
         type: string
       remark:
         description: 备注
-        example: 测试部门
         maxLength: 255
         type: string
-      status:
-        description: 状态
-        example: true
-        type: boolean
+      sort:
+        default: 1
+        description: 排序
+        type: integer
     required:
     - code
     - name
@@ -872,6 +916,47 @@ definitions:
       total:
         description: 总数
         type: integer
+    type: object
+  system.UpdateDeptRequest:
+    properties:
+      code:
+        description: 部门编码
+        maxLength: 100
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      name:
+        description: 部门名称
+        maxLength: 100
+        type: string
+      owner:
+        description: 负责人
+        type: string
+      parent_id:
+        description: 上级部门
+        type: string
+      phone:
+        description: 联系电话
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      version:
+        description: 版本
+        type: integer
+    required:
+    - code
+    - id
+    - name
     type: object
   system.UpdateMenuButtonRequest:
     properties:
@@ -1356,6 +1441,90 @@ paths:
       summary: 创建部门
       tags:
       - 系统管理/部门管理
+  /v1/system/dept/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id部门
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除部门
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id部门信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Dept'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取部门
+      tags:
+      - 系统管理/部门管理
   /v1/system/dept/listTree:
     get:
       consumes:
@@ -1398,7 +1567,37 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
       summary: 获取部门树形结构
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新部门信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateDeptRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateDeptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新部门
       tags:
       - 系统管理/部门管理
   /v1/system/menu/create:

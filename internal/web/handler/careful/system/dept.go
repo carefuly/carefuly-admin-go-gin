@@ -26,31 +26,59 @@ import (
 
 // CreateDeptRequest 创建
 type CreateDeptRequest struct {
-	Name     string `json:"name" binding:"required,max=100" example:"测试部门"`           // 部门名称
-	Code     string `json:"code" binding:"required,max=100" example:"CARE_TEST"`      // 部门编码
-	Owner    string `json:"owner" binding:"omitempty" example:"admin"`                // 负责人
-	Phone    string `json:"phone" binding:"omitempty" example:"18566666666"`          // 联系电话
-	Email    string `json:"email" binding:"omitempty,email" example:"admin@test.com"` // 邮箱
-	Status   bool   `json:"status" binding:"omitempty" example:"true"`                // 状态
-	ParentID string `json:"parent_id" binding:"omitempty" example:"1"`                // 上级部门
-	Remark   string `json:"remark" binding:"omitempty,max=255" example:"测试部门"`        // 备注
+	Name     string `json:"name" binding:"required,max=100"`      // 部门名称
+	Code     string `json:"code" binding:"required,max=100"`      // 部门编码
+	Owner    string `json:"owner" binding:"omitempty"`            // 负责人
+	Phone    string `json:"phone" binding:"omitempty"`            // 联系电话
+	Email    string `json:"email" binding:"omitempty,email"`      // 邮箱
+	ParentID string `json:"parent_id" binding:"omitempty"`        // 上级部门
+	Sort     int    `json:"sort" binding:"omitempty" default:"1"` // 排序
+	Remark   string `json:"remark" binding:"omitempty,max=255"`   // 备注
+}
+
+// UpdateDeptRequest 更新
+type UpdateDeptRequest struct {
+	Id       string `json:"id" binding:"required"`                // 主键ID
+	Name     string `json:"name" binding:"required,max=100"`      // 部门名称
+	Code     string `json:"code" binding:"required,max=100"`      // 部门编码
+	Owner    string `json:"owner" binding:"omitempty"`            // 负责人
+	Phone    string `json:"phone" binding:"omitempty"`            // 联系电话
+	Email    string `json:"email" binding:"omitempty,email"`      // 邮箱
+	ParentID string `json:"parent_id" binding:"omitempty"`        // 上级部门
+	Sort     int    `json:"sort" binding:"omitempty" default:"1"` // 排序
+	Version  int    `json:"version" binding:"omitempty"`          // 版本
+	Remark   string `json:"remark" binding:"omitempty,max=255"`   // 备注
+}
+
+// DeptListPageResponse 列表分页响应
+type DeptListPageResponse struct {
+	List     []domainSystem.Dept `json:"list"`     // 列表
+	Total    int64               `json:"total"`    // 总数
+	Page     int                 `json:"page"`     // 页码
+	PageSize int                 `json:"pageSize"` // 每页数量
 }
 
 type DeptHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+	BatchDelete(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	GetById(ctx *gin.Context)
 	GetDeptTree(ctx *gin.Context)
 }
 
 type deptHandler struct {
-	rely config.RelyConfig
-	svc  serviceSystem.DeptService
+	rely    config.RelyConfig
+	svc     serviceSystem.DeptService
+	userSvc serviceSystem.UserService
 }
 
-func NewDeptHandler(rely config.RelyConfig, svc serviceSystem.DeptService) DeptHandler {
+func NewDeptHandler(rely config.RelyConfig, svc serviceSystem.DeptService, userSvc serviceSystem.UserService) DeptHandler {
 	return &deptHandler{
-		rely: rely,
-		svc:  svc,
+		rely:    rely,
+		svc:     svc,
+		userSvc: userSvc,
 	}
 }
 
@@ -58,6 +86,10 @@ func NewDeptHandler(rely config.RelyConfig, svc serviceSystem.DeptService) DeptH
 func (h *deptHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base := router.Group("/dept")
 	base.POST("/create", h.Create)
+	base.DELETE("/delete/:id", h.Delete)
+	base.POST("/delete/batchDelete", h.BatchDelete)
+	base.PUT("/update", h.Update)
+	base.GET("/getById/:id", h.GetById)
 	base.GET("/listTree", h.GetDeptTree)
 }
 
@@ -81,6 +113,14 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 		return
 	}
 
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
 	var req CreateDeptRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
@@ -91,11 +131,12 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 	domain := domainSystem.Dept{
 		Dept: modelSystem.Dept{
 			CoreModels: models.CoreModels{
-				Creator:  uid,
-				Modifier: uid,
-				Remark:   req.Remark,
+				Sort:       req.Sort,
+				Creator:    uid,
+				Modifier:   uid,
+				BelongDept: user.DeptId,
+				Remark:     req.Remark,
 			},
-			Status:   req.Status,
 			Name:     req.Name,
 			Code:     req.Code,
 			Owner:    req.Owner,
@@ -106,16 +147,11 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Create(ctx, domain); err != nil {
-		if errors.Is(err, serviceSystem.ErrDeptNameDuplicate) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "部门名称已存在", nil)
-			return
-		} else if errors.Is(err, serviceSystem.ErrDeptCodeDuplicate) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "部门编码已存在", nil)
-			return
-		} else if errors.Is(err, serviceSystem.ErrDeptDuplicate) {
+		switch {
+		case errors.Is(err, serviceSystem.ErrDeptDuplicate):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "部门信息已存在", nil)
 			return
-		} else {
+		default:
 			zap.L().Error("创建部门失败", zap.Error(err))
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
@@ -123,6 +159,176 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "新增成功", nil)
+}
+
+// Delete
+// @Summary 删除部门
+// @Description 删除指定id部门
+// @Tags 系统管理/部门管理
+// @Accept application/json
+// @Produce application/json
+// @Param id path string true "id"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/system/dept/delete/{id} [delete]
+// @Security LoginToken
+func (h *deptHandler) Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" || len(id) == 0 {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
+		return
+	}
+
+	if err := h.svc.Delete(ctx, id); err != nil {
+		switch {
+		case errors.Is(err, serviceSystem.ErrDeptNotFound):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "部门不存在", nil)
+			return
+		case errors.Is(err, serviceSystem.ErrDeptChildNodes):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "请先删除当前部门下的子部门", nil)
+			return
+		default:
+			ctx.Set("internal", err.Error())
+			zap.L().Error("删除部门失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
+		}
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
+}
+
+// BatchDelete
+// @Summary 批量删除部门
+// @Description 批量删除部门
+// @Tags 系统管理/部门管理
+// @Accept application/json
+// @Produce application/json
+// @Param ids body []string true "id数组"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/system/dept/delete/batchDelete [post]
+// @Security LoginToken
+func (h *deptHandler) BatchDelete(ctx *gin.Context) {
+	var ids []string
+	if err := ctx.ShouldBindJSON(&ids); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	err := h.svc.BatchDelete(ctx, ids)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("批量删除部门异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "批量删除成功", nil)
+}
+
+// Update
+// @Summary 更新部门
+// @Description 更新部门信息
+// @Tags 系统管理/部门管理
+// @Accept application/json
+// @Produce application/json
+// @Param UpdateDeptRequest body UpdateDeptRequest true "请求"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/system/dept/update [put]
+// @Security LoginToken
+func (h *deptHandler) Update(ctx *gin.Context) {
+	uid, ok := ctx.MustGet("userId").(string)
+	if !ok {
+		ctx.Set("internal", uid)
+		zap.S().Error("用户ID获取失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	var req UpdateDeptRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	// 转换为领域模型
+	domain := domainSystem.Dept{
+		Dept: modelSystem.Dept{
+			CoreModels: models.CoreModels{
+				Id:         req.Id,
+				Sort:       req.Sort,
+				Version:    req.Version,
+				Modifier:   uid,
+				BelongDept: user.DeptId,
+				Remark:     req.Remark,
+			},
+			Name:     req.Name,
+			Code:     req.Code,
+			Owner:    req.Owner,
+			Phone:    req.Phone,
+			Email:    req.Email,
+			ParentID: req.ParentID,
+		},
+	}
+
+	if err := h.svc.Update(ctx, domain); err != nil {
+		switch {
+		case errors.Is(err, serviceSystem.ErrDeptDuplicate):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "部门信息已存在", nil)
+			return
+		case errors.Is(err, serviceSystem.ErrDeptVersionInconsistency):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
+			return
+		default:
+			zap.L().Error("更新部门失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
+		}
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "更新成功", nil)
+}
+
+// GetById
+// @Summary 获取部门
+// @Description 获取指定id部门信息
+// @Tags 系统管理/部门管理
+// @Accept application/json
+// @Produce application/json
+// @Param id path string true "id"
+// @Success 200 {object} domainSystem.Dept
+// @Failure 400 {object} response.Response
+// @Router /v1/system/dept/getById/{id} [get]
+// @Security LoginToken
+func (h *deptHandler) GetById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" || len(id) == 0 {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
+		return
+	}
+
+	detail, err := h.svc.GetById(ctx, id)
+	if err != nil {
+		if errors.Is(err, serviceSystem.ErrDeptNotFound) {
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "部门不存在", nil)
+			return
+		}
+		zap.L().Error("获取部门失败", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "获取成功", detail)
 }
 
 // GetDeptTree 获取部门树形结构
@@ -140,6 +346,7 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 // @Success 200 {object} serviceSystem.DeptTree
 // @Failure 400 {object} response.Response
 // @Router /v1/system/dept/listTree [get]
+// @Security LoginToken
 func (h *deptHandler) GetDeptTree(ctx *gin.Context) {
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")

@@ -62,9 +62,11 @@ func (r *SystemRouter) RegisterRouter(router *gin.RouterGroup) {
 	menuColumnHandler := handlerSystem.NewMenuColumnHandler(r.rely, menuColumnService, userService)
 	menuColumnHandler.RegisterRoutes(baseRouter)
 
+	// 部门
+	deptCache := cacheSystem.NewRedisDeptCache(r.rely.Redis)
 	deptDAO := daoSystem.NewGORMDeptDAO(r.rely.Db.Careful)
-	deptRepository := repositorySystem.NewDeptRepository(deptDAO)
+	deptRepository := repositorySystem.NewDeptRepository(deptDAO, deptCache)
 	deptService := serviceSystem.NewDeptService(deptRepository)
-	deptHandler := handlerSystem.NewDeptHandler(r.rely, deptService)
+	deptHandler := handlerSystem.NewDeptHandler(r.rely, deptService, userService)
 	deptHandler.RegisterRoutes(baseRouter)
 }

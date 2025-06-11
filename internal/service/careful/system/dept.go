@@ -23,15 +23,20 @@ type DeptTree struct {
 }
 
 var (
-	ErrDeptNotFound      = repositorySystem.ErrDeptNotFound
-	ErrDeptNameDuplicate = repositorySystem.ErrDeptNameDuplicate
-	ErrDeptCodeDuplicate = repositorySystem.ErrDeptCodeDuplicate
-	ErrDeptDuplicate     = repositorySystem.ErrDeptDuplicate
+	ErrDeptNotFound             = repositorySystem.ErrDeptNotFound
+	ErrDeptDuplicate            = repositorySystem.ErrDeptDuplicate
+	ErrDeptVersionInconsistency = repositorySystem.ErrDeptVersionInconsistency
+	ErrDeptChildNodes           = repositorySystem.ErrDeptChildNodes
 )
 
 type DeptService interface {
 	Create(ctx context.Context, domain domainSystem.Dept) error
+	Delete(ctx context.Context, id string) error
+	BatchDelete(ctx context.Context, ids []string) error
+	Update(ctx context.Context, domain domainSystem.Dept) error
 
+	GetById(ctx context.Context, id string) (domainSystem.Dept, error)
+	GetListAll(ctx context.Context, filter domainSystem.DeptFilter) ([]domainSystem.Dept, error)
 	GetListTree(ctx context.Context, filter domainSystem.DeptFilter) ([]*DeptTree, error)
 }
 
@@ -47,22 +52,16 @@ func NewDeptService(repo repositorySystem.DeptRepository) DeptService {
 
 // Create 创建
 func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) error {
-	exists, err := svc.repo.CheckExistByName(ctx, domain.Name, "")
+	// 检查name、code和parentId是否同时存在
+	exists, err := svc.repo.CheckExistByNameAndCodeAndParentId(ctx, domain.Name, domain.Code, domain.ParentID, "")
 	if err != nil {
 		return err
 	}
 	if exists {
-		return repositorySystem.ErrDeptNameDuplicate
+		return repositorySystem.ErrDeptDuplicate
 	}
 
-	exists, err = svc.repo.CheckExistByCode(ctx, domain.Code, "")
-	if err != nil {
-		return err
-	}
-	if exists {
-		return repositorySystem.ErrDeptCodeDuplicate
-	}
-
+	// 创建用户
 	if err := svc.repo.Create(ctx, domain); err != nil {
 		if svc.IsDuplicateEntryError(err) {
 			return repositorySystem.ErrDeptDuplicate
@@ -71,6 +70,69 @@ func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) er
 	}
 
 	return nil
+}
+
+// Delete 删除
+func (svc *deptService) Delete(ctx context.Context, id string) error {
+	rowsAffected, err := svc.repo.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return repositorySystem.ErrDeptNotFound
+	}
+	return err
+}
+
+// BatchDelete 批量删除
+func (svc *deptService) BatchDelete(ctx context.Context, ids []string) error {
+	return svc.repo.BatchDelete(ctx, ids)
+}
+
+// Update 更新
+func (svc *deptService) Update(ctx context.Context, domain domainSystem.Dept) error {
+	// 检查name、code和parentId是否同时存在
+	exists, err := svc.repo.CheckExistByNameAndCodeAndParentId(ctx, domain.Name, domain.Code, domain.ParentID, domain.Id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return repositorySystem.ErrDeptDuplicate
+	}
+
+	// 更新用户
+	if err := svc.repo.Update(ctx, domain); err != nil {
+		switch {
+		case svc.IsDuplicateEntryError(err):
+			return repositorySystem.ErrDeptDuplicate
+		case errors.Is(err, repositorySystem.ErrDeptVersionInconsistency):
+			return repositorySystem.ErrDeptVersionInconsistency
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
+
+// GetById 获取详情
+func (svc *deptService) GetById(ctx context.Context, id string) (domainSystem.Dept, error) {
+	domain, err := svc.repo.GetById(ctx, id)
+	if err != nil {
+		if errors.Is(err, repositorySystem.ErrDeptNotFound) {
+			return domain, repositorySystem.ErrDeptNotFound
+		}
+		return domain, err
+	}
+	if domain.Id == "" {
+		return domain, repositorySystem.ErrDeptNotFound
+	}
+	return domain, err
+}
+
+// GetListAll 查询所有列表
+func (svc *deptService) GetListAll(ctx context.Context, filter domainSystem.DeptFilter) ([]domainSystem.Dept, error) {
+	return svc.repo.GetListAll(ctx, filter)
 }
 
 // GetListTree 获取树形结构

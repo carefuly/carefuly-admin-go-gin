@@ -19,19 +19,22 @@ import (
 
 var (
 	ErrDeptNotFound             = gorm.ErrRecordNotFound
-	ErrDeptNameDuplicate        = errors.New("部门名称已存在")
-	ErrDeptCodeDuplicate        = errors.New("部门编码已存在")
 	ErrDeptDuplicate            = errors.New("部门信息已存在")
 	ErrDeptVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
+	ErrDeptChildNodes           = errors.New("请先删除当前部门下的子部门")
 )
 
 type DeptDAO interface {
 	Insert(ctx context.Context, model system.Dept) error
+	Delete(ctx context.Context, id string) (int64, error)
+	BatchDelete(ctx context.Context, ids []string) error
+	Update(ctx context.Context, model system.Dept) error
 
+	FindById(ctx context.Context, id string) (*system.Dept, error)
 	FindListAll(ctx context.Context, filter domainSystem.DeptFilter) ([]*system.Dept, error)
 
-	CheckExistByName(ctx context.Context, name, excludeId string) (bool, error)
-	CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error)
+	CheckExistByIdAndParentId(ctx context.Context, id string) (bool, error)
+	CheckExistByNameAndCodeAndParentId(ctx context.Context, name, code, parentId, excludeId string) (bool, error)
 }
 
 type GORMDeptDAO struct {
@@ -55,6 +58,11 @@ func (dao *GORMDeptDAO) Delete(ctx context.Context, id string) (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
+// BatchDelete 批量删除
+func (dao *GORMDeptDAO) BatchDelete(ctx context.Context, ids []string) error {
+	return dao.db.WithContext(ctx).Where("id IN ?", ids).Delete(&system.Dept{}).Error
+}
+
 // Update 更新
 func (dao *GORMDeptDAO) Update(ctx context.Context, model system.Dept) error {
 	result := dao.db.WithContext(ctx).Model(&model).
@@ -66,10 +74,10 @@ func (dao *GORMDeptDAO) Update(ctx context.Context, model system.Dept) error {
 			"phone":     model.Phone,
 			"email":     model.Email,
 			"parent_id": model.ParentID,
-			// "status":    model.Status,
-			"version":  gorm.Expr("version + 1"),
-			"modifier": model.Modifier,
-			"remark":   model.Remark,
+			"sort":      model.Sort,
+			"version":   gorm.Expr("version + 1"),
+			"modifier":  model.Modifier,
+			"remark":    model.Remark,
 		})
 	// 处理行影响数为0的情况
 	if result.RowsAffected == 0 {
@@ -112,7 +120,7 @@ func (dao *GORMDeptDAO) FindById(ctx context.Context, id string) (*system.Dept, 
 		}
 		return &model, err
 	}
-	return &model, nil
+	return &model, err
 }
 
 // FindListAll 获取所有列表
@@ -144,16 +152,12 @@ func (dao *GORMDeptDAO) buildQuery(ctx context.Context, filter domainSystem.Dept
 	return builder.Apply(dao.db.WithContext(ctx).Model(&system.Dept{}))
 }
 
-// CheckExistByName 检查name是否存在
-func (dao *GORMDeptDAO) CheckExistByName(ctx context.Context, name, excludeId string) (bool, error) {
+// CheckExistByIdAndParentId 检查当前id是否存在子节点
+func (dao *GORMDeptDAO) CheckExistByIdAndParentId(ctx context.Context, id string) (bool, error) {
 	var model system.Dept
 	query := dao.db.WithContext(ctx).Model(&system.Dept{}).
 		Select("id"). // 只查询必要的字段
-		Where("name = ?", name)
-
-	if excludeId != "" {
-		query = query.Where("id != ?", excludeId)
-	}
+		Where("parent_id = ?", id)
 
 	// 使用 LIMIT 1 快速判断是否存在
 	err := query.Limit(1).First(&model).Error
@@ -164,12 +168,12 @@ func (dao *GORMDeptDAO) CheckExistByName(ctx context.Context, name, excludeId st
 	return err == nil, err // 存在或查询出错
 }
 
-// CheckExistByCode 检查code是否存在
-func (dao *GORMDeptDAO) CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error) {
+// CheckExistByNameAndCodeAndParentId 检查name、code和parentId是否同时存在
+func (dao *GORMDeptDAO) CheckExistByNameAndCodeAndParentId(ctx context.Context, name, code, parentId, excludeId string) (bool, error) {
 	var model system.Dept
 	query := dao.db.WithContext(ctx).Model(&system.Dept{}).
 		Select("id"). // 只查询必要的字段
-		Where("code = ?", code)
+		Where("name = ? AND code = ? AND parent_id = ?", name, code, parentId)
 
 	if excludeId != "" {
 		query = query.Where("id != ?", excludeId)

@@ -8,7 +8,7 @@ POST http://localhost:8080/dev-api/v1/auth/login
 {
     "username": "careful",
     "password": "123456",
-    "id": "dk1sjQtn3Ff0hRn81OnD",
-    "code": "180449",
+    "id": "Ha9vZubsjoZDEdjHJ8Th",
+    "code": "004204",
     "bizType": "BizCaptchaLogin"
 }
