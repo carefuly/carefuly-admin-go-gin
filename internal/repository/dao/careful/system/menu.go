@@ -83,6 +83,7 @@ func (dao *GORMMenuDAO) Update(ctx context.Context, model system.Menu) error {
 			"isAffix":     model.IsAffix,
 			"parent_id":   model.ParentID,
 			"sort":        model.Sort,
+			"status":      model.Status,
 			"version":     gorm.Expr("version + 1"),
 			"modifier":    model.Modifier,
 			"remark":      model.Remark,

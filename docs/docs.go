@@ -1696,6 +1696,386 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/role/create": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "创建角色",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreateRoleRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.CreateRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/role/delete/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "批量删除角色",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/role/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "删除角色",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/role/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id角色信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "获取角色",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/role/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有角色列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "获取所有角色",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/role/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取角色分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "获取角色分页列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.RoleListPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/role/update": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新角色信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "更新角色",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateRoleRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.UpdateRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/user/listPage": {
             "get": {
                 "security": [
@@ -2828,6 +3208,123 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "角色编码",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "data_range": {
+                    "description": "数据权限范围",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/role.DataRangeConst"
+                        }
+                    ]
+                },
+                "dept": {
+                    "description": "数据权限-关联部门",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept"
+                    }
+                },
+                "dept_ids": {
+                    "description": "忽略GORM处理，只用于接收参数",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "menu": {
+                    "description": "数据权限-关联菜单",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu"
+                    }
+                },
+                "menuButton": {
+                    "description": "数据权限-关联菜单的接口按钮",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuButton"
+                    }
+                },
+                "menuColumn": {
+                    "description": "数据权限-列表权限",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuColumn"
+                    }
+                },
+                "menu_button_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "menu_column_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "menu_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "角色名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User": {
             "type": "object",
             "properties": {
@@ -3136,6 +3633,136 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuButton": {
+            "type": "object",
+            "properties": {
+                "api": {
+                    "description": "接口地址",
+                    "type": "string"
+                },
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "权限值",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "menu": {
+                    "description": "菜单",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu"
+                        }
+                    ]
+                },
+                "menu_id": {
+                    "description": "关联菜单",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "请求方式",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.MethodConst"
+                        }
+                    ]
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuColumn": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "field": {
+                    "description": "字段名",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "menu": {
+                    "description": "菜单",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu"
+                        }
+                    ]
+                },
+                "menu_id": {
+                    "description": "关联菜单",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "title": {
+                    "description": "标题",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                },
+                "width": {
+                    "description": "宽度",
+                    "type": "integer"
+                }
+            }
+        },
         "menu.MethodConst": {
             "type": "integer",
             "enum": [
@@ -3191,6 +3818,30 @@ const docTemplate = `{
                 }
             }
         },
+        "role.DataRangeConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "x-enum-comments": {
+                "DataRangeConstAll": "全部数据权限",
+                "DataRangeConstCustom": "自定数据权限",
+                "DataRangeConstDept": "本部门数据权限",
+                "DataRangeConstDeptBelow": "本部门及以下数据权限",
+                "DataRangeConstOnly": "仅本人数据权限"
+            },
+            "x-enum-varnames": [
+                "DataRangeConstOnly",
+                "DataRangeConstDept",
+                "DataRangeConstDeptBelow",
+                "DataRangeConstAll",
+                "DataRangeConstCustom"
+            ]
+        },
         "system.CreateDeptRequest": {
             "type": "object",
             "required": [
@@ -3233,6 +3884,11 @@ const docTemplate = `{
                     "description": "排序",
                     "type": "integer",
                     "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
@@ -3284,6 +3940,11 @@ const docTemplate = `{
                     "description": "排序",
                     "type": "integer",
                     "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
@@ -3315,6 +3976,11 @@ const docTemplate = `{
                     "description": "排序",
                     "type": "integer",
                     "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 },
                 "title": {
                     "description": "标题",
@@ -3402,6 +4068,11 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 1
                 },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
                 "title": {
                     "description": "菜单标题",
                     "type": "string",
@@ -3415,6 +4086,40 @@ const docTemplate = `{
                             "$ref": "#/definitions/menu.TypeConst"
                         }
                     ]
+                }
+            }
+        },
+        "system.CreateRoleRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "角色编码",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "name": {
+                    "description": "角色名称",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
@@ -3542,6 +4247,30 @@ const docTemplate = `{
                 }
             }
         },
+        "system.RoleListPageResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role"
+                    }
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页数量",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
         "system.UpdateDeptRequest": {
             "type": "object",
             "required": [
@@ -3589,6 +4318,11 @@ const docTemplate = `{
                     "description": "排序",
                     "type": "integer",
                     "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 },
                 "version": {
                     "description": "版本",
@@ -3644,6 +4378,11 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 1
                 },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
                 "version": {
                     "description": "版本",
                     "type": "integer"
@@ -3677,6 +4416,11 @@ const docTemplate = `{
                     "description": "排序",
                     "type": "integer",
                     "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 },
                 "title": {
                     "description": "标题",
@@ -3773,6 +4517,11 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 1
                 },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
                 "title": {
                     "description": "菜单标题",
                     "type": "string",
@@ -3786,6 +4535,85 @@ const docTemplate = `{
                             "$ref": "#/definitions/menu.TypeConst"
                         }
                     ]
+                },
+                "version": {
+                    "description": "版本",
+                    "type": "integer"
+                }
+            }
+        },
+        "system.UpdateRoleRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "button_ids": {
+                    "description": "按钮ID数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "code": {
+                    "description": "角色编码",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "column_ids": {
+                    "description": "列权限ID数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "data_range": {
+                    "description": "数据权限范围",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/role.DataRangeConst"
+                        }
+                    ]
+                },
+                "dept_ids": {
+                    "description": "部门ID数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "menu_ids": {
+                    "description": "菜单ID数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "description": "角色名称",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 },
                 "version": {
                     "description": "版本",

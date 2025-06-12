@@ -393,6 +393,89 @@ definitions:
         description: 宽度
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 角色编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      data_range:
+        allOf:
+        - $ref: '#/definitions/role.DataRangeConst'
+        description: 数据权限范围
+      dept:
+        description: 数据权限-关联部门
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept'
+        type: array
+      dept_ids:
+        description: 忽略GORM处理，只用于接收参数
+        items:
+          type: string
+        type: array
+      id:
+        description: 主键ID
+        type: string
+      menu:
+        description: 数据权限-关联菜单
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu'
+        type: array
+      menu_button_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
+      menu_column_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
+      menu_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
+      menuButton:
+        description: 数据权限-关联菜单的接口按钮
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuButton'
+        type: array
+      menuColumn:
+        description: 数据权限-列表权限
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuColumn'
+        type: array
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 角色名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.User:
     properties:
       avatar:
@@ -613,6 +696,96 @@ definitions:
         description: 版本号
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuButton:
+    properties:
+      api:
+        description: 接口地址
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 权限值
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      menu:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu'
+        description: 菜单
+      menu_id:
+        description: 关联菜单
+        type: string
+      method:
+        allOf:
+        - $ref: '#/definitions/menu.MethodConst'
+        description: 请求方式
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuColumn:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      field:
+        description: 字段名
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      menu:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu'
+        description: 菜单
+      menu_id:
+        description: 关联菜单
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      title:
+        description: 标题
+        type: string
+      version:
+        description: 版本号
+        type: integer
+      width:
+        description: 宽度
+        type: integer
+    type: object
   menu.MethodConst:
     enum:
     - 1
@@ -654,6 +827,26 @@ definitions:
         description: 是否成功
         type: boolean
     type: object
+  role.DataRangeConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    type: integer
+    x-enum-comments:
+      DataRangeConstAll: 全部数据权限
+      DataRangeConstCustom: 自定数据权限
+      DataRangeConstDept: 本部门数据权限
+      DataRangeConstDeptBelow: 本部门及以下数据权限
+      DataRangeConstOnly: 仅本人数据权限
+    x-enum-varnames:
+    - DataRangeConstOnly
+    - DataRangeConstDept
+    - DataRangeConstDeptBelow
+    - DataRangeConstAll
+    - DataRangeConstCustom
   system.CreateDeptRequest:
     properties:
       code:
@@ -684,6 +877,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
     required:
     - code
     - name
@@ -719,6 +916,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
     required:
     - api
     - code
@@ -744,6 +945,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       title:
         description: 标题
         maxLength: 64
@@ -813,6 +1018,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       title:
         description: 菜单标题
         maxLength: 64
@@ -826,6 +1035,32 @@ definitions:
     - name
     - path
     - title
+    type: object
+  system.CreateRoleRequest:
+    properties:
+      code:
+        description: 角色编码
+        maxLength: 100
+        type: string
+      name:
+        description: 角色名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+    required:
+    - code
+    - name
     type: object
   system.DeptTree:
     properties:
@@ -917,6 +1152,23 @@ definitions:
         description: 总数
         type: integer
     type: object
+  system.RoleListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
   system.UpdateDeptRequest:
     properties:
       code:
@@ -950,6 +1202,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       version:
         description: 版本
         type: integer
@@ -988,6 +1244,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       version:
         description: 版本
         type: integer
@@ -1015,6 +1275,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       title:
         description: 标题
         maxLength: 64
@@ -1090,6 +1354,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       title:
         description: 菜单标题
         maxLength: 64
@@ -1107,6 +1375,63 @@ definitions:
     - name
     - path
     - title
+    type: object
+  system.UpdateRoleRequest:
+    properties:
+      button_ids:
+        description: 按钮ID数组
+        items:
+          type: string
+        type: array
+      code:
+        description: 角色编码
+        maxLength: 100
+        type: string
+      column_ids:
+        description: 列权限ID数组
+        items:
+          type: string
+        type: array
+      data_range:
+        allOf:
+        - $ref: '#/definitions/role.DataRangeConst'
+        description: 数据权限范围
+      dept_ids:
+        description: 部门ID数组
+        items:
+          type: string
+        type: array
+      id:
+        description: 主键ID
+        type: string
+      menu_ids:
+        description: 菜单ID数组
+        items:
+          type: string
+        type: array
+      name:
+        description: 角色名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      version:
+        description: 版本
+        type: integer
+    required:
+    - code
+    - id
+    - name
     type: object
   system.UserListPageResponse:
     properties:
@@ -2283,6 +2608,248 @@ paths:
       summary: 更新菜单数据列
       tags:
       - 系统管理/菜单数据列管理
+  /v1/system/role/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建角色
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateRoleRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建角色
+      tags:
+      - 系统管理/角色管理
+  /v1/system/role/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id角色
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除角色
+      tags:
+      - 系统管理/角色管理
+  /v1/system/role/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除角色
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除角色
+      tags:
+      - 系统管理/角色管理
+  /v1/system/role/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id角色信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取角色
+      tags:
+      - 系统管理/角色管理
+  /v1/system/role/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有角色列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 角色名称
+        in: query
+        name: name
+        type: string
+      - description: 角色编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有角色
+      tags:
+      - 系统管理/角色管理
+  /v1/system/role/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取角色分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 角色名称
+        in: query
+        name: name
+        type: string
+      - description: 角色编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.RoleListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取角色分页列表
+      tags:
+      - 系统管理/角色管理
+  /v1/system/role/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新角色信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateRoleRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新角色
+      tags:
+      - 系统管理/角色管理
   /v1/system/user/listPage:
     get:
       consumes:

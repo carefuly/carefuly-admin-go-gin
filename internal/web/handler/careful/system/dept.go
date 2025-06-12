@@ -26,28 +26,30 @@ import (
 
 // CreateDeptRequest 创建
 type CreateDeptRequest struct {
-	Name     string `json:"name" binding:"required,max=100"`      // 部门名称
-	Code     string `json:"code" binding:"required,max=100"`      // 部门编码
-	Owner    string `json:"owner" binding:"omitempty"`            // 负责人
-	Phone    string `json:"phone" binding:"omitempty"`            // 联系电话
-	Email    string `json:"email" binding:"omitempty,email"`      // 邮箱
-	ParentID string `json:"parent_id" binding:"omitempty"`        // 上级部门
-	Sort     int    `json:"sort" binding:"omitempty" default:"1"` // 排序
-	Remark   string `json:"remark" binding:"omitempty,max=255"`   // 备注
+	Name     string `json:"name" binding:"required,max=100"`           // 部门名称
+	Code     string `json:"code" binding:"required,max=100"`           // 部门编码
+	Owner    string `json:"owner" binding:"omitempty"`                 // 负责人
+	Phone    string `json:"phone" binding:"omitempty"`                 // 联系电话
+	Email    string `json:"email" binding:"omitempty,email"`           // 邮箱
+	ParentID string `json:"parent_id" binding:"omitempty"`             // 上级部门
+	Sort     int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status   bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Remark   string `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
 // UpdateDeptRequest 更新
 type UpdateDeptRequest struct {
-	Id       string `json:"id" binding:"required"`                // 主键ID
-	Name     string `json:"name" binding:"required,max=100"`      // 部门名称
-	Code     string `json:"code" binding:"required,max=100"`      // 部门编码
-	Owner    string `json:"owner" binding:"omitempty"`            // 负责人
-	Phone    string `json:"phone" binding:"omitempty"`            // 联系电话
-	Email    string `json:"email" binding:"omitempty,email"`      // 邮箱
-	ParentID string `json:"parent_id" binding:"omitempty"`        // 上级部门
-	Sort     int    `json:"sort" binding:"omitempty" default:"1"` // 排序
-	Version  int    `json:"version" binding:"omitempty"`          // 版本
-	Remark   string `json:"remark" binding:"omitempty,max=255"`   // 备注
+	Id       string `json:"id" binding:"required"`                     // 主键ID
+	Name     string `json:"name" binding:"required,max=100"`           // 部门名称
+	Code     string `json:"code" binding:"required,max=100"`           // 部门编码
+	Owner    string `json:"owner" binding:"omitempty"`                 // 负责人
+	Phone    string `json:"phone" binding:"omitempty"`                 // 联系电话
+	Email    string `json:"email" binding:"omitempty,email"`           // 邮箱
+	ParentID string `json:"parent_id" binding:"omitempty"`             // 上级部门
+	Sort     int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status   bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Version  int    `json:"version" binding:"omitempty"`               // 版本
+	Remark   string `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
 // DeptListPageResponse 列表分页响应
@@ -137,6 +139,7 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
+			Status:   req.Status,
 			Name:     req.Name,
 			Code:     req.Code,
 			Owner:    req.Owner,
@@ -272,6 +275,7 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
+			Status:   req.Status,
 			Name:     req.Name,
 			Code:     req.Code,
 			Owner:    req.Owner,

@@ -26,23 +26,25 @@ import (
 
 // CreateMenuColumnRequest 创建
 type CreateMenuColumnRequest struct {
-	Title  string `json:"title" binding:"required,max=64"`        // 标题
-	Field  string `json:"field" binding:"required,max=64"`        // 字段名
-	Width  int    `json:"width" binding:"required" default:"150"` // 宽度
-	MenuId string `json:"menu_id" binding:"required,max=100"`     // 菜单ID
-	Sort   int    `json:"sort" binding:"omitempty" default:"1"`   // 排序
-	Remark string `json:"remark" binding:"omitempty,max=255"`     // 备注
+	Title  string `json:"title" binding:"required,max=64"`           // 标题
+	Field  string `json:"field" binding:"required,max=64"`           // 字段名
+	Width  int    `json:"width" binding:"required" default:"150"`    // 宽度
+	MenuId string `json:"menu_id" binding:"required,max=100"`        // 菜单ID
+	Sort   int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Remark string `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
 // UpdateMenuColumnRequest 更新
 type UpdateMenuColumnRequest struct {
-	Id      string `json:"id" binding:"required"`                  // 主键ID
-	Title   string `json:"title" binding:"required,max=64"`        // 标题
-	Field   string `json:"field" binding:"required,max=64"`        // 字段名
-	Width   int    `json:"width" binding:"required" default:"150"` // 宽度
-	Sort    int    `json:"sort" binding:"omitempty" default:"1"`   // 排序
-	Version int    `json:"version" binding:"omitempty"`            // 版本
-	Remark  string `json:"remark" binding:"omitempty,max=255"`     // 备注
+	Id      string `json:"id" binding:"required"`                     // 主键ID
+	Title   string `json:"title" binding:"required,max=64"`           // 标题
+	Field   string `json:"field" binding:"required,max=64"`           // 字段名
+	Width   int    `json:"width" binding:"required" default:"150"`    // 宽度
+	Sort    int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status  bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Version int    `json:"version" binding:"omitempty"`               // 版本
+	Remark  string `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
 // MenuColumnListPageResponse 列表分页响应
@@ -134,6 +136,7 @@ func (h *menuColumnHandler) Create(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
+			Status: req.Status,
 			Title:  req.Title,
 			Field:  req.Field,
 			MenuId: req.MenuId,
@@ -255,9 +258,10 @@ func (h *menuColumnHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
-			Title: req.Title,
-			Field: req.Field,
-			Width: req.Width,
+			Status: req.Status,
+			Title:  req.Title,
+			Field:  req.Field,
+			Width:  req.Width,
 		},
 	}
 

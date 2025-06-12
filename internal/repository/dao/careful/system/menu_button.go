@@ -69,6 +69,7 @@ func (dao *GORMMenuButtonDAO) Update(ctx context.Context, model system.MenuButto
 			"api":      model.Api,
 			"method":   model.Method,
 			"sort":     model.Sort,
+			"status":   model.Status,
 			"version":  gorm.Expr("version + 1"),
 			"modifier": model.Modifier,
 			"remark":   model.Remark,

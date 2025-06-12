@@ -1,8 +1,8 @@
 /**
  * Description：
- * FileName：menu_button.go
+ * FileName：role.go
  * Author：CJiaの用心
- * Create：2025/6/9 14:43:24
+ * Create：2025/6/12 14:23:45
  * Remark：
  */
 
@@ -14,11 +14,10 @@ import (
 	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 	modelSystem "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/system"
 	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/system/menu"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/system/role"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
-	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/enumconv"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -26,40 +25,40 @@ import (
 	"strconv"
 )
 
-// CreateMenuButtonRequest 创建
-type CreateMenuButtonRequest struct {
-	Name   string           `json:"name" binding:"required,max=64"`            // 名称
-	Code   string           `json:"code" binding:"required,max=64"`            // 权限值
-	Api    string           `json:"api" binding:"required,max=255"`            // 接口地址
-	Method menu.MethodConst `json:"method" binding:"required" default:"1"`     // 请求方式
-	MenuId string           `json:"menu_id" binding:"required,max=100"`        // 菜单ID
-	Sort   int              `json:"sort" binding:"omitempty" default:"1"`      // 排序
-	Status bool             `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
-	Remark string           `json:"remark" binding:"omitempty,max=255"`        // 备注
+// CreateRoleRequest 创建
+type CreateRoleRequest struct {
+	Name   string `json:"name" binding:"required,max=100"`           // 角色名称
+	Code   string `json:"code" binding:"required,max=100"`           // 角色编码
+	Sort   int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Remark string `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
-// UpdateMenuButtonRequest 更新
-type UpdateMenuButtonRequest struct {
-	Id      string           `json:"id" binding:"required"`                     // 主键ID
-	Name    string           `json:"name" binding:"required,max=64"`            // 名称
-	Code    string           `json:"code" binding:"required,max=64"`            // 权限值
-	Api     string           `json:"api" binding:"required,max=255"`            // 接口地址
-	Method  menu.MethodConst `json:"method" binding:"required" default:"1"`     // 请求方式
-	Sort    int              `json:"sort" binding:"omitempty" default:"1"`      // 排序
-	Status  bool             `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
-	Version int              `json:"version" binding:"omitempty"`               // 版本
-	Remark  string           `json:"remark" binding:"omitempty,max=255"`        // 备注
+// UpdateRoleRequest 更新
+type UpdateRoleRequest struct {
+	Id            string              `json:"id" binding:"required"`                     // 主键ID
+	Name          string              `json:"name" binding:"required,max=100"`           // 角色名称
+	Code          string              `json:"code" binding:"required,max=100"`           // 角色编码
+	DataRange     role.DataRangeConst `json:"data_range" binding:"omitempty"`            // 数据权限范围
+	DeptIDs       []string            `json:"dept_ids" binding:"omitempty"`              // 部门ID数组
+	MenuIDs       []string            `json:"menu_ids" binding:"omitempty"`              // 菜单ID数组
+	MenuButtonIDs []string            `json:"button_ids" binding:"omitempty"`            // 按钮ID数组
+	MenuColumnIDs []string            `json:"column_ids" binding:"omitempty"`            // 列权限ID数组
+	Sort          int                 `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status        bool                `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Version       int                 `json:"version" binding:"omitempty"`               // 版本
+	Remark        string              `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
-// MenuButtonListPageResponse 列表分页响应
-type MenuButtonListPageResponse struct {
-	List     []domainSystem.MenuButton `json:"list"`     // 列表
-	Total    int64                     `json:"total"`    // 总数
-	Page     int                       `json:"page"`     // 页码
-	PageSize int                       `json:"pageSize"` // 每页数量
+// RoleListPageResponse 列表分页响应
+type RoleListPageResponse struct {
+	List     []domainSystem.Role `json:"list"`     // 列表
+	Total    int64               `json:"total"`    // 总数
+	Page     int                 `json:"page"`     // 页码
+	PageSize int                 `json:"pageSize"` // 每页数量
 }
 
-type MenuButtonHandler interface {
+type RoleHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	Delete(ctx *gin.Context)
@@ -70,14 +69,14 @@ type MenuButtonHandler interface {
 	GetListAll(ctx *gin.Context)
 }
 
-type menuButtonHandler struct {
+type roleHandler struct {
 	rely    config.RelyConfig
-	svc     serviceSystem.MenuButtonService
+	svc     serviceSystem.RoleService
 	userSvc serviceSystem.UserService
 }
 
-func NewMenuButtonHandler(rely config.RelyConfig, svc serviceSystem.MenuButtonService, userSvc serviceSystem.UserService) MenuButtonHandler {
-	return &menuButtonHandler{
+func NewRoleHandler(rely config.RelyConfig, svc serviceSystem.RoleService, userSvc serviceSystem.UserService) RoleHandler {
+	return &roleHandler{
 		rely:    rely,
 		svc:     svc,
 		userSvc: userSvc,
@@ -85,8 +84,8 @@ func NewMenuButtonHandler(rely config.RelyConfig, svc serviceSystem.MenuButtonSe
 }
 
 // RegisterRoutes 注册路由
-func (h *menuButtonHandler) RegisterRoutes(router *gin.RouterGroup) {
-	base := router.Group("/menuButton")
+func (h *roleHandler) RegisterRoutes(router *gin.RouterGroup) {
+	base := router.Group("/role")
 	base.POST("/create", h.Create)
 	base.DELETE("/delete/:id", h.Delete)
 	base.POST("/delete/batchDelete", h.BatchDelete)
@@ -97,17 +96,17 @@ func (h *menuButtonHandler) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // Create
-// @Summary 创建菜单权限
-// @Description 创建菜单权限
-// @Tags 系统管理/菜单权限管理
+// @Summary 创建角色
+// @Description 创建角色
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
-// @Param CreateMenuButtonRequest body CreateMenuButtonRequest true "请求"
+// @Param CreateRoleRequest body CreateRoleRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/create [post]
+// @Router /v1/system/role/create [post]
 // @Security LoginToken
-func (h *menuButtonHandler) Create(ctx *gin.Context) {
+func (h *roleHandler) Create(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
@@ -124,24 +123,15 @@ func (h *menuButtonHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req CreateMenuButtonRequest
+	var req CreateRoleRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
 		return
 	}
 
-	// 校验参数
-	methodValidValues := []string{"GET", "POST", "PUT", "DELETE"}
-	converter := enumconv.NewEnumConverter(menu.MethodMapping, menu.MethodImportMapping, methodValidValues, "请求方式")
-	_, err = converter.FromEnum(req.Method)
-	if err != nil {
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-
 	// 转换为领域模型
-	domain := domainSystem.MenuButton{
-		MenuButton: modelSystem.MenuButton{
+	domain := domainSystem.Role{
+		Role: modelSystem.Role{
 			CoreModels: models.CoreModels{
 				Sort:       req.Sort,
 				Creator:    uid,
@@ -152,33 +142,36 @@ func (h *menuButtonHandler) Create(ctx *gin.Context) {
 			Status: req.Status,
 			Name:   req.Name,
 			Code:   req.Code,
-			Api:    req.Api,
-			Method: req.Method,
-			MenuId: req.MenuId,
 		},
 	}
 
 	if err := h.svc.Create(ctx, domain); err != nil {
-		zap.L().Error("创建菜单权限失败", zap.Error(err))
-		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-		return
+		switch {
+		case errors.Is(err, serviceSystem.ErrRoleCodeDuplicate):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "角色编码已存在", nil)
+			return
+		default:
+			zap.L().Error("创建角色失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
+		}
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "新增成功", nil)
 }
 
 // Delete
-// @Summary 删除菜单权限
-// @Description 删除指定id菜单权限
-// @Tags 系统管理/菜单权限管理
+// @Summary 删除角色
+// @Description 删除指定id角色
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
 // @Param id path string true "id"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/delete/{id} [delete]
+// @Router /v1/system/role/delete/{id} [delete]
 // @Security LoginToken
-func (h *menuButtonHandler) Delete(ctx *gin.Context) {
+func (h *roleHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
@@ -186,31 +179,33 @@ func (h *menuButtonHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		if errors.Is(err, serviceSystem.ErrMenuButtonNotFound) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "菜单权限不存在", nil)
+		switch {
+		case errors.Is(err, serviceSystem.ErrRoleNotFound):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "角色不存在", nil)
+			return
+		default:
+			ctx.Set("internal", err.Error())
+			zap.L().Error("删除角色失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
-		ctx.Set("internal", err.Error())
-		zap.L().Error("删除菜单权限失败", zap.Error(err))
-		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-		return
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
 }
 
 // BatchDelete
-// @Summary 批量删除菜单权限
-// @Description 批量删除菜单权限
-// @Tags 系统管理/菜单权限管理
+// @Summary 批量删除角色
+// @Description 批量删除角色
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
 // @Param ids body []string true "id数组"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/delete/batchDelete [post]
+// @Router /v1/system/role/delete/batchDelete [post]
 // @Security LoginToken
-func (h *menuButtonHandler) BatchDelete(ctx *gin.Context) {
+func (h *roleHandler) BatchDelete(ctx *gin.Context) {
 	var ids []string
 	if err := ctx.ShouldBindJSON(&ids); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
@@ -220,7 +215,7 @@ func (h *menuButtonHandler) BatchDelete(ctx *gin.Context) {
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.L().Error("批量删除菜单权限异常", zap.Error(err))
+		zap.L().Error("批量删除角色异常", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -229,17 +224,17 @@ func (h *menuButtonHandler) BatchDelete(ctx *gin.Context) {
 }
 
 // Update
-// @Summary 更新菜单权限
-// @Description 更新菜单权限信息
-// @Tags 系统管理/菜单权限管理
+// @Summary 更新角色
+// @Description 更新角色信息
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
-// @Param UpdateMenuButtonRequest body UpdateMenuButtonRequest true "请求"
+// @Param UpdateRoleRequest body UpdateRoleRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/update [put]
+// @Router /v1/system/role/update [put]
 // @Security LoginToken
-func (h *menuButtonHandler) Update(ctx *gin.Context) {
+func (h *roleHandler) Update(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
@@ -256,15 +251,15 @@ func (h *menuButtonHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var req UpdateMenuButtonRequest
+	var req UpdateRoleRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
 		return
 	}
 
 	// 转换为领域模型
-	domain := domainSystem.MenuButton{
-		MenuButton: modelSystem.MenuButton{
+	domain := domainSystem.Role{
+		Role: modelSystem.Role{
 			CoreModels: models.CoreModels{
 				Id:         req.Id,
 				Sort:       req.Sort,
@@ -273,21 +268,27 @@ func (h *menuButtonHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
-			Status: req.Status,
-			Name:   req.Name,
-			Code:   req.Code,
-			Api:    req.Api,
-			Method: req.Method,
+			Status:        req.Status,
+			Name:          req.Name,
+			Code:          req.Code,
+			DataRange:     req.DataRange,
+			DeptIDs:       req.DeptIDs,
+			MenuIDs:       req.MenuIDs,
+			MenuButtonIDs: req.MenuButtonIDs,
+			MenuColumnIDs: req.MenuColumnIDs,
 		},
 	}
 
 	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrMenuButtonVersionInconsistency):
+		case errors.Is(err, serviceSystem.ErrRoleCodeDuplicate):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "角色编码已存在", nil)
+			return
+		case errors.Is(err, serviceSystem.ErrRoleVersionInconsistency):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			zap.L().Error("更新菜单权限失败", zap.Error(err))
+			zap.L().Error("更新角色失败", zap.Error(err))
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -297,30 +298,30 @@ func (h *menuButtonHandler) Update(ctx *gin.Context) {
 }
 
 // GetById
-// @Summary 获取菜单权限
-// @Description 获取指定id菜单权限信息
-// @Tags 系统管理/菜单权限管理
+// @Summary 获取角色
+// @Description 获取指定id角色信息
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
 // @Param id path string true "id"
-// @Success 200 {object} domainSystem.MenuButton
+// @Success 200 {object} domainSystem.Role
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/getById/{id} [get]
+// @Router /v1/system/role/getById/{id} [get]
 // @Security LoginToken
-func (h *menuButtonHandler) GetById(ctx *gin.Context) {
+func (h *roleHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
-	if id == "" {
+	if id == "" || len(id) == 0 {
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
 		return
 	}
 
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
-		if errors.Is(err, serviceSystem.ErrMenuButtonNotFound) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "菜单权限不存在", nil)
+		if errors.Is(err, serviceSystem.ErrRoleNotFound) {
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "角色不存在", nil)
 			return
 		}
-		zap.L().Error("获取菜单权限失败", zap.Error(err))
+		zap.L().Error("获取角色失败", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -329,9 +330,9 @@ func (h *menuButtonHandler) GetById(ctx *gin.Context) {
 }
 
 // GetListPage
-// @Summary 获取菜单权限分页列表
-// @Description 获取菜单权限分页列表
-// @Tags 系统管理/菜单权限管理
+// @Summary 获取角色分页列表
+// @Description 获取角色分页列表
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
 // @Param page query int true "页码" default(1)
@@ -339,14 +340,13 @@ func (h *menuButtonHandler) GetById(ctx *gin.Context) {
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "名称"
-// @Param code query string false "权限值"
-// @Param menu_id query string false "菜单ID"
-// @Success 200 {object} MenuButtonListPageResponse
+// @Param name query string false "角色名称"
+// @Param code query string false "角色编码"
+// @Success 200 {object} RoleListPageResponse
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/listPage [get]
+// @Router /v1/system/role/listPage [get]
 // @Security LoginToken
-func (h *menuButtonHandler) GetListPage(ctx *gin.Context) {
+func (h *roleHandler) GetListPage(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
@@ -371,9 +371,8 @@ func (h *menuButtonHandler) GetListPage(ctx *gin.Context) {
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	menuId := ctx.DefaultQuery("menu_id", "")
 
-	filter := domainSystem.MenuButtonFilter{
+	filter := domainSystem.RoleFilter{
 		Pagination: filters.Pagination{
 			Page:     page,
 			PageSize: pageSize,
@@ -386,7 +385,6 @@ func (h *menuButtonHandler) GetListPage(ctx *gin.Context) {
 		Status: status,
 		Name:   name,
 		Code:   code,
-		MenuId: menuId,
 	}
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
@@ -396,7 +394,7 @@ func (h *menuButtonHandler) GetListPage(ctx *gin.Context) {
 		return
 	}
 
-	response.NewResponse().SuccessResponse(ctx, "查询成功", MenuButtonListPageResponse{
+	response.NewResponse().SuccessResponse(ctx, "查询成功", RoleListPageResponse{
 		List:     list,
 		Total:    total,
 		Page:     page,
@@ -405,22 +403,21 @@ func (h *menuButtonHandler) GetListPage(ctx *gin.Context) {
 }
 
 // GetListAll
-// @Summary 获取所有菜单权限
-// @Description 获取所有菜单权限列表
-// @Tags 系统管理/菜单权限管理
+// @Summary 获取所有角色
+// @Description 获取所有角色列表
+// @Tags 系统管理/角色管理
 // @Accept application/json
 // @Produce application/json
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "名称"
-// @Param code query string false "权限值"
-// @Param menu_id query string false "菜单ID"
-// @Success 200 {array} []domainSystem.MenuButton
+// @Param name query string false "角色名称"
+// @Param code query string false "角色编码"
+// @Success 200 {array} []domainSystem.Role
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menuButton/listAll [get]
+// @Router /v1/system/role/listAll [get]
 // @Security LoginToken
-func (h *menuButtonHandler) GetListAll(ctx *gin.Context) {
+func (h *roleHandler) GetListAll(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
@@ -443,9 +440,8 @@ func (h *menuButtonHandler) GetListAll(ctx *gin.Context) {
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	menuId := ctx.DefaultQuery("menu_id", "")
 
-	filter := domainSystem.MenuButtonFilter{
+	filter := domainSystem.RoleFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
@@ -454,7 +450,6 @@ func (h *menuButtonHandler) GetListAll(ctx *gin.Context) {
 		Status: status,
 		Name:   name,
 		Code:   code,
-		MenuId: menuId,
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)

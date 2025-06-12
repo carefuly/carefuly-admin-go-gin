@@ -31,6 +31,7 @@ func NewSystemRouter(rely config.RelyConfig) *SystemRouter {
 func (r *SystemRouter) RegisterRouter(router *gin.RouterGroup) {
 	baseRouter := router.Group("/system")
 
+	// 用户
 	userCache := cacheSystem.NewRedisUserCache(r.rely.Redis)
 	userDAO := daoSystem.NewGORMUserDAO(r.rely.Db.Careful)
 	userRepository := repositorySystem.NewUserRepository(userDAO, userCache)
@@ -69,4 +70,14 @@ func (r *SystemRouter) RegisterRouter(router *gin.RouterGroup) {
 	deptService := serviceSystem.NewDeptService(deptRepository)
 	deptHandler := handlerSystem.NewDeptHandler(r.rely, deptService, userService)
 	deptHandler.RegisterRoutes(baseRouter)
+
+	// 角色
+	roleCache := cacheSystem.NewRedisRoleCache(r.rely.Redis)
+	roleDAO := daoSystem.NewGORMRoleDAO(r.rely.Db.Careful, deptDAO, menuDAO, menuButtonDAO, menuColumnDAO)
+	roleRepository := repositorySystem.NewRoleRepository(roleDAO, roleCache)
+	roleService := serviceSystem.NewRoleService(roleRepository)
+	roleHandler := handlerSystem.NewRoleHandler(r.rely, roleService, userService)
+	roleHandler.RegisterRoutes(baseRouter)
+
+	// 岗位
 }

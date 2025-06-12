@@ -182,6 +182,7 @@ func (repo *menuRepository) toEntity(domain domainSystem.Menu) modelSystem.Menu 
 			BelongDept: domain.BelongDept,
 			Remark:     domain.Remark,
 		},
+		Status:      domain.Status,
 		Type:        domain.Type,
 		Icon:        domain.Icon,
 		Title:       domain.Title,

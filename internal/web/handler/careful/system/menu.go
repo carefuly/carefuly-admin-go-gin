@@ -42,6 +42,7 @@ type CreateMenuRequest struct {
 	IsAffix     bool           `json:"isAffix" binding:"omitempty" default:"false"`          // 是否缓存固定路由
 	ParentID    string         `json:"parent_id" binding:"omitempty,max=100"`                // 上级菜单
 	Sort        int            `json:"sort" binding:"omitempty" default:"1"`                 // 排序
+	Status      bool           `json:"status" binding:"omitempty" default:"true"`            // 状态【true-启用 false-停用】
 	Remark      string         `json:"remark" binding:"omitempty,max=255"`                   // 备注
 }
 
@@ -62,6 +63,7 @@ type UpdateMenuRequest struct {
 	IsAffix     bool           `json:"isAffix" binding:"omitempty" default:"false"`          // 是否缓存固定路由
 	ParentID    string         `json:"parent_id" binding:"omitempty,max=100"`                // 上级菜单
 	Sort        int            `json:"sort" binding:"omitempty" default:"1"`                 // 排序
+	Status      bool           `json:"status" binding:"omitempty" default:"true"`            // 状态【true-启用 false-停用】
 	Version     int            `json:"version" binding:"omitempty"`                          // 版本
 	Remark      string         `json:"remark" binding:"omitempty,max=255"`                   // 备注
 }
@@ -162,6 +164,7 @@ func (h *menuHandler) Create(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
+			Status:      req.Status,
 			Type:        req.Type,
 			Icon:        req.Icon,
 			Title:       req.Title,
@@ -299,6 +302,7 @@ func (h *menuHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
+			Status:      req.Status,
 			Type:        req.Type,
 			Icon:        req.Icon,
 			Title:       req.Title,

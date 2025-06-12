@@ -68,6 +68,7 @@ func (dao *GORMMenuColumnDAO) Update(ctx context.Context, model system.MenuColum
 			"field":    model.Field,
 			"width":    model.Width,
 			"sort":     model.Sort,
+			"status":   model.Status,
 			"version":  gorm.Expr("version + 1"),
 			"modifier": model.Modifier,
 			"remark":   model.Remark,

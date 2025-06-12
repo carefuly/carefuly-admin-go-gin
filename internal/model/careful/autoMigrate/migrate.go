@@ -23,6 +23,7 @@ func AutoMigrate(db *gorm.DB) {
 
 func initSystem(db *gorm.DB) {
 	system.NewUser().AutoMigrate(db)
+	system.NewRole().AutoMigrate(db)
 	system.NewMenu().AutoMigrate(db)
 	system.NewMenuButton().AutoMigrate(db)
 	system.NewMenuColumn().AutoMigrate(db)

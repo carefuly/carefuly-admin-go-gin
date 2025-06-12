@@ -75,6 +75,7 @@ func (dao *GORMDeptDAO) Update(ctx context.Context, model system.Dept) error {
 			"email":     model.Email,
 			"parent_id": model.ParentID,
 			"sort":      model.Sort,
+			"status":    model.Status,
 			"version":   gorm.Expr("version + 1"),
 			"modifier":  model.Modifier,
 			"remark":    model.Remark,
@@ -96,17 +97,6 @@ func (dao *GORMDeptDAO) Update(ctx context.Context, model system.Dept) error {
 		return ErrDeptVersionInconsistency
 	}
 
-	return result.Error
-}
-
-// UpdateStatus 更新状态
-func (dao *GORMDeptDAO) UpdateStatus(ctx context.Context, id string, status bool) error {
-	result := dao.db.WithContext(ctx).Model(&system.Dept{}).
-		Where("id = ?", id).
-		Update("status", status)
-	if result.RowsAffected == 0 {
-		return ErrDeptNotFound
-	}
 	return result.Error
 }
 
