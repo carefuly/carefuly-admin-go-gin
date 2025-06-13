@@ -51,7 +51,7 @@ func (r *SystemRouter) RegisterRouter(router *gin.RouterGroup) {
 	menuButtonCache := cacheSystem.NewRedisMenuButtonCache(r.rely.Redis)
 	menuButtonDAO := daoSystem.NewGORMMenuButtonDAO(r.rely.Db.Careful)
 	menuButtonRepository := repositorySystem.NewMenuButtonRepository(menuButtonDAO, menuButtonCache)
-	menuButtonService := serviceSystem.NewMenuButtonService(menuButtonRepository)
+	menuButtonService := serviceSystem.NewMenuButtonService(menuButtonRepository, menuRepository)
 	menuButtonHandler := handlerSystem.NewMenuButtonHandler(r.rely, menuButtonService, userService)
 	menuButtonHandler.RegisterRoutes(baseRouter)
 
@@ -59,7 +59,7 @@ func (r *SystemRouter) RegisterRouter(router *gin.RouterGroup) {
 	menuColumnCache := cacheSystem.NewRedisMenuColumnCache(r.rely.Redis)
 	menuColumnDAO := daoSystem.NewGORMMenuColumnDAO(r.rely.Db.Careful)
 	menuColumnRepository := repositorySystem.NewMenuColumnRepository(menuColumnDAO, menuColumnCache)
-	menuColumnService := serviceSystem.NewMenuColumnService(menuColumnRepository)
+	menuColumnService := serviceSystem.NewMenuColumnService(menuColumnRepository, menuRepository)
 	menuColumnHandler := handlerSystem.NewMenuColumnHandler(r.rely, menuColumnService, userService)
 	menuColumnHandler.RegisterRoutes(baseRouter)
 

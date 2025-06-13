@@ -1164,6 +1164,54 @@
                 }
             }
         },
+        "/v1/system/menuButton/listByMenuIds": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定菜单下的所有按钮",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单权限管理"
+                ],
+                "summary": "获取指定菜单下的所有按钮",
+                "parameters": [
+                    {
+                        "description": "菜单id数组",
+                        "name": "menu_ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.MenuAndButtonTree"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/menuButton/listPage": {
             "get": {
                 "security": [
@@ -1545,6 +1593,54 @@
                                     "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn"
                                 }
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menuColumn/listByMenuIds": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定菜单下的所有列",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单数据列管理"
+                ],
+                "summary": "获取指定菜单下的所有列",
+                "parameters": [
+                    {
+                        "description": "菜单id数组",
+                        "name": "menu_ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.MenuAndColumnTree"
                         }
                     },
                     "400": {
@@ -4190,6 +4286,54 @@
                 "version": {
                     "description": "版本号",
                     "type": "integer"
+                }
+            }
+        },
+        "system.MenuAndButtonTree": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "description": "子菜单按钮列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/system.MenuAndButtonTree"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "parentID": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/menu.TypeConst"
+                }
+            }
+        },
+        "system.MenuAndColumnTree": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "description": "子菜单列列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/system.MenuAndColumnTree"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "parentID": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/menu.TypeConst"
                 }
             }
         },

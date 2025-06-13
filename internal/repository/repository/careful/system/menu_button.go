@@ -32,6 +32,7 @@ type MenuButtonRepository interface {
 
 	GetById(ctx context.Context, id string) (domainSystem.MenuButton, error)
 	GetListPage(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, int64, error)
+	GetListByMenuIds(ctx context.Context) ([]domainSystem.MenuButton, error)
 	GetListAll(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, error)
 }
 
@@ -152,6 +153,25 @@ func (repo *menuButtonRepository) GetListPage(ctx context.Context, filters domai
 	}
 
 	return domain, row, nil
+}
+
+// GetListByMenuIds 获取指定菜单下的所有按钮
+func (repo *menuButtonRepository) GetListByMenuIds(ctx context.Context) ([]domainSystem.MenuButton, error) {
+	list, err := repo.dao.FindListByMenuIds(ctx)
+	if err != nil {
+		return []domainSystem.MenuButton{}, err
+	}
+
+	if len(list) == 0 {
+		return []domainSystem.MenuButton{}, nil
+	}
+
+	var toDomain []domainSystem.MenuButton
+	for _, v := range list {
+		toDomain = append(toDomain, repo.toDomain(v))
+	}
+
+	return toDomain, nil
 }
 
 // GetListAll 查询所有列表

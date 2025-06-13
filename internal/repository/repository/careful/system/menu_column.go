@@ -32,6 +32,7 @@ type MenuColumnRepository interface {
 
 	GetById(ctx context.Context, id string) (domainSystem.MenuColumn, error)
 	GetListPage(ctx context.Context, filters domainSystem.MenuColumnFilter) ([]domainSystem.MenuColumn, int64, error)
+	GetListByMenuIds(ctx context.Context) ([]domainSystem.MenuColumn, error)
 	GetListAll(ctx context.Context, filters domainSystem.MenuColumnFilter) ([]domainSystem.MenuColumn, error)
 }
 
@@ -152,6 +153,25 @@ func (repo *menuColumnRepository) GetListPage(ctx context.Context, filters domai
 	}
 
 	return domain, row, nil
+}
+
+// GetListByMenuIds 获取指定菜单下的所有列
+func (repo *menuColumnRepository) GetListByMenuIds(ctx context.Context) ([]domainSystem.MenuColumn, error) {
+	list, err := repo.dao.FindListByMenuIds(ctx)
+	if err != nil {
+		return []domainSystem.MenuColumn{}, err
+	}
+
+	if len(list) == 0 {
+		return []domainSystem.MenuColumn{}, nil
+	}
+
+	var toDomain []domainSystem.MenuColumn
+	for _, v := range list {
+		toDomain = append(toDomain, repo.toDomain(v))
+	}
+
+	return toDomain, nil
 }
 
 // GetListAll 查询所有列表

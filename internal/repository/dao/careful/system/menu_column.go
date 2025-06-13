@@ -30,6 +30,7 @@ type MenuColumnDAO interface {
 
 	FindById(ctx context.Context, id string) (*system.MenuColumn, error)
 	FindListPage(ctx context.Context, filter domainSystem.MenuColumnFilter) ([]*system.MenuColumn, int64, error)
+	FindListByMenuIds(ctx context.Context) ([]*system.MenuColumn, error)
 	FindListAll(ctx context.Context, filter domainSystem.MenuColumnFilter) ([]*system.MenuColumn, error)
 }
 
@@ -120,6 +121,20 @@ func (dao *GORMMenuColumnDAO) FindListPage(ctx context.Context, filter domainSys
 		Find(&models).Error
 
 	return models, total, err
+}
+
+// FindListByMenuIds 获取指定菜单下的所有列
+func (dao *GORMMenuColumnDAO) FindListByMenuIds(ctx context.Context) ([]*system.MenuColumn, error) {
+	var models []*system.MenuColumn
+
+	query := dao.db.WithContext(ctx)
+
+	// 查询
+	if err := query.Find(&models).Error; err != nil {
+		return nil, err
+	}
+
+	return models, nil
 }
 
 // FindListAll 获取所有列表

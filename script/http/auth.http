@@ -8,7 +8,16 @@ POST http://localhost:8080/dev-api/v1/auth/login
 {
     "username": "careful",
     "password": "123456",
-    "id": "AFFOGT4YCS3Y93qqM6Bz",
-    "code": "954189",
+    "id": "646eSU2DgFX6UTq1gHM9",
+    "code": "379637",
     "bizType": "BizCaptchaLogin"
+}
+
+### 多类型登录
+POST http://localhost:8080/dev-api/v1/auth/type-login
+
+{
+    "username": "careful",
+    "password": "123456",
+    "userType”: 1
 }

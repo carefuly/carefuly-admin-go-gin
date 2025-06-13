@@ -13,7 +13,20 @@ import (
 	"errors"
 	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 	repositorySystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/system"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/system/menu"
 )
+
+type MenuAndButton struct {
+	Id       string
+	Title    string
+	ParentID string
+	Type     menu.TypeConst
+}
+
+type MenuAndButtonTree struct {
+	MenuAndButton                      // 嵌入基础菜单按钮信息
+	Children      []*MenuAndButtonTree `json:"children"` // 子菜单按钮列表
+}
 
 var (
 	ErrMenuButtonNotFound             = repositorySystem.ErrMenuButtonNotFound
@@ -28,16 +41,19 @@ type MenuButtonService interface {
 
 	GetById(ctx context.Context, id string) (domainSystem.MenuButton, error)
 	GetListPage(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, int64, error)
+	GetListByMenuIds(ctx context.Context, menuIds []string) ([]*MenuAndButtonTree, error)
 	GetListAll(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, error)
 }
 
 type menuButtonService struct {
-	repo repositorySystem.MenuButtonRepository
+	repo     repositorySystem.MenuButtonRepository
+	menuRepo repositorySystem.MenuRepository
 }
 
-func NewMenuButtonService(repo repositorySystem.MenuButtonRepository) MenuButtonService {
+func NewMenuButtonService(repo repositorySystem.MenuButtonRepository, menuRepo repositorySystem.MenuRepository) MenuButtonService {
 	return &menuButtonService{
-		repo: repo,
+		repo:     repo,
+		menuRepo: menuRepo,
 	}
 }
 
@@ -93,6 +109,70 @@ func (svc *menuButtonService) GetById(ctx context.Context, id string) (domainSys
 // GetListPage 分页查询列表
 func (svc *menuButtonService) GetListPage(ctx context.Context, filters domainSystem.MenuButtonFilter) ([]domainSystem.MenuButton, int64, error) {
 	return svc.repo.GetListPage(ctx, filters)
+}
+
+// GetListByMenuIds 获取指定菜单下的所有按钮
+func (svc *menuButtonService) GetListByMenuIds(ctx context.Context, menuIds []string) ([]*MenuAndButtonTree, error) {
+	menuIdMap := make(map[string]bool)
+	for _, id := range menuIds {
+		menuIdMap[id] = true
+	}
+
+	// 获取全部菜单
+	var menuAndButton []MenuAndButton
+
+	menuList, _ := svc.menuRepo.GetListAll(ctx, domainSystem.MenuFilter{Status: true})
+	for _, m := range menuList {
+		if menuIdMap[m.Id] {
+			menuAndButton = append(menuAndButton, MenuAndButton{
+				Id:       m.Id,
+				Title:    m.Title,
+				ParentID: m.ParentID,
+				Type:     m.Type,
+			})
+		}
+	}
+	// 获取指定菜单按钮
+	menuButtonList, _ := svc.repo.GetListByMenuIds(ctx)
+	for _, menuButton := range menuButtonList {
+		if menuIdMap[menuButton.MenuId] {
+			menuAndButton = append(menuAndButton, MenuAndButton{
+				Id:       menuButton.Id,
+				Title:    menuButton.Name,
+				ParentID: menuButton.MenuId,
+				Type:     3,
+			})
+		}
+	}
+
+	// 构建菜单按钮树
+	menuButtonMap := make(map[string]*MenuAndButtonTree)
+	var roots []*MenuAndButtonTree
+
+	if len(menuAndButton) == 0 {
+		return []*MenuAndButtonTree{}, nil
+	}
+
+	// 第一遍遍历，创建所有节点
+	for _, menuButton := range menuAndButton {
+		menuButtonMap[menuButton.Id] = &MenuAndButtonTree{
+			MenuAndButton: menuButton,
+			Children:      []*MenuAndButtonTree{},
+		}
+	}
+
+	// 第二遍遍历，构建树结构
+	for _, menuButton := range menuAndButton {
+		node := menuButtonMap[menuButton.Id]
+		if menuButton.ParentID == "" || menuButtonMap[menuButton.ParentID] == nil {
+			roots = append(roots, node)
+		} else {
+			parent := menuButtonMap[menuButton.ParentID]
+			parent.Children = append(parent.Children, node)
+		}
+	}
+
+	return roots, nil
 }
 
 // GetListAll 查询所有列表

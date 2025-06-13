@@ -30,6 +30,7 @@ type MenuButtonDAO interface {
 
 	FindById(ctx context.Context, id string) (*system.MenuButton, error)
 	FindListPage(ctx context.Context, filter domainSystem.MenuButtonFilter) ([]*system.MenuButton, int64, error)
+	FindListByMenuIds(ctx context.Context) ([]*system.MenuButton, error)
 	FindListAll(ctx context.Context, filter domainSystem.MenuButtonFilter) ([]*system.MenuButton, error)
 }
 
@@ -121,6 +122,20 @@ func (dao *GORMMenuButtonDAO) FindListPage(ctx context.Context, filter domainSys
 		Find(&models).Error
 
 	return models, total, err
+}
+
+// FindListByMenuIds 获取指定菜单下的所有按钮
+func (dao *GORMMenuButtonDAO) FindListByMenuIds(ctx context.Context) ([]*system.MenuButton, error) {
+	var models []*system.MenuButton
+
+	query := dao.db.WithContext(ctx)
+
+	// 查询
+	if err := query.Find(&models).Error; err != nil {
+		return nil, err
+	}
+
+	return models, nil
 }
 
 // FindListAll 获取所有列表

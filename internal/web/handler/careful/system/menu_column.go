@@ -63,6 +63,7 @@ type MenuColumnHandler interface {
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
+	GetListByMenuIds(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 }
 
@@ -89,6 +90,7 @@ func (h *menuColumnHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
 	base.GET("/listPage", h.GetListPage)
+	base.POST("/listByMenuIds", h.GetListByMenuIds)
 	base.GET("/listAll", h.GetListAll)
 }
 
@@ -386,6 +388,35 @@ func (h *menuColumnHandler) GetListPage(ctx *gin.Context) {
 		Page:     page,
 		PageSize: pageSize,
 	})
+}
+
+// GetListByMenuIds
+// @Summary 获取指定菜单下的所有列
+// @Description 获取指定菜单下的所有列
+// @Tags 系统管理/菜单数据列管理
+// @Accept application/json
+// @Produce application/json
+// @Param menu_ids body []string true "菜单id数组"
+// @Success 200 {object} serviceSystem.MenuAndColumnTree
+// @Failure 400 {object} response.Response
+// @Router /v1/system/menuColumn/listByMenuIds [post]
+// @Security LoginToken
+func (h *menuColumnHandler) GetListByMenuIds(ctx *gin.Context) {
+	var menuIds []string
+	if err := ctx.ShouldBindJSON(&menuIds); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	tree, err := h.svc.GetListByMenuIds(ctx, menuIds)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("获取菜单列树失败", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "查询成功", tree)
 }
 
 // GetListAll
