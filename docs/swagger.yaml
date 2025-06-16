@@ -393,6 +393,45 @@ definitions:
         description: 宽度
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 部门编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role:
     properties:
       belongDept:
@@ -1036,6 +1075,32 @@ definitions:
     - path
     - title
     type: object
+  system.CreatePostRequest:
+    properties:
+      code:
+        description: 岗位编码
+        maxLength: 100
+        type: string
+      name:
+        description: 岗位名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+    required:
+    - code
+    - name
+    type: object
   system.CreateRoleRequest:
     properties:
       code:
@@ -1173,6 +1238,23 @@ definitions:
         description: 列表
         items:
           $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
+  system.PostListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post'
         type: array
       page:
         description: 页码
@@ -1407,6 +1489,39 @@ definitions:
     - name
     - path
     - title
+    type: object
+  system.UpdatePostRequest:
+    properties:
+      code:
+        description: 岗位编码
+        maxLength: 100
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      name:
+        description: 岗位名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      version:
+        description: 版本
+        type: integer
+    required:
+    - code
+    - id
+    - name
     type: object
   system.UpdateRoleRequest:
     properties:
@@ -2700,6 +2815,248 @@ paths:
       summary: 更新菜单数据列
       tags:
       - 系统管理/菜单数据列管理
+  /v1/system/post/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建岗位
+      parameters:
+      - description: 请求
+        in: body
+        name: CreatePostRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建岗位
+      tags:
+      - 系统管理/岗位管理
+  /v1/system/post/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id岗位
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除岗位
+      tags:
+      - 系统管理/岗位管理
+  /v1/system/post/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除岗位
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除岗位
+      tags:
+      - 系统管理/岗位管理
+  /v1/system/post/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id岗位信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取岗位
+      tags:
+      - 系统管理/岗位管理
+  /v1/system/post/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有岗位列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 岗位名称
+        in: query
+        name: name
+        type: string
+      - description: 岗位编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有岗位
+      tags:
+      - 系统管理/岗位管理
+  /v1/system/post/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取岗位分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 岗位名称
+        in: query
+        name: name
+        type: string
+      - description: 岗位编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.PostListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取岗位分页列表
+      tags:
+      - 系统管理/岗位管理
+  /v1/system/post/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新岗位信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdatePostRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新岗位
+      tags:
+      - 系统管理/岗位管理
   /v1/system/role/create:
     post:
       consumes:

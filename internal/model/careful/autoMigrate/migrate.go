@@ -28,6 +28,7 @@ func initSystem(db *gorm.DB) {
 	system.NewMenuButton().AutoMigrate(db)
 	system.NewMenuColumn().AutoMigrate(db)
 	system.NewDept().AutoMigrate(db)
+	system.NewPost().AutoMigrate(db)
 }
 
 func initTools(db *gorm.DB) {

@@ -1792,6 +1792,386 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/post/create": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建岗位",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "创建岗位",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreatePostRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.CreatePostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/post/delete/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除岗位",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "批量删除岗位",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/post/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id岗位",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "删除岗位",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/post/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id岗位信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "获取岗位",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/post/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有岗位列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "获取所有岗位",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "岗位名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "岗位编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/post/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取岗位分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "获取岗位分页列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "岗位名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "岗位编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.PostListPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/post/update": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新岗位信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/岗位管理"
+                ],
+                "summary": "更新岗位",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdatePostRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.UpdatePostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/role/create": {
             "post": {
                 "security": [
@@ -3304,6 +3684,59 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "部门编码",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Role": {
             "type": "object",
             "properties": {
@@ -4185,6 +4618,40 @@ const docTemplate = `{
                 }
             }
         },
+        "system.CreatePostRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "岗位编码",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "name": {
+                    "description": "岗位名称",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
         "system.CreateRoleRequest": {
             "type": "object",
             "required": [
@@ -4375,6 +4842,30 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.MenuColumn"
+                    }
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页数量",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "system.PostListPageResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_system.Post"
                     }
                 },
                 "page": {
@@ -4679,6 +5170,49 @@ const docTemplate = `{
                             "$ref": "#/definitions/menu.TypeConst"
                         }
                     ]
+                },
+                "version": {
+                    "description": "版本",
+                    "type": "integer"
+                }
+            }
+        },
+        "system.UpdatePostRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "岗位编码",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "岗位名称",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 },
                 "version": {
                     "description": "版本",

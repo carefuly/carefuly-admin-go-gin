@@ -80,4 +80,10 @@ func (r *SystemRouter) RegisterRouter(router *gin.RouterGroup) {
 	roleHandler.RegisterRoutes(baseRouter)
 
 	// 岗位
+	postCache := cacheSystem.NewRedisPostCache(r.rely.Redis)
+	postDAO := daoSystem.NewGORMPostDAO(r.rely.Db.Careful)
+	postRepository := repositorySystem.NewPostRepository(postDAO, postCache)
+	postService := serviceSystem.NewPostService(postRepository)
+	postHandler := handlerSystem.NewPostHandler(r.rely, postService, userService)
+	postHandler.RegisterRoutes(baseRouter)
 }
