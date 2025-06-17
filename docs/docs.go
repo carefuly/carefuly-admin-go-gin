@@ -42,7 +42,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "认证管理/修改密码"
                 ],
                 "summary": "修改密码",
                 "parameters": [
@@ -88,7 +88,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "认证管理/账号密码登录"
                 ],
                 "summary": "账号密码登录",
                 "parameters": [
@@ -136,7 +136,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "认证管理/退出登录"
                 ],
                 "summary": "退出登录",
                 "responses": {
@@ -165,7 +165,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "认证管理/刷新令牌"
                 ],
                 "summary": "刷新令牌",
                 "parameters": [
@@ -211,7 +211,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "认证管理/用户注册"
                 ],
                 "summary": "用户注册",
                 "parameters": [
@@ -241,52 +241,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/type-login": {
-            "post": {
-                "description": "不同类型用户登录接口",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "认证管理"
-                ],
-                "summary": "多用户类型登录",
-                "parameters": [
-                    {
-                        "description": "多用户类型登录参数",
-                        "name": "UserTypeLoginRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.UserTypeLoginRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/auth.LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/auth/userinfo": {
             "get": {
                 "security": [
@@ -305,7 +259,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证管理"
+                    "认证管理/获取用户信息"
                 ],
                 "summary": "获取当前登录用户信息",
                 "responses": {
@@ -3171,28 +3125,10 @@ const docTemplate = `{
         "auth.LoginRequest": {
             "type": "object",
             "required": [
-                "bizType",
-                "code",
-                "id",
                 "password",
                 "username"
             ],
             "properties": {
-                "bizType": {
-                    "description": "验证码类型",
-                    "type": "string",
-                    "example": "BizCaptchaLogin"
-                },
-                "code": {
-                    "description": "验证码",
-                    "type": "string",
-                    "example": "654321"
-                },
-                "id": {
-                    "description": "验证码",
-                    "type": "string",
-                    "example": "ldqQpBjJfvPxbBzP"
-                },
                 "password": {
                     "description": "密码",
                     "type": "string",
@@ -3242,38 +3178,10 @@ const docTemplate = `{
         "auth.RegisterRequest": {
             "type": "object",
             "required": [
-                "name",
                 "password",
                 "username"
             ],
             "properties": {
-                "avatar": {
-                    "description": "头像",
-                    "type": "string",
-                    "example": ""
-                },
-                "email": {
-                    "description": "邮箱",
-                    "type": "string",
-                    "example": "admin@test.com"
-                },
-                "gender": {
-                    "description": "性别",
-                    "type": "integer",
-                    "example": 1
-                },
-                "mobile": {
-                    "description": "手机号",
-                    "type": "string",
-                    "example": "13800138000"
-                },
-                "name": {
-                    "description": "姓名",
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 2,
-                    "example": "管理员"
-                },
                 "password": {
                     "description": "密码",
                     "type": "string",
@@ -3281,42 +3189,12 @@ const docTemplate = `{
                     "minLength": 6,
                     "example": "123456"
                 },
-                "userType": {
-                    "description": "用户类型",
-                    "type": "integer",
-                    "example": 1
-                },
                 "username": {
                     "description": "用户名",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 3,
                     "example": "demo"
-                }
-            }
-        },
-        "auth.UserTypeLoginRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "userType",
-                "username"
-            ],
-            "properties": {
-                "password": {
-                    "description": "密码",
-                    "type": "string",
-                    "example": "123456"
-                },
-                "userType": {
-                    "description": "用户类型",
-                    "type": "integer",
-                    "example": 1
-                },
-                "username": {
-                    "description": "用户名",
-                    "type": "string",
-                    "example": "admin"
                 }
             }
         },
@@ -3881,7 +3759,7 @@ const docTemplate = `{
                         }
                     ]
                 },
-                "deptId": {
+                "dept_id": {
                     "description": "部门ID",
                     "type": "string"
                 },
@@ -3891,7 +3769,11 @@ const docTemplate = `{
                 },
                 "gender": {
                     "description": "性别",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/user.GenderConst"
+                        }
+                    ]
                 },
                 "id": {
                     "description": "主键ID",
@@ -3909,9 +3791,37 @@ const docTemplate = `{
                     "description": "姓名",
                     "type": "string"
                 },
+                "post": {
+                    "description": "关联岗位",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Post"
+                    }
+                },
+                "post_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "remark": {
                     "description": "备注",
                     "type": "string"
+                },
+                "role": {
+                    "description": "关联角色",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Role"
+                    }
+                },
+                "role_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "sort": {
                     "description": "显示排序",
@@ -3919,7 +3829,7 @@ const docTemplate = `{
                 },
                 "status": {
                     "description": "状态",
-                    "type": "integer"
+                    "type": "boolean"
                 },
                 "updateTime": {
                     "description": "更新时间",
@@ -3927,7 +3837,11 @@ const docTemplate = `{
                 },
                 "userType": {
                     "description": "用户类型",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/user.TypeConst"
+                        }
+                    ]
                 },
                 "username": {
                     "description": "用户名",
@@ -4288,6 +4202,160 @@ const docTemplate = `{
                 },
                 "width": {
                     "description": "宽度",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Post": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "部门编码",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Role": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "角色编码",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "data_range": {
+                    "description": "数据权限范围",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/role.DataRangeConst"
+                        }
+                    ]
+                },
+                "dept": {
+                    "description": "数据权限-关联部门",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept"
+                    }
+                },
+                "dept_ids": {
+                    "description": "忽略GORM处理，只用于接收参数",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "menu": {
+                    "description": "数据权限-关联菜单",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu"
+                    }
+                },
+                "menuButton": {
+                    "description": "数据权限-关联菜单的接口按钮",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuButton"
+                    }
+                },
+                "menuColumn": {
+                    "description": "数据权限-列表权限",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuColumn"
+                    }
+                },
+                "menu_button_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "menu_column_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "menu_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "角色名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "version": {
+                    "description": "版本号",
                     "type": "integer"
                 }
             }
@@ -5442,6 +5510,39 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "user.GenderConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ],
+            "x-enum-comments": {
+                "GenderConstFemale": "女",
+                "GenderConstMale": "男",
+                "GenderConstSecret": "保密"
+            },
+            "x-enum-varnames": [
+                "GenderConstMale",
+                "GenderConstFemale",
+                "GenderConstSecret"
+            ]
+        },
+        "user.TypeConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ],
+            "x-enum-comments": {
+                "TypeConstAdminUser": "后台用户",
+                "TypeConstFrontUser": "前台用户"
+            },
+            "x-enum-varnames": [
+                "TypeConstAdminUser",
+                "TypeConstFrontUser"
+            ]
         }
     },
     "securityDefinitions": {

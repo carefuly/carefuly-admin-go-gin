@@ -30,7 +30,7 @@ type UserRepository interface {
 	Create(ctx context.Context, domain domainSystem.User) error
 	Delete(ctx context.Context, id string) (int64, error)
 	Update(ctx context.Context, domain domainSystem.User) error
-	UpdatePassword(ctx context.Context, userId string, hashedPassword string) error
+	UpdatePassword(ctx context.Context, userId string, newPassword, hashedPassword string) error
 
 	GetById(ctx context.Context, id string) (domainSystem.User, error)
 	GetByUsername(ctx context.Context, username string) (domainSystem.User, error)
@@ -72,6 +72,26 @@ func (repo *userRepository) Delete(ctx context.Context, id string) (int64, error
 	return rowsAffected, err
 }
 
+// BatchDelete 批量删除
+func (repo *userRepository) BatchDelete(ctx context.Context, ids []string) error {
+	err := repo.dao.BatchDelete(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	// 删除缓存
+	for _, val := range ids {
+		err = repo.cache.Del(ctx, val)
+		if err != nil {
+			// 网络崩了，也可能是 redis 崩了
+			zap.L().Error("Redis异常", zap.Error(err))
+			return err
+		}
+	}
+
+	return err
+}
+
 // Update 更新
 func (repo *userRepository) Update(ctx context.Context, domain domainSystem.User) error {
 	err := repo.dao.Update(ctx, repo.toEntity(domain))
@@ -91,8 +111,8 @@ func (repo *userRepository) Update(ctx context.Context, domain domainSystem.User
 }
 
 // UpdatePassword 更新密码
-func (repo *userRepository) UpdatePassword(ctx context.Context, userId string, hashedPassword string) error {
-	return repo.dao.UpdatePassword(ctx, userId, hashedPassword)
+func (repo *userRepository) UpdatePassword(ctx context.Context, userId string, newPassword, hashedPassword string) error {
+	return repo.dao.UpdatePassword(ctx, userId, newPassword, hashedPassword)
 }
 
 // GetById 根据ID获取
@@ -181,11 +201,15 @@ func (repo *userRepository) CheckExistByUsername(ctx context.Context, username, 
 func (repo *userRepository) toEntity(domain domainSystem.User) modelSystem.User {
 	return modelSystem.User{
 		CoreModels: models.CoreModels{
-			Creator:  domain.Creator,
-			Modifier: domain.Modifier,
-			// BelongUser: domain.BelongUser,
-			Remark: domain.Remark,
+			Id:         domain.Id,
+			Sort:       domain.Sort,
+			Version:    domain.Version,
+			Creator:    domain.Creator,
+			Modifier:   domain.Modifier,
+			BelongDept: domain.BelongDept,
+			Remark:     domain.Remark,
 		},
+		Status:      domain.Status,
 		Username:    domain.Username,
 		Password:    domain.Password,
 		PasswordStr: domain.PasswordStr,
@@ -195,6 +219,9 @@ func (repo *userRepository) toEntity(domain domainSystem.User) modelSystem.User 
 		Email:       domain.Email,
 		Mobile:      domain.Mobile,
 		Avatar:      domain.Avatar,
+		DeptId:      domain.DeptId,
+		PostIDs:     domain.PostIDs,
+		RoleIDs:     domain.RoleIDs,
 	}
 }
 

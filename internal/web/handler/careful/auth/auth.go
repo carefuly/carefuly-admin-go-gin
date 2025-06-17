@@ -14,6 +14,7 @@ import (
 	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 	modelSystem "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/system"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
+	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/jwt"
@@ -29,21 +30,12 @@ import (
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=50" example:"demo"`   // 用户名
 	Password string `json:"password" binding:"required,min=6,max=20" example:"123456"` // 密码
-	UserType int    `json:"userType" binding:"omitempty" example:"1"`                  // 用户类型
-	Name     string `json:"name" binding:"required,min=2,max=20" example:"管理员"`        // 姓名
-	Gender   int    `json:"gender" binding:"omitempty" example:"1"`                    // 性别
-	Email    string `json:"email" binding:"omitempty,email" example:"admin@test.com"`  // 邮箱
-	Mobile   string `json:"mobile" binding:"omitempty" example:"13800138000"`          // 手机号
-	Avatar   string `json:"avatar" binding:"omitempty" example:""`                     // 头像
 }
 
 // LoginRequest 登录请求
 type LoginRequest struct {
-	Username string `json:"username" binding:"required" example:"demo"`           // 用户名
-	Password string `json:"password" binding:"required" example:"123456"`         // 密码
-	Id       string `json:"id" binding:"required" example:"ldqQpBjJfvPxbBzP"`     // 验证码
-	Code     string `json:"code" binding:"required" example:"654321"`             // 验证码
-	BizType  string `json:"bizType" binding:"required" example:"BizCaptchaLogin"` // 验证码类型
+	Username string `json:"username" binding:"required" example:"demo"`   // 用户名
+	Password string `json:"password" binding:"required" example:"123456"` // 密码
 }
 
 // UserTypeLoginRequest 多用户类型登录请求
@@ -71,23 +63,23 @@ type ChangePasswordRequest struct {
 	NewPassword string `json:"newPassword" binding:"required,min=6,max=20" example:"654321"` // 新密码
 }
 
-type AuthHandler interface {
+type AuthsHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	RegisterHandler(ctx *gin.Context)
 	LoginHandler(ctx *gin.Context)
-	UserTypeLoginHandler(ctx *gin.Context) // 多用户类型登录
 	RefreshTokenHandler(ctx *gin.Context)
 	LogoutHandler(ctx *gin.Context)
 	GetCurrentUserHandler(ctx *gin.Context)
+	ChangePasswordHandler(ctx *gin.Context)
 }
 
 type authHandler struct {
 	rely       config.RelyConfig
-	userSvc    system.UserService
+	userSvc    serviceSystem.UserService
 	captchaSvc third.CaptchaService
 }
 
-func NewRegisterHandler(rely config.RelyConfig, svc system.UserService, captchaSvc third.CaptchaService) AuthHandler {
+func NewRegisterHandler(rely config.RelyConfig, svc serviceSystem.UserService, captchaSvc third.CaptchaService) AuthsHandler {
 	return &authHandler{
 		rely:       rely,
 		userSvc:    svc,
@@ -99,8 +91,6 @@ func NewRegisterHandler(rely config.RelyConfig, svc system.UserService, captchaS
 func (h *authHandler) RegisterRoutes(router *gin.RouterGroup) {
 	router.POST("/register", h.RegisterHandler)
 	router.POST("/login", h.LoginHandler)
-	// 多用户类型接口
-	router.POST("/type-login", h.UserTypeLoginHandler)
 	router.POST("/refresh-token", h.RefreshTokenHandler)
 	router.POST("/logout", h.LogoutHandler)
 	router.GET("/userinfo", h.GetCurrentUserHandler)
@@ -110,7 +100,7 @@ func (h *authHandler) RegisterRoutes(router *gin.RouterGroup) {
 // RegisterHandler
 // @Summary 用户注册
 // @Description 用户注册
-// @Tags 认证管理
+// @Tags 认证管理/用户注册
 // @Accept application/json
 // @Produce application/json
 // @Param RegisterRequest body RegisterRequest true "请求"
@@ -124,45 +114,27 @@ func (h *authHandler) RegisterHandler(ctx *gin.Context) {
 		return
 	}
 
-	// // 校验参数
-	// _, err := constants.ConvertGender(req.Gender)
-	// if err != nil {
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "性别:"+err.Error(), nil)
-	// 	return
-	// }
-	// _, err = constants.ConvertUserType(req.UserType)
-	// if err != nil {
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户类型:"+err.Error(), nil)
-	// 	return
-	// }
-	// if req.UserType == 1 {
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "不支持管理员注册", nil)
-	// 	return
-	// }
-
 	// 转换为领域模型
 	user := domainSystem.User{
 		User: modelSystem.User{
 			Username: req.Username,
 			Password: req.Password,
-			UserType: req.UserType,
-			Name:     req.Name,
-			Gender:   req.Gender,
-			Email:    req.Email,
-			Mobile:   req.Mobile,
-			Avatar:   req.Avatar,
+			DeptId:   "ADE5E818-5F3C-46F0-A366-837A8B13089E",
 		},
 	}
 
 	// 调用业务逻辑
 	if err := h.userSvc.Register(ctx, user); err != nil {
-		if errors.Is(err, system.ErrUsernameDuplicate) {
+		switch {
+		case errors.Is(err, serviceSystem.ErrUsernameDuplicate):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户名已存在，请重新输入", nil)
 			return
+		default:
+			ctx.Set("internal", err.Error())
+			zap.L().Error("用户注册失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
 		}
-		zap.L().Error("用户注册异常", zap.Error(err))
-		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-		return
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "注册成功", nil)
@@ -171,7 +143,7 @@ func (h *authHandler) RegisterHandler(ctx *gin.Context) {
 // LoginHandler
 // @Summary 账号密码登录
 // @Description 账号密码登录
-// @Tags 认证管理
+// @Tags 认证管理/账号密码登录
 // @Accept application/json
 // @Produce application/json
 // @Param LoginRequest body LoginRequest true "请求"
@@ -185,89 +157,19 @@ func (h *authHandler) LoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	ok, err := h.captchaSvc.Verify(ctx, req.Id, req.BizType, req.Code)
-
-	switch {
-	case ok:
-		// 调用业务逻辑
-		user, err := h.userSvc.Login(ctx, req.Username, req.Password)
-		if err != nil {
-			if errors.Is(err, system.ErrUserInvalidCredential) {
-				response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户名或密码错误", nil)
-				return
-			}
-			zap.S().Errorf("登录失败: %v", err)
-			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "登录失败: "+err.Error(), nil)
-			return
-		}
-
-		// 生成JWT令牌
-		token, err := jwt.GenerateToken(ctx, user.Id, user.Username, user.UserType, h.rely.Token.Secret, h.rely.Token.Expire)
-		if err != nil {
-			zap.S().Errorf("生成令牌失败: %v", err)
-			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "生成令牌失败: "+err.Error(), nil)
-			return
-		}
-
-		// 返回用户信息和令牌
-		response.NewResponse().SuccessResponse(ctx, "登录成功", LoginResponse{
-			Token:  token,
-			User:   user,
-			Expire: h.rely.Token.Expire * 3600,
-		})
-	case errors.Is(err, third.ErrUserBlocked):
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "操作过于频繁，请10分钟后再试", nil)
-	case errors.Is(err, third.ErrCaptchaNotFound):
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "验证码已过期/验证码不存在", nil)
-	case errors.Is(err, third.ErrCaptchaVerifyTooMany):
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "验证次数已耗尽，请10分钟后再试", nil)
-	case errors.Is(err, third.ErrCaptchaIncorrect):
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "验证码错误，请重新输入", nil)
-	default:
-		ctx.Set("internal", err.Error())
-		zap.L().Error("验证验证码异常", zap.Error(err))
-		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-	}
-}
-
-// UserTypeLoginHandler
-// @Summary 多用户类型登录
-// @Description 不同类型用户登录接口
-// @Tags 认证管理
-// @Accept application/json
-// @Produce application/json
-// @Param UserTypeLoginRequest body UserTypeLoginRequest true "多用户类型登录参数"
-// @Success 200 {object} LoginResponse
-// @Failure 400 {object} response.Response
-// @Failure 401 {object} response.Response
-// @Router /v1/auth/type-login [post]
-func (h *authHandler) UserTypeLoginHandler(ctx *gin.Context) {
-	var req UserTypeLoginRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
-		return
-	}
-
-	// 校验参数
-	// _, err := constants.ConvertUserType(req.UserType)
-	// if err != nil {
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户类型:"+err.Error(), nil)
-	// 	return
-	// }
-
-	// 调用业务逻辑，按用户类型登录
-	user, err := h.userSvc.LoginWithType(ctx, req.Username, req.Password, req.UserType)
+	// 调用业务逻辑
+	user, err := h.userSvc.Login(ctx, req.Username, req.Password)
 	if err != nil {
-		if errors.Is(err, system.ErrUserInvalidCredential) {
+		switch {
+		case errors.Is(err, system.ErrUserInvalidCredential):
 			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户名或密码错误", nil)
 			return
-		} else if errors.Is(err, system.ErrUserTypeDoesNotMatch) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户类型不匹配", nil)
+		default:
+			ctx.Set("internal", err.Error())
+			zap.L().Error("登录失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
-		zap.S().Errorf("登录失败: %v", err)
-		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "登录失败: "+err.Error(), nil)
-		return
 	}
 
 	// 生成JWT令牌
@@ -289,7 +191,7 @@ func (h *authHandler) UserTypeLoginHandler(ctx *gin.Context) {
 // RefreshTokenHandler
 // @Summary 刷新令牌
 // @Description 使用旧的JWT令牌获取新的令牌
-// @Tags 认证管理
+// @Tags 认证管理/刷新令牌
 // @Accept application/json
 // @Produce application/json
 // @Param RefreshTokenRequest body RefreshTokenRequest true "刷新令牌参数"
@@ -349,7 +251,7 @@ func (h *authHandler) RefreshTokenHandler(ctx *gin.Context) {
 // GetCurrentUserHandler
 // @Summary 获取当前登录用户信息
 // @Description 获取当前登录用户的详细信息
-// @Tags 认证管理
+// @Tags 认证管理/获取用户信息
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
@@ -369,7 +271,7 @@ func (h *authHandler) GetCurrentUserHandler(ctx *gin.Context) {
 	// 根据id获取用户信息
 	user, err := h.userSvc.GetById(ctx, userId)
 	if err != nil {
-		if errors.Is(err, system.ErrUserNotFound) {
+		if errors.Is(err, serviceSystem.ErrUserNotFound) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户不存在", nil)
 			return
 		}
@@ -379,13 +281,13 @@ func (h *authHandler) GetCurrentUserHandler(ctx *gin.Context) {
 	}
 
 	// 返回用户信息
-	response.NewResponse().SuccessResponse(ctx, "获取用户信息成功", user)
+	response.NewResponse().SuccessResponse(ctx, "获取成功", user)
 }
 
 // LogoutHandler
 // @Summary 退出登录
 // @Description 用户退出登录
-// @Tags 认证管理
+// @Tags 认证管理/退出登录
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
@@ -451,7 +353,7 @@ func (h *authHandler) LogoutHandler(ctx *gin.Context) {
 // ChangePasswordHandler
 // @Summary 修改密码
 // @Description 修改当前登录用户的密码
-// @Tags 认证管理
+// @Tags 认证管理/修改密码
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
@@ -462,17 +364,17 @@ func (h *authHandler) LogoutHandler(ctx *gin.Context) {
 // @Router /v1/auth/change-password [post]
 // @Security LoginToken
 func (h *authHandler) ChangePasswordHandler(ctx *gin.Context) {
-	var req ChangePasswordRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
-		return
-	}
-
 	// 从上下文中获取用户ID
 	userId, exists := ctx.MustGet("userId").(string)
 	if !exists {
 		zap.S().Error("未找到用户认证信息", userId)
 		response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "服务器异常", nil)
+		return
+	}
+
+	var req ChangePasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
 		return
 	}
 

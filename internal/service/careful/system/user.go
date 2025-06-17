@@ -29,7 +29,6 @@ var (
 type UserService interface {
 	Register(ctx context.Context, user domainSystem.User) error
 	Login(ctx context.Context, username, password string) (domainSystem.User, error)
-	LoginWithType(ctx context.Context, username, password string, userType int) (domainSystem.User, error)
 	ChangePassword(ctx context.Context, userId string, oldPassword, newPassword string) error
 
 	Create(ctx context.Context, domain domainSystem.User) error
@@ -92,31 +91,7 @@ func (svc *userService) Login(ctx context.Context, username, password string) (d
 		if errors.Is(err, ErrUserNotFound) {
 			return domainSystem.User{}, ErrUserInvalidCredential
 		}
-		return domainSystem.User{}, fmt.Errorf("获取用户信息失败: %w", err)
-	}
-
-	// 验证密码
-	if err := bcrypt.ComparePasswords(user.Password, password); !err {
-		return domainSystem.User{}, ErrUserInvalidCredential
-	}
-
-	return user, nil
-}
-
-// LoginWithType 按用户类型登录
-func (svc *userService) LoginWithType(ctx context.Context, username, password string, userType int) (domainSystem.User, error) {
-	// 根据用户名获取用户
-	user, err := svc.GetByUsername(ctx, username)
-	if err != nil {
-		if errors.Is(err, ErrUserNotFound) {
-			return domainSystem.User{}, ErrUserInvalidCredential
-		}
-		return domainSystem.User{}, fmt.Errorf("获取用户信息失败: %w", err)
-	}
-
-	// 验证用户类型
-	if user.UserType != userType {
-		return domainSystem.User{}, ErrUserTypeDoesNotMatch
+		return domainSystem.User{}, err
 	}
 
 	// 验证密码
@@ -150,7 +125,7 @@ func (svc *userService) ChangePassword(ctx context.Context, userId string, oldPa
 	}
 
 	// 更新密码
-	if err := svc.repo.UpdatePassword(ctx, userId, hashedPassword); err != nil {
+	if err := svc.repo.UpdatePassword(ctx, userId, newPassword, hashedPassword); err != nil {
 		return fmt.Errorf("更新密码失败: %w", err)
 	}
 

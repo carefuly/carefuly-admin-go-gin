@@ -18,18 +18,6 @@ definitions:
     type: object
   auth.LoginRequest:
     properties:
-      bizType:
-        description: 验证码类型
-        example: BizCaptchaLogin
-        type: string
-      code:
-        description: 验证码
-        example: "654321"
-        type: string
-      id:
-        description: 验证码
-        example: ldqQpBjJfvPxbBzP
-        type: string
       password:
         description: 密码
         example: "123456"
@@ -39,9 +27,6 @@ definitions:
         example: demo
         type: string
     required:
-    - bizType
-    - code
-    - id
     - password
     - username
     type: object
@@ -69,38 +54,12 @@ definitions:
     type: object
   auth.RegisterRequest:
     properties:
-      avatar:
-        description: 头像
-        example: ""
-        type: string
-      email:
-        description: 邮箱
-        example: admin@test.com
-        type: string
-      gender:
-        description: 性别
-        example: 1
-        type: integer
-      mobile:
-        description: 手机号
-        example: "13800138000"
-        type: string
-      name:
-        description: 姓名
-        example: 管理员
-        maxLength: 20
-        minLength: 2
-        type: string
       password:
         description: 密码
         example: "123456"
         maxLength: 20
         minLength: 6
         type: string
-      userType:
-        description: 用户类型
-        example: 1
-        type: integer
       username:
         description: 用户名
         example: demo
@@ -108,27 +67,7 @@ definitions:
         minLength: 3
         type: string
     required:
-    - name
     - password
-    - username
-    type: object
-  auth.UserTypeLoginRequest:
-    properties:
-      password:
-        description: 密码
-        example: "123456"
-        type: string
-      userType:
-        description: 用户类型
-        example: 1
-        type: integer
-      username:
-        description: 用户名
-        example: admin
-        type: string
-    required:
-    - password
-    - userType
     - username
     type: object
   captcha.TypeCaptcha:
@@ -533,15 +472,16 @@ definitions:
         allOf:
         - $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept'
         description: 部门
-      deptId:
+      dept_id:
         description: 部门ID
         type: string
       email:
         description: 邮箱
         type: string
       gender:
+        allOf:
+        - $ref: '#/definitions/user.GenderConst'
         description: 性别
-        type: integer
       id:
         description: 主键ID
         type: string
@@ -554,21 +494,42 @@ definitions:
       name:
         description: 姓名
         type: string
+      post:
+        description: 关联岗位
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Post'
+        type: array
+      post_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
       remark:
         description: 备注
         type: string
+      role:
+        description: 关联角色
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Role'
+        type: array
+      role_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
       sort:
         description: 显示排序
         type: integer
       status:
         description: 状态
-        type: integer
+        type: boolean
       updateTime:
         description: 更新时间
         type: string
       userType:
+        allOf:
+        - $ref: '#/definitions/user.TypeConst'
         description: 用户类型
-        type: integer
       username:
         description: 用户名
         type: string
@@ -823,6 +784,116 @@ definitions:
         type: integer
       width:
         description: 宽度
+        type: integer
+    type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Post:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 部门编码
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Role:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 角色编码
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      data_range:
+        allOf:
+        - $ref: '#/definitions/role.DataRangeConst'
+        description: 数据权限范围
+      dept:
+        description: 数据权限-关联部门
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Dept'
+        type: array
+      dept_ids:
+        description: 忽略GORM处理，只用于接收参数
+        items:
+          type: string
+        type: array
+      id:
+        description: 主键ID
+        type: string
+      menu:
+        description: 数据权限-关联菜单
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.Menu'
+        type: array
+      menu_button_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
+      menu_column_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
+      menu_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
+      menuButton:
+        description: 数据权限-关联菜单的接口按钮
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuButton'
+        type: array
+      menuColumn:
+        description: 数据权限-列表权限
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_model_careful_system.MenuColumn'
+        type: array
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 角色名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      version:
+        description: 版本号
         type: integer
     type: object
   menu.MethodConst:
@@ -1682,6 +1753,31 @@ definitions:
     - code
     - id
     type: object
+  user.GenderConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      GenderConstFemale: 女
+      GenderConstMale: 男
+      GenderConstSecret: 保密
+    x-enum-varnames:
+    - GenderConstMale
+    - GenderConstFemale
+    - GenderConstSecret
+  user.TypeConst:
+    enum:
+    - 1
+    - 2
+    type: integer
+    x-enum-comments:
+      TypeConstAdminUser: 后台用户
+      TypeConstFrontUser: 前台用户
+    x-enum-varnames:
+    - TypeConstAdminUser
+    - TypeConstFrontUser
 host: localhost:8080
 info:
   contact:
@@ -1728,7 +1824,7 @@ paths:
       - LoginToken: []
       summary: 修改密码
       tags:
-      - 认证管理
+      - 认证管理/修改密码
   /v1/auth/login:
     post:
       consumes:
@@ -1754,7 +1850,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: 账号密码登录
       tags:
-      - 认证管理
+      - 认证管理/账号密码登录
   /v1/auth/logout:
     post:
       consumes:
@@ -1776,7 +1872,7 @@ paths:
       - LoginToken: []
       summary: 退出登录
       tags:
-      - 认证管理
+      - 认证管理/退出登录
   /v1/auth/refresh-token:
     post:
       consumes:
@@ -1806,7 +1902,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: 刷新令牌
       tags:
-      - 认证管理
+      - 认证管理/刷新令牌
   /v1/auth/register:
     post:
       consumes:
@@ -1832,37 +1928,7 @@ paths:
             $ref: '#/definitions/response.Response'
       summary: 用户注册
       tags:
-      - 认证管理
-  /v1/auth/type-login:
-    post:
-      consumes:
-      - application/json
-      description: 不同类型用户登录接口
-      parameters:
-      - description: 多用户类型登录参数
-        in: body
-        name: UserTypeLoginRequest
-        required: true
-        schema:
-          $ref: '#/definitions/auth.UserTypeLoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/auth.LoginResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: 多用户类型登录
-      tags:
-      - 认证管理
+      - 认证管理/用户注册
   /v1/auth/userinfo:
     get:
       consumes:
@@ -1884,7 +1950,7 @@ paths:
       - LoginToken: []
       summary: 获取当前登录用户信息
       tags:
-      - 认证管理
+      - 认证管理/获取用户信息
   /v1/system/dept/create:
     post:
       consumes:
