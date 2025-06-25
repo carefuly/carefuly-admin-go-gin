@@ -38,8 +38,8 @@ type DictRepository interface {
 	GetListPage(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, int64, error)
 	GetListAll(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, error)
 
-	CheckExistByName(ctx context.Context, name, excludeId string) (bool, error)
 	CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error)
+	CheckExistByName(ctx context.Context, name, excludeId string) (bool, error)
 }
 
 type dictRepository struct {
@@ -189,14 +189,14 @@ func (repo *dictRepository) GetListAll(ctx context.Context, filters domainTools.
 	return toDomain, nil
 }
 
-// CheckExistByName 检查name是否存在
-func (repo *dictRepository) CheckExistByName(ctx context.Context, name, excludeId string) (bool, error) {
-	return repo.dao.CheckExistByName(ctx, name, excludeId)
-}
-
 // CheckExistByCode 检查code是否存在
 func (repo *dictRepository) CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error) {
 	return repo.dao.CheckExistByCode(ctx, code, excludeId)
+}
+
+// CheckExistByName 检查name是否存在
+func (repo *dictRepository) CheckExistByName(ctx context.Context, name, excludeId string) (bool, error) {
+	return repo.dao.CheckExistByName(ctx, name, excludeId)
 }
 
 // toEntity 转换为实体模型

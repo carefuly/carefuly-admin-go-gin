@@ -28,22 +28,22 @@ import (
 
 // CreateMenuRequest 创建
 type CreateMenuRequest struct {
-	Type        menu.TypeConst `json:"type" binding:"omitempty" default:"2"`                 // 菜单类型
-	Icon        string         `json:"icon" binding:"omitempty,max=64" default:"HomeFilled"` // 菜单图标
-	Title       string         `json:"title" binding:"required,max=64"`                      // 菜单标题
-	Name        string         `json:"name" binding:"required,max=64"`                       // 组件名称
-	Component   string         `json:"component" binding:"omitempty,max=128"`                // 组件名称
-	Path        string         `json:"path" binding:"required,max=128"`                      // 路由地址
-	Redirect    string         `json:"redirect" binding:"omitempty,max=128"`                 // 重定向地址
-	IsHide      bool           `json:"isHide" binding:"omitempty" default:"false"`           // 是否隐藏
-	IsLink      string         `json:"isLink" binding:"omitempty,max=255"`                   // 是否外链【不填写默认没有外链】
-	IsKeepAlive bool           `json:"isKeepAlive" binding:"omitempty" default:"false"`      // 是否页面缓存
-	IsFull      bool           `json:"isFull" binding:"omitempty" default:"false"`           // 是否缓存全屏
-	IsAffix     bool           `json:"isAffix" binding:"omitempty" default:"false"`          // 是否缓存固定路由
-	ParentID    string         `json:"parent_id" binding:"omitempty,max=100"`                // 上级菜单
-	Sort        int            `json:"sort" binding:"omitempty" default:"1"`                 // 排序
-	Status      bool           `json:"status" binding:"omitempty" default:"true"`            // 状态【true-启用 false-停用】
-	Remark      string         `json:"remark" binding:"omitempty,max=255"`                   // 备注
+	Type        menu.TypeConst `json:"type" binding:"omitempty" default:"2"`            // 菜单类型
+	Icon        string         `json:"icon" binding:"omitempty,max=64"`                 // 菜单图标
+	Title       string         `json:"title" binding:"required,max=64"`                 // 菜单标题
+	Name        string         `json:"name" binding:"required,max=64"`                  // 组件名称
+	Component   string         `json:"component" binding:"omitempty,max=128"`           // 组件名称
+	Path        string         `json:"path" binding:"required,max=128"`                 // 路由地址
+	Redirect    string         `json:"redirect" binding:"omitempty,max=128"`            // 重定向地址
+	IsHide      bool           `json:"isHide" binding:"omitempty" default:"false"`      // 是否隐藏
+	IsLink      string         `json:"isLink" binding:"omitempty,max=255"`              // 是否外链【不填写默认没有外链】
+	IsKeepAlive bool           `json:"isKeepAlive" binding:"omitempty" default:"false"` // 是否页面缓存
+	IsFull      bool           `json:"isFull" binding:"omitempty" default:"false"`      // 是否缓存全屏
+	IsAffix     bool           `json:"isAffix" binding:"omitempty" default:"false"`     // 是否缓存固定路由
+	ParentID    string         `json:"parent_id" binding:"omitempty,max=100"`           // 上级菜单
+	Sort        int            `json:"sort" binding:"omitempty" default:"1"`            // 排序
+	Status      bool           `json:"status" binding:"omitempty" default:"true"`       // 状态【true-启用 false-停用】
+	Remark      string         `json:"remark" binding:"omitempty,max=255"`              // 备注
 }
 
 // UpdateMenuRequest 更新
@@ -83,6 +83,7 @@ type MenuHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
+	GetMenuTree(ctx *gin.Context)
 	GetListRouter(ctx *gin.Context)
 }
 
@@ -108,6 +109,7 @@ func (h *menuHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/delete/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
+	base.GET("/listTree", h.GetMenuTree)
 	base.GET("/listRouter", h.GetListRouter)
 }
 
@@ -367,6 +369,47 @@ func (h *menuHandler) GetById(ctx *gin.Context) {
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "获取成功", detail)
+}
+
+// GetMenuTree 获取菜单树形结构
+// @Summary 获取菜单树形结构
+// @Description 获取菜单树形结构
+// @Tags 系统管理/菜单管理
+// @Accept application/json
+// @Produce application/json
+// @Param creator query string false "创建人"
+// @Param modifier query string false "修改人"
+// @Param status query bool false "状态" default(true)
+// @Param title query string false "菜单标题"
+// @Success 200 {object} serviceSystem.MenuTree
+// @Failure 400 {object} response.Response
+// @Router /v1/system/menu/listTree [get]
+// @Security LoginToken
+func (h *menuHandler) GetMenuTree(ctx *gin.Context) {
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
+	title := ctx.DefaultQuery("title", "")
+
+	filter := domainSystem.MenuFilter{
+		Filters: filters.Filters{
+			Creator:  creator,
+			Modifier: modifier,
+		},
+		Status: status,
+		Title:  title,
+	}
+
+	tree, err := h.svc.GetListTree(ctx, filter)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.L().Error("获取菜单树失败", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "查询成功", tree)
 }
 
 // GetListRouter

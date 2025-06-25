@@ -28,7 +28,7 @@ type DictFilter struct {
 	Name      string              `json:"name"`      // 字典名称
 	Code      string              `json:"code"`      // 字典编码
 	Type      dict.TypeConst      `json:"type"`      // 字典分类
-	ValueType dict.TypeValueConst `json:"valueType"` // 字典值类型
+	ValueType dict.TypeValueConst `json:"valueType"` // 数据类型
 }
 
 func (f *DictFilter) Apply(query *gorm.DB) *gorm.DB {

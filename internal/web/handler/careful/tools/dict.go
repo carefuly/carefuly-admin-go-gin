@@ -39,6 +39,7 @@ type CreateDictRequest struct {
 	Type      dict.TypeConst      `json:"type" binding:"omitempty" default:"1"`      // 字典分类
 	ValueType dict.TypeValueConst `json:"valueType" binding:"omitempty" default:"1"` // 字典值类型
 	Sort      int                 `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status    bool                `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
 	Remark    string              `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
@@ -49,11 +50,12 @@ type ImportDictRequest struct {
 
 // UpdateDictRequest 更新
 type UpdateDictRequest struct {
-	Id      string `json:"id" binding:"required"`                // 主键ID
-	Code    string `json:"code" binding:"required,max=100"`      // 字典编码
-	Sort    int    `json:"sort" binding:"omitempty" default:"1"` // 排序
-	Version int    `json:"version" binding:"omitempty"`          // 版本
-	Remark  string `json:"remark" binding:"omitempty,max=255"`   // 备注
+	Id      string `json:"id" binding:"required"`                     // 主键ID
+	Code    string `json:"code" binding:"required,max=100"`           // 字典编码
+	Sort    int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
+	Status  bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
+	Version int    `json:"version" binding:"omitempty"`               // 版本
+	Remark  string `json:"remark" binding:"omitempty,max=255"`        // 备注
 }
 
 // DictListPageResponse 列表分页响应
@@ -163,6 +165,7 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
+			Status:    req.Status,
 			Name:      req.Name,
 			Code:      req.Code,
 			Type:      req.Type,
@@ -352,7 +355,8 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
-			Code: req.Code,
+			Status: req.Status,
+			Code:   req.Code,
 		},
 	}
 
@@ -393,8 +397,8 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 // @Security LoginToken
 func (h *dictHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
-	if id == "" {
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户ID不能为空", nil)
+	if id == "" || len(id) == 0 {
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
 		return
 	}
 
@@ -528,6 +532,7 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
 	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
 	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))

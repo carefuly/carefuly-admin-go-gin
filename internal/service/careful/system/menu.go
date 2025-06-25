@@ -16,6 +16,12 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
+// MenuTree 菜单树形结构
+type MenuTree struct {
+	domainSystem.Menu             // 嵌入基础菜单信息
+	Children          []*MenuTree `json:"children"` // 子部门列表
+}
+
 var (
 	ErrMenuNotFound             = repositorySystem.ErrMenuNotFound
 	ErrMenuNameDuplicate        = repositorySystem.ErrMenuNameDuplicate
@@ -30,6 +36,7 @@ type MenuService interface {
 	Update(ctx context.Context, domain domainSystem.Menu) error
 
 	GetById(ctx context.Context, id string) (domainSystem.Menu, error)
+	GetListTree(ctx context.Context, filter domainSystem.MenuFilter) ([]*MenuTree, error)
 	GetListAll(ctx context.Context, filter domainSystem.MenuFilter) ([]domainSystem.Menu, error)
 }
 
@@ -121,6 +128,52 @@ func (svc *menuService) GetById(ctx context.Context, id string) (domainSystem.Me
 		return domain, repositorySystem.ErrMenuNotFound
 	}
 	return domain, err
+}
+
+// GetListTree 获取菜单树形结构
+func (svc *menuService) GetListTree(ctx context.Context, filter domainSystem.MenuFilter) ([]*MenuTree, error) {
+	list, err := svc.repo.GetListAll(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	// 构建部门树
+	menuMap := make(map[string]*MenuTree)
+	var roots []*MenuTree
+
+	if len(list) == 0 {
+		return []*MenuTree{}, nil
+	}
+
+	// 第一遍遍历，创建所有节点
+	for _, menu := range list {
+		menu.Meta = map[string]any{
+			"icon":      menu.Icon,
+			"title":     menu.Title,
+			"isHide":    menu.IsHide,
+			"isLink":    menu.IsLink,
+			"isFull":    menu.IsFull,
+			"keepAlive": menu.IsKeepAlive,
+			"fixedTab":  menu.IsAffix,
+		}
+		menuMap[menu.Id] = &MenuTree{
+			Menu:     menu,
+			Children: []*MenuTree{},
+		}
+	}
+
+	// 第二遍遍历，构建树结构
+	for _, menu := range list {
+		node := menuMap[menu.Id]
+		if menu.ParentID == "" || menuMap[menu.ParentID] == nil {
+			roots = append(roots, node)
+		} else {
+			parent := menuMap[menu.ParentID]
+			parent.Children = append(parent.Children, node)
+		}
+	}
+
+	return roots, nil
 }
 
 // GetListAll 查询所有列表

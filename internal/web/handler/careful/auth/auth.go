@@ -162,7 +162,7 @@ func (h *authHandler) LoginHandler(ctx *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, system.ErrUserInvalidCredential):
-			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户名或密码错误", nil)
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户名或密码错误", nil)
 			return
 		default:
 			ctx.Set("internal", err.Error())
@@ -272,7 +272,7 @@ func (h *authHandler) GetCurrentUserHandler(ctx *gin.Context) {
 	user, err := h.userSvc.GetById(ctx, userId)
 	if err != nil {
 		if errors.Is(err, serviceSystem.ErrUserNotFound) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户不存在", nil)
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户不存在", nil)
 			return
 		}
 		zap.L().Error("获取用户信息异常", zap.String("userId", userId), zap.Error(err))
@@ -300,7 +300,7 @@ func (h *authHandler) LogoutHandler(ctx *gin.Context) {
 	userId, exists := ctx.MustGet("userId").(string)
 	if !exists {
 		zap.S().Error("未找到用户认证信息", userId)
-		response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "服务器异常", nil)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
@@ -368,7 +368,7 @@ func (h *authHandler) ChangePasswordHandler(ctx *gin.Context) {
 	userId, exists := ctx.MustGet("userId").(string)
 	if !exists {
 		zap.S().Error("未找到用户认证信息", userId)
-		response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "服务器异常", nil)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
@@ -385,7 +385,7 @@ func (h *authHandler) ChangePasswordHandler(ctx *gin.Context) {
 		case errors.Is(err, system.ErrUserInvalidCredential):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "旧密码错误", nil)
 		case errors.Is(err, system.ErrUserNotFound):
-			response.NewResponse().ErrorResponse(ctx, http.StatusUnauthorized, "用户不存在", nil)
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "用户不存在", nil)
 		default:
 			zap.L().Error("修改密码失败", zap.Error(err))
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "修改密码失败", nil)

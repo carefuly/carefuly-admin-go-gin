@@ -192,6 +192,10 @@ definitions:
       isLink:
         description: 是否外链
         type: string
+      meta:
+        additionalProperties: {}
+        description: 元信息
+        type: object
       modifier:
         description: 修改人
         type: string
@@ -579,7 +583,7 @@ definitions:
       valueType:
         allOf:
         - $ref: '#/definitions/dict.TypeValueConst'
-        description: 字典值类型
+        description: 数据类型
       version:
         description: 版本号
         type: integer
@@ -1080,7 +1084,6 @@ definitions:
         maxLength: 128
         type: string
       icon:
-        default: HomeFilled
         description: 菜单图标
         maxLength: 64
         type: string
@@ -1318,6 +1321,88 @@ definitions:
         type: integer
       total:
         description: 总数
+        type: integer
+    type: object
+  system.MenuTree:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      children:
+        description: 子部门列表
+        items:
+          $ref: '#/definitions/system.MenuTree'
+        type: array
+      component:
+        description: 组件地址
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      icon:
+        description: 菜单图标
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      isAffix:
+        description: 是否缓存固定路由
+        type: boolean
+      isFull:
+        description: 是否缓存全屏
+        type: boolean
+      isHide:
+        description: 是否隐藏
+        type: boolean
+      isKeepAlive:
+        description: 是否页面缓存
+        type: boolean
+      isLink:
+        description: 是否外链
+        type: string
+      meta:
+        additionalProperties: {}
+        description: 元信息
+        type: object
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 组件名称
+        type: string
+      parent_id:
+        description: 上级菜单
+        type: string
+      path:
+        description: 路由地址
+        type: string
+      redirect:
+        description: 重定向地址
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      title:
+        description: 菜单标题
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
+        description: 菜单类型
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
         type: integer
     type: object
   system.PostListPageResponse:
@@ -1698,6 +1783,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       type:
         allOf:
         - $ref: '#/definitions/dict.TypeConst'
@@ -1746,6 +1835,10 @@ definitions:
         default: 1
         description: 排序
         type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
       version:
         description: 版本
         type: integer
@@ -2291,6 +2384,45 @@ paths:
       security:
       - LoginToken: []
       summary: 获取所有菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/listTree:
+    get:
+      consumes:
+      - application/json
+      description: 获取菜单树形结构
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 菜单标题
+        in: query
+        name: title
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.MenuTree'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取菜单树形结构
       tags:
       - 系统管理/菜单管理
   /v1/system/menu/update:

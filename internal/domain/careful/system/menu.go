@@ -16,8 +16,9 @@ import (
 
 type Menu struct {
 	system.Menu
-	CreateTime string `json:"createTime"` // 创建时间
-	UpdateTime string `json:"updateTime"` // 更新时间
+	Meta       map[string]any `json:"meta"`       // 元信息
+	CreateTime string         `json:"createTime"` // 创建时间
+	UpdateTime string         `json:"updateTime"` // 更新时间
 }
 
 type MenuFilter struct {
@@ -30,7 +31,7 @@ type MenuFilter struct {
 func (f *MenuFilter) Apply(query *gorm.DB) *gorm.DB {
 	query = f.Filters.Apply(query).
 		Where("status = ?", f.Status).
-		Order("update_time DESC, sort ASC")
+		Order("sort ASC, update_time DESC")
 
 	if f.Title != "" {
 		query = query.Where("title LIKE ?", "%"+f.Title+"%")

@@ -821,6 +821,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/menu/listTree": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取菜单树形结构",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "获取菜单树形结构",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "菜单标题",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.MenuTree"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/menu/update": {
             "put": {
                 "security": [
@@ -3362,6 +3423,11 @@ const docTemplate = `{
                     "description": "是否外链",
                     "type": "string"
                 },
+                "meta": {
+                    "description": "元信息",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
                 "modifier": {
                     "description": "修改人",
                     "type": "string"
@@ -3909,7 +3975,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "valueType": {
-                    "description": "字典值类型",
+                    "description": "数据类型",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dict.TypeValueConst"
@@ -4607,7 +4673,6 @@ const docTemplate = `{
                 "icon": {
                     "description": "菜单图标",
                     "type": "string",
-                    "default": "HomeFilled",
                     "maxLength": 64
                 },
                 "isAffix": {
@@ -4922,6 +4987,119 @@ const docTemplate = `{
                 },
                 "total": {
                     "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "system.MenuTree": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "children": {
+                    "description": "子部门列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/system.MenuTree"
+                    }
+                },
+                "component": {
+                    "description": "组件地址",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "菜单图标",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "isAffix": {
+                    "description": "是否缓存固定路由",
+                    "type": "boolean"
+                },
+                "isFull": {
+                    "description": "是否缓存全屏",
+                    "type": "boolean"
+                },
+                "isHide": {
+                    "description": "是否隐藏",
+                    "type": "boolean"
+                },
+                "isKeepAlive": {
+                    "description": "是否页面缓存",
+                    "type": "boolean"
+                },
+                "isLink": {
+                    "description": "是否外链",
+                    "type": "string"
+                },
+                "meta": {
+                    "description": "元信息",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "组件名称",
+                    "type": "string"
+                },
+                "parent_id": {
+                    "description": "上级菜单",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "路由地址",
+                    "type": "string"
+                },
+                "redirect": {
+                    "description": "重定向地址",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "title": {
+                    "description": "菜单标题",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "菜单类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本号",
                     "type": "integer"
                 }
             }
@@ -5435,6 +5613,11 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 1
                 },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
                 "type": {
                     "description": "字典分类",
                     "default": 1,
@@ -5504,6 +5687,11 @@ const docTemplate = `{
                     "description": "排序",
                     "type": "integer",
                     "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 },
                 "version": {
                     "description": "版本",

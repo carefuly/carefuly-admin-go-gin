@@ -36,8 +36,8 @@ type DictDAO interface {
 	FindListPage(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, int64, error)
 	FindListAll(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, error)
 
-	CheckExistByName(ctx context.Context, name, excludeId string) (bool, error)
 	CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error)
+	CheckExistByName(ctx context.Context, name, excludeId string) (bool, error)
 }
 
 type GORMDictDAO struct {
@@ -73,6 +73,7 @@ func (dao *GORMDictDAO) Update(ctx context.Context, model tools.Dict) error {
 		Updates(map[string]any{
 			"code":     model.Code,
 			"sort":     model.Sort,
+			"status":   model.Status,
 			"version":  gorm.Expr("version + 1"),
 			"modifier": model.Modifier,
 			"remark":   model.Remark,
@@ -168,12 +169,12 @@ func (dao *GORMDictDAO) buildQuery(ctx context.Context, filter domainTools.DictF
 	return builder.Apply(dao.db.WithContext(ctx).Model(&tools.Dict{}))
 }
 
-// CheckExistByName 检查name是否存在
-func (dao *GORMDictDAO) CheckExistByName(ctx context.Context, name, excludeId string) (bool, error) {
+// CheckExistByCode 检查code是否存在
+func (dao *GORMDictDAO) CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error) {
 	var model tools.Dict
 	query := dao.db.WithContext(ctx).Model(&tools.Dict{}).
 		Select("id"). // 只查询必要的字段
-		Where("name = ?", name)
+		Where("code = ?", code)
 
 	if excludeId != "" {
 		query = query.Where("id != ?", excludeId)
@@ -188,12 +189,12 @@ func (dao *GORMDictDAO) CheckExistByName(ctx context.Context, name, excludeId st
 	return err == nil, err // 存在或查询出错
 }
 
-// CheckExistByCode 检查code是否存在
-func (dao *GORMDictDAO) CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error) {
+// CheckExistByName 检查name是否存在
+func (dao *GORMDictDAO) CheckExistByName(ctx context.Context, name, excludeId string) (bool, error) {
 	var model tools.Dict
 	query := dao.db.WithContext(ctx).Model(&tools.Dict{}).
 		Select("id"). // 只查询必要的字段
-		Where("code = ?", code)
+		Where("name = ?", name)
 
 	if excludeId != "" {
 		query = query.Where("id != ?", excludeId)

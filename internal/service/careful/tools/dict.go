@@ -58,20 +58,20 @@ func NewDictService(repo repositoryTools.DictRepository) DictService {
 
 // Create 创建
 func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) error {
-	exists, err := svc.repo.CheckExistByName(ctx, domain.Name, "")
-	if err != nil {
-		return err
-	}
-	if exists {
-		return repositoryTools.ErrDictNameDuplicate
-	}
-
-	exists, err = svc.repo.CheckExistByCode(ctx, domain.Code, "")
+	exists, err := svc.repo.CheckExistByCode(ctx, domain.Code, "")
 	if err != nil {
 		return err
 	}
 	if exists {
 		return repositoryTools.ErrDictCodeDuplicate
+	}
+
+	exists, err = svc.repo.CheckExistByName(ctx, domain.Name, "")
+	if err != nil {
+		return err
+	}
+	if exists {
+		return repositoryTools.ErrDictNameDuplicate
 	}
 
 	if err := svc.repo.Create(ctx, domain); err != nil {
@@ -209,20 +209,20 @@ func (svc *dictService) BatchDelete(ctx context.Context, ids []string) error {
 
 // Update 更新
 func (svc *dictService) Update(ctx context.Context, domain domainTools.Dict) error {
-	exists, err := svc.repo.CheckExistByName(ctx, domain.Name, domain.Id)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return repositoryTools.ErrDictNameDuplicate
-	}
-
-	exists, err = svc.repo.CheckExistByCode(ctx, domain.Code, domain.Id)
+	exists, err := svc.repo.CheckExistByCode(ctx, domain.Code, domain.Id)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return repositoryTools.ErrDictCodeDuplicate
+	}
+
+	exists, err = svc.repo.CheckExistByName(ctx, domain.Name, domain.Id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return repositoryTools.ErrDictNameDuplicate
 	}
 
 	err = svc.repo.Update(ctx, domain)
