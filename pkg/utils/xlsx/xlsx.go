@@ -9,151 +9,156 @@
 package xlsx
 
 import (
-	"errors"
-	"github.com/tealeg/xlsx"
+	"fmt"
+	"github.com/xuri/excelize/v2"
 	"strings"
-)
-
-var (
-	ErrOpenFile      = errors.New("打开文件失败")
-	ErrSheetNotFound = errors.New("指定的工作表不存在")
-	ErrInvalidRow    = errors.New("无效的行数据")
 )
 
 type Xlsx struct {
 	FilePath string
+	file     *excelize.File // 内部文件引用
 }
 
+// NewXlsxFile 创建新的Xlsx实例
 func NewXlsxFile(filePath string) *Xlsx {
 	return &Xlsx{
 		FilePath: filePath,
 	}
 }
 
-// Read 读取整个Excel文件的所有工作表数据
-func (x *Xlsx) Read() ([]map[string]any, error) {
-	// 解析Excel文件
-	var result []map[string]any // 存储所有行的数据
-	// 打开上传的Excel文件
-	xlFile, err := xlsx.OpenFile(x.FilePath)
-	if err != nil {
-		// 打开文件失败
-		return nil, ErrOpenFile
+// ReadFirstSheet 读取第一个Sheet
+func (x *Xlsx) ReadFirstSheet() ([]map[string]string, error) {
+	if err := x.openFile(); err != nil {
+		return nil, err
 	}
 
-	for _, sheet := range xlFile.Sheets {
-		// 获取表头（第一行）
-		header := sheet.Rows[0]
+	sheets := x.file.GetSheetList()
+	if len(sheets) == 0 {
+		return nil, fmt.Errorf("文件没有sheet")
+	}
+	return x.processSheet(sheets[0])
+}
 
-		var keys []string
-		for _, cell := range header.Cells {
-			keys = append(keys, cell.String())
+// ReadSheetByName 读取指定名称的Sheet
+func (x *Xlsx) ReadSheetByName(sheetName string) ([]map[string]string, error) {
+	if err := x.openFile(); err != nil {
+		return nil, err
+	}
+
+	sheets := x.file.GetSheetList()
+	exists := false
+	for _, s := range sheets {
+		if s == sheetName {
+			exists = true
+			break
 		}
+	}
 
-		// 遍历数据行（从第二行开始）
-		for _, row := range sheet.Rows[1:] {
-			// 跳过空行
-			if row == nil || len(row.Cells) == 0 {
-				continue
-			}
+	if !exists {
+		return nil, fmt.Errorf("sheet[%s]不存在", sheetName)
+	}
 
-			// 检查是否整行为空
-			isEmpty := true
-			for _, cell := range row.Cells {
-				if strings.TrimSpace(cell.String()) != "" {
-					isEmpty = false
-					break
-				}
-			}
-			if isEmpty {
-				continue
-			}
+	return x.processSheet(sheetName)
+}
 
-			rowData := make(map[string]any)
-			for colIndex, cell := range row.Cells {
-				if colIndex < len(keys) {
-					rowData[keys[colIndex]] = cell.String()
-				}
-			}
-			result = append(result, rowData)
+// ReadAllSheets 读取所有Sheet
+func (x *Xlsx) ReadAllSheets() (map[string][]map[string]string, error) {
+	if err := x.openFile(); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string][]map[string]string)
+	sheets := x.file.GetSheetList()
+
+	for _, sheet := range sheets {
+		data, err := x.processSheet(sheet)
+		if err != nil {
+			return nil, err
 		}
+		result[sheet] = data
 	}
 
 	return result, nil
 }
 
-// ReadBySheet 读取指定工作表的数据
-func (x *Xlsx) ReadBySheet(sheetName string) ([]map[string]string, error) {
-	// 打开上传的Excel文件
-	xlFile, err := xlsx.OpenFile(x.FilePath)
+// openFile 打开Excel文件（内部方法）
+func (x *Xlsx) openFile() error {
+	if x.file != nil {
+		return nil // 文件已打开
+	}
+
+	f, err := excelize.OpenFile(x.FilePath)
 	if err != nil {
-		return nil, ErrOpenFile
+		return fmt.Errorf("打开文件失败: %w", err)
+	}
+	x.file = f
+	return nil
+}
+
+// Close 关闭文件（使用完后必须调用）
+func (x *Xlsx) Close() error {
+	if x.file == nil {
+		return nil
+	}
+	if err := x.file.Close(); err != nil {
+		return fmt.Errorf("关闭文件失败: %w", err)
+	}
+	x.file = nil
+	return nil
+}
+
+// processSheet 处理单个Sheet数据（内部方法）
+func (x *Xlsx) processSheet(sheetName string) ([]map[string]string, error) {
+	if err := x.openFile(); err != nil {
+		return nil, err
 	}
 
-	// 查找指定的sheet
-	var targetSheet *xlsx.Sheet
-	for _, sheet := range xlFile.Sheets {
-		if sheet.Name == sheetName {
-			targetSheet = sheet
-			break
-		}
+	rows, err := x.file.GetRows(sheetName)
+	if err != nil {
+		return nil, fmt.Errorf("获取sheet[%s]失败: %w", sheetName, err)
 	}
 
-	if targetSheet == nil {
-		return nil, ErrSheetNotFound
-	}
-
-	if len(targetSheet.Rows) == 0 {
+	if len(rows) == 0 {
 		return []map[string]string{}, nil
 	}
 
-	// 获取表头
-	header := targetSheet.Rows[0]
-	keys := make([]string, len(header.Cells))
-	for i, cell := range header.Cells {
-		keys[i] = strings.TrimSpace(cell.String())
+	// 处理表头
+	headers := rows[0]
+	headerMap := make(map[string]int)
+	uniqueHeaders := make([]string, len(headers))
+
+	for i, h := range headers {
+		// 去除首尾空白并处理重复表头
+		trimmed := strings.TrimSpace(h)
+		if trimmed == "" {
+			trimmed = fmt.Sprintf("column_%d", i+1) // 空表头处理
+		}
+
+		count := headerMap[trimmed] + 1
+		headerMap[trimmed] = count
+
+		uniqueHeader := trimmed
+		if count > 1 {
+			uniqueHeader = fmt.Sprintf("%s_%d", trimmed, count)
+		}
+		uniqueHeaders[i] = uniqueHeader
 	}
 
-	var result []map[string]string
-	for _, row := range targetSheet.Rows[1:] {
-		rowData, err := x.processRow(row, keys)
-		if err != nil {
-			continue // 跳过无效行
+	// 处理数据行
+	result := make([]map[string]string, 0, len(rows)-1)
+	for _, row := range rows[1:] {
+		rowMap := make(map[string]string, len(uniqueHeaders))
+
+		for colIdx := 0; colIdx < len(uniqueHeaders); colIdx++ {
+			var value string
+			if colIdx < len(row) {
+				value = strings.TrimSpace(row[colIdx])
+			}
+			rowMap[uniqueHeaders[colIdx]] = value
 		}
-		result = append(result, rowData)
+
+		result = append(result, rowMap)
 	}
 
 	return result, nil
-}
-
-// processRow 处理单行数据，返回map和错误
-func (x *Xlsx) processRow(row *xlsx.Row, keys []string) (map[string]string, error) {
-	// 检查空行
-	if row == nil || len(row.Cells) == 0 {
-		return nil, ErrInvalidRow
-	}
-
-	// 检查是否整行为空
-	isEmpty := true
-	for _, cell := range row.Cells {
-		if strings.TrimSpace(cell.String()) != "" {
-			isEmpty = false
-			break
-		}
-	}
-	if isEmpty {
-		return nil, ErrInvalidRow
-	}
-
-	// 确保所有字段都有值
-	rowData := make(map[string]string)
-	for i, key := range keys {
-		var value string
-		if i < len(row.Cells) {
-			value = strings.TrimSpace(row.Cells[i].String())
-		}
-		rowData[key] = value
-	}
-
-	return rowData, nil
 }

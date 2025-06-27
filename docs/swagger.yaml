@@ -3674,6 +3674,61 @@ paths:
       summary: 批量删除字典
       tags:
       - 系统工具/字典管理
+  /v1/tools/dict/export:
+    post:
+      consumes:
+      - application/json
+      description: 导出字典数据到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典名称
+        in: query
+        name: name
+        type: string
+      - description: 字典编码
+        in: query
+        name: code
+        type: string
+      - default: 1
+        description: 字典分类
+        in: query
+        name: type
+        required: true
+        type: integer
+      - default: 1
+        description: 字典值类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导出字典数据
+      tags:
+      - 系统工具/字典管理
   /v1/tools/dict/getById/{id}:
     get:
       consumes:

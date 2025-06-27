@@ -51,7 +51,7 @@ func (s *Storage) Logger(path string) *zap.Logger {
 
 func (s *Storage) StorageLogger(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if strings.Contains(c.Request.URL.Path, "swagger") {
+		if s.containsAnySubstring(c.Request.URL.Path, []string{"swagger", "static", "export"}) {
 			c.Next()
 		} else {
 			// 开始时间
@@ -141,4 +141,14 @@ func (s *Storage) StorageLogger(db *gorm.DB) gin.HandlerFunc {
 			)
 		}
 	}
+}
+
+// 检查字符串是否包含切片中的任意一个子串
+func (s *Storage) containsAnySubstring(str string, subs []string) bool {
+	for _, sub := range subs {
+		if strings.Contains(str, sub) {
+			return true
+		}
+	}
+	return false
 }

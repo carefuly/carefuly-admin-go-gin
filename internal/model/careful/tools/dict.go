@@ -18,11 +18,11 @@ import (
 // Dict 字典表
 type Dict struct {
 	models.CoreModels
-	Status    bool                `gorm:"type:boolean;index:idx_status;default:true;column:status;comment:状态【true-启用 false-停用】" json:"status"` // 状态
-	Name      string              `gorm:"type:varchar(100);not null;uniqueIndex;index:idx_name;column:name;comment:字典名称" json:"name"`          // 字典名称
-	Code      string              `gorm:"type:varchar(100);not null;uniqueIndex;index:idx_code;column:code;comment:字典编码" json:"code"`          // 字典编码
-	Type      dict.TypeConst      `gorm:"type:tinyint;default:1;index:idx_type;column:type;comment:字典分类" json:"type"`                          // 字典分类
-	ValueType dict.TypeValueConst `gorm:"type:tinyint;default:1;index:idx_value_type;column:valueType;comment:数据类型" json:"valueType"`          // 数据类型
+	Status    bool                `gorm:"type:boolean;index:idx_status;default:false;column:status;comment:状态【true-启用 false-停用】" json:"status"` // 状态
+	Name      string              `gorm:"type:varchar(100);not null;uniqueIndex;index:idx_name;column:name;comment:字典名称" json:"name"`           // 字典名称
+	Code      string              `gorm:"type:varchar(100);not null;uniqueIndex;index:idx_code;column:code;comment:字典编码" json:"code"`           // 字典编码
+	Type      dict.TypeConst      `gorm:"type:tinyint;default:1;index:idx_type;column:type;comment:字典分类" json:"type"`                           // 字典分类
+	ValueType dict.TypeValueConst `gorm:"type:tinyint;default:1;index:idx_value_type;column:valueType;comment:数据类型" json:"valueType"`           // 数据类型
 }
 
 func NewDict() *Dict {

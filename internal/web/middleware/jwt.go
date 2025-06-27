@@ -62,7 +62,7 @@ func (l *LoginJWTMiddlewareBuilder) Unauthorized(ctx *gin.Context, msg string) {
 func (l *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// swagger文档
-		if strings.Contains(ctx.Request.URL.Path, "swagger") {
+		if l.containsAnySubstring(ctx.Request.URL.Path, []string{"swagger", "static"}) {
 			return
 		}
 		// 不需要登录校验的
@@ -168,4 +168,14 @@ func (l *LoginJWTMiddlewareBuilder) JWTAuthMiddleware(tokenConfig config.TokenCo
 
 		ctx.Next()
 	}
+}
+
+// containsAnySubstring 检查字符串是否包含切片中的任意一个子串
+func (l *LoginJWTMiddlewareBuilder) containsAnySubstring(str string, subs []string) bool {
+	for _, sub := range subs {
+		if strings.Contains(str, sub) {
+			return true
+		}
+	}
+	return false
 }

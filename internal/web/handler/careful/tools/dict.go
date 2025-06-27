@@ -14,17 +14,18 @@ import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
+	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	serviceTools "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/tools/dict"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/enumconv"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/excelutil"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/xlsx"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
+	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 	"mime/multipart"
 	"net/http"
@@ -70,6 +71,7 @@ type DictHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	Import(ctx *gin.Context)
+	Export(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
@@ -80,11 +82,11 @@ type DictHandler interface {
 
 type dictHandler struct {
 	rely    config.RelyConfig
-	svc     tools.DictService
-	userSvc system.UserService
+	svc     serviceTools.DictService
+	userSvc serviceSystem.UserService
 }
 
-func NewDictHandler(rely config.RelyConfig, svc tools.DictService, userSvc system.UserService) DictHandler {
+func NewDictHandler(rely config.RelyConfig, svc serviceTools.DictService, userSvc serviceSystem.UserService) DictHandler {
 	return &dictHandler{
 		rely:    rely,
 		svc:     svc,
@@ -97,6 +99,7 @@ func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base := router.Group("/dict")
 	base.POST("/create", h.Create)
 	base.POST("/import", h.Import)
+	base.POST("/export", h.Export)
 	base.DELETE("/delete/:id", h.Delete)
 	base.POST("/delete/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
@@ -148,7 +151,7 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 		return
 	}
 	typeValueValidValues := []string{"字符串", "整型", "布尔"}
-	typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "字典值类型")
+	typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "数据类型")
 	_, err = typeValueConverter.FromEnum(req.ValueType)
 	if err != nil {
 		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
@@ -237,16 +240,154 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 	}
 
 	// 读取Excel文件
-	read, err := xlsx.NewXlsxFile(filePath).ReadBySheet("字典模板")
+	read, err := xlsx.NewXlsxFile(filePath).ReadSheetByName("字典模板")
 	if err != nil {
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, xlsx.ErrOpenFile, nil)
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	result := h.svc.Import(ctx, uid, user.DeptId, read)
 	msg := fmt.Sprintf("导入成功【成功导入【%d】条数据, 失败【%d】条数据】", result.SuccessCount, result.FailCount)
 
-	response.NewResponse().SuccessResponse(ctx, msg, result)
+	response.NewResponse().SuccessResponse(ctx, msg, read)
+}
+
+// Export
+// @Summary 导出字典数据
+// @Description 导出字典数据到Excel文件
+// @Tags 系统工具/字典管理
+// @Accept application/json
+// @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+// @Param creator query string false "创建人"
+// @Param modifier query string false "修改人"
+// @Param status query bool false "状态" default(true)
+// @Param name query string false "字典名称"
+// @Param code query string false "字典编码"
+// @Param type query int true "字典分类" default(1)
+// @Param valueType query int true "字典值类型" default(1)
+// @Success 200 {file} file "Excel文件"
+// @Failure 500 {object} response.Response
+// @Router /v1/tools/dict/export [post]
+// @Security LoginToken
+func (h *dictHandler) Export(ctx *gin.Context) {
+	uid, ok := ctx.MustGet("userId").(string)
+	if !ok {
+		ctx.Set("internal", uid)
+		zap.S().Error("用户ID获取失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
+	name := ctx.DefaultQuery("name", "")
+	code := ctx.DefaultQuery("code", "")
+	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	valueType, _ := strconv.Atoi(ctx.DefaultQuery("valueType", "0"))
+
+	filter := domainTools.DictFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: user.DeptId,
+		},
+		Status:    status,
+		Name:      name,
+		Code:      code,
+		Type:      dict.TypeConst(dictType),
+		ValueType: dict.TypeValueConst(valueType),
+	}
+
+	list, err := h.svc.GetListAll(ctx, filter)
+	if err != nil {
+		zap.L().Error("获取列表异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 准备导出配置
+	cfg := excelutil.ExcelExportConfig{
+		SheetName: "sheet1",
+		FileName:  "字典数据导出",
+		Columns: []excelutil.ExcelColumn{
+			{Title: "ID", Field: "id", Width: 10},
+			{Title: "字典名称", Field: "Name", Width: 20},
+			{Title: "字典编码", Field: "Code", Width: 20},
+			{
+				Title: "字典编码",
+				Field: "Type",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
+					converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+					t, _ := converter.ToEnum(strconv.Itoa(int(value.(dict.TypeConst))))
+					return strconv.Itoa(int(t))
+				},
+			},
+			{
+				Title: "数据类型",
+				Field: "ValueType",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValueValidValues := []string{"字符串", "整型", "布尔"}
+					typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "数据类型")
+					typeValue, _ := typeValueConverter.ToEnum(strconv.Itoa(int(value.(dict.TypeValueConst))))
+					return strconv.Itoa(int(typeValue))
+				},
+			},
+			{
+				Title: "状态",
+				Field: "Status",
+				Width: 10,
+				Formatter: func(value interface{}) string {
+					if status, ok := value.(bool); ok {
+						if status {
+							return "启用"
+						}
+						return "停用"
+					}
+					return fmt.Sprintf("%v", value)
+				},
+				Style: &excelize.Style{
+					Font: &excelize.Font{Color: "#009944"}, // 绿色文本
+				},
+			},
+			{Title: "排序", Field: "Sort", Width: 8},
+			{Title: "创建时间", Field: "CreateTime", Width: 20},
+			{Title: "更新时间", Field: "UpdateTime", Width: 20},
+			{Title: "备注", Field: "Remark", Width: 30},
+		},
+		Data: list,
+		HeaderStyle: &excelize.Style{
+			Font: &excelize.Font{Bold: true, Color: "#FFFFFF"},
+			Fill: excelize.Fill{Type: "pattern", Color: []string{"#1F4E78"}, Pattern: 1},
+		},
+	}
+
+	// 创建并执行导出器
+	exporter := excelutil.NewExcelExporter(&cfg)
+	excelBytes, err := exporter.Export()
+	if err != nil {
+		zap.L().Error("导出数据字典失败", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.xlsx\"", cfg.FileName))
+	ctx.Header("Content-Transfer-Encoding", "binary")
+	ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelBytes)
 }
 
 // Delete

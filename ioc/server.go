@@ -24,6 +24,9 @@ import (
 	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"log"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 )
@@ -44,11 +47,10 @@ func (s *Server) InitGinMiddlewares(rely config.RelyConfig) []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		middleware.CORSMiddleware(),
 		middleware.NewLoginJWTMiddlewareBuilder(rely).
-			IgnorePaths("/dev-api/v1/third/generateCaptcha").
 			IgnorePaths("/dev-api/v1/auth/register").
 			IgnorePaths("/dev-api/v1/auth/login").
-			IgnorePaths("/dev-api/v1/auth/type-login").
 			IgnorePaths("/dev-api/v1/auth/refresh-token").
+			IgnorePaths("/dev-api/v1/third/generateCaptcha").
 			Build(),
 		middleware.NewLogger(rely.Logger).Logger(),
 		middleware.NewStorage().StorageLogger(rely.Db.Careful),
@@ -99,6 +101,19 @@ func (s *Server) InitGinTrans() (ut.Translator, error) {
 	return trans, nil
 }
 
+func (s *Server) StaticPath() string {
+	// 静态资源配置
+	staticDir := "./static"
+	absPath, _ := filepath.Abs(staticDir)
+
+	// 检查目录是否存在
+	if _, err := os.Stat(absPath); os.IsNotExist(err) {
+		log.Fatalf("静态资源目录不存在: %s", absPath)
+	}
+
+	return staticDir
+}
+
 func (s *Server) InitWebServer(middle []gin.HandlerFunc, rely config.RelyConfig) *gin.Engine {
 	server := gin.Default()
 	server.Use(middle...)
@@ -107,6 +122,10 @@ func (s *Server) InitWebServer(middle []gin.HandlerFunc, rely config.RelyConfig)
 	docs.SwaggerInfo.BasePath = "/dev-api"
 	// 配置接口文档
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	// 静态资源配置
+	staticDir := s.StaticPath()
+	// 设置静态路由
+	server.Static("/static", staticDir)
 
 	ApiGroup := server.Group("/dev-api")
 	v1 := ApiGroup.Group("/v1")
