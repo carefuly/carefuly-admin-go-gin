@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel导出</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<h1>数据导出</h1>
+<button onclick="exportExcel()">导出Excel</button>
+<p id="message"></p>
+
+<script>
+    function exportExcel() {
+        const message = document.getElementById('message');
+        message.textContent = '开始生成Excel文件...';
+
+        axios({
+            method: 'get',
+            url: 'http://localhost:8080/api/export',
+            responseType: 'blob'
+        })
+            .then(response => {
+                console.log(response.data);
+                // 创建下载链接
+                const url = window.URL.createObjectURL(
+                    new Blob([response.data],
+                        {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+                );
+
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `数据导出_${new Date().toLocaleString()}.xlsx`);
+                document.body.appendChild(link);
+
+                // 触发下载
+                link.click();
+
+                // 清理
+                window.URL.revokeObjectURL(url);
+                link.remove();
+
+                message.textContent = '文件下载完成！';
+            })
+            .catch(error => {
+                console.error('导出失败:', error);
+                message.textContent = '导出失败: ' + error.response?.data?.error || error.message;
+            });
+    }
+</script>
+</body>
+</html>

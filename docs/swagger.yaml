@@ -3675,7 +3675,7 @@ paths:
       tags:
       - 系统工具/字典管理
   /v1/tools/dict/export:
-    post:
+    get:
       consumes:
       - application/json
       description: 导出字典数据到Excel文件

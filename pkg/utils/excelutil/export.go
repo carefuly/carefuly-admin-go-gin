@@ -9,10 +9,11 @@
 package excelutil
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ type ExcelExportConfig struct {
 	TimeFormat   string          // 时间格式化模板
 	DefaultStyle *excelize.Style // 默认单元格样式
 	HeaderStyle  *excelize.Style // 表头样式
+	BasePath     string          // 文件保存的基础路径
 }
 
 // ExcelExporter Excel导出工具
@@ -76,14 +78,14 @@ func NewExcelExporter(cfg *ExcelExportConfig) *ExcelExporter {
 		cfg.HeaderStyle = &excelize.Style{
 			// 字体设置
 			Font: &excelize.Font{
-				Family: "Consolas", // 字体名称
-				Bold:   true,       // 加粗
-				Size:   12,         // 字体大小（可选设置）
+				Family: "Noto Sans SC Medium", // 字体名称
+				Bold:   true,                  // 加粗
+				Size:   12,                    // 字体大小（可选设置）
 			},
 			// 背景填充
 			Fill: excelize.Fill{
 				Type:    "pattern",           // 填充类型：纯色填充
-				Color:   []string{"#EDEDED"}, // 灰色背景
+				Color:   []string{"#A6A6A6"}, // 灰色背景
 				Pattern: 1,                   // 实心填充模式
 			},
 			// 边框设置
@@ -100,12 +102,17 @@ func NewExcelExporter(cfg *ExcelExportConfig) *ExcelExporter {
 			},
 		}
 	}
+	// 设置默认文件保存路径
+	if cfg.BasePath == "" {
+		// 默认为当前目录下的export目录
+		cfg.BasePath = filepath.Join(".", "static/export")
+	}
 
 	return &ExcelExporter{config: cfg}
 }
 
 // Export 执行导出，返回Excel文件内容
-func (e *ExcelExporter) Export() ([]byte, error) {
+func (e *ExcelExporter) Export() (*excelize.File, error) {
 	f := excelize.NewFile()
 	sheet := e.config.SheetName
 
@@ -235,14 +242,22 @@ func (e *ExcelExporter) Export() ([]byte, error) {
 	// 根据指定模式导出文件
 	if e.config.StreamMode {
 		// 导出文件流
-		buf := bytes.NewBuffer([]byte{})
-		if err := f.Write(buf); err != nil {
-			return nil, err
-		}
-		return buf.Bytes(), nil
+		return f, err
 	} else {
-		// 根据指定路径保存文件
-		if err := f.SaveAs(e.config.FileName); err != nil {
+		// 创建日期目录（格式：年月日）
+		dateDir := time.Now().Format("20060102")
+		// 构建完整路径：基础路径 + 日期目录
+		fullPath := filepath.Join(e.config.BasePath, dateDir)
+		// 确保目录存在
+		if err := os.MkdirAll(fullPath, 0755); err != nil {
+			zap.S().Errorf("创建目录失败: %s, %v", fullPath, err)
+			return nil, fmt.Errorf("创建目录失败: %w", err)
+		}
+		// 构建完整文件名：路径 + 文件名 + 后缀
+		fileName := e.config.FileName + ".xlsx"
+		outputPath := filepath.Join(fullPath, fileName)
+		// 保存文件到指定路径
+		if err := f.SaveAs(outputPath); err != nil {
 			zap.S().Errorf("保存文件失败: %v", err)
 			return nil, err
 		}

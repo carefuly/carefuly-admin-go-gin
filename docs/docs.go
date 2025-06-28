@@ -2842,7 +2842,7 @@ const docTemplate = `{
             }
         },
         "/v1/tools/dict/export": {
-            "post": {
+            "get": {
                 "security": [
                     {
                         "LoginToken": []
