@@ -1,6 +1,6 @@
 /**
  * Description：
- * FileName：dictType.go
+ * FileName：dict_type.go
  * Author：CJiaの用心
  * Create：2025/5/23 17:19:12
  * Remark：
@@ -81,5 +81,5 @@ func (c *RedisDictTypeCache) SetNotFound(ctx context.Context, id string) error {
 }
 
 func (c *RedisDictTypeCache) key(id string) string {
-	return fmt.Sprintf("careful:tools:dictType:info:%s", id)
+	return fmt.Sprintf("careful:tools:dict_type:info:%s", id)
 }

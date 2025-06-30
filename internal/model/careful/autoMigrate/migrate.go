@@ -16,9 +16,9 @@ import (
 )
 
 func AutoMigrate(db *gorm.DB) {
-	initSystem(db)
+	// initSystem(db)
 	initTools(db)
-	initLogger(db)
+	// initLogger(db)
 }
 
 func initSystem(db *gorm.DB) {
@@ -33,7 +33,7 @@ func initSystem(db *gorm.DB) {
 
 func initTools(db *gorm.DB) {
 	tools.NewDict().AutoMigrate(db)
-	// tools.NewDictType().AutoMigrate(db)
+	tools.NewDictType().AutoMigrate(db)
 }
 
 func initLogger(db *gorm.DB) {

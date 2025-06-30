@@ -1,6 +1,6 @@
 /**
  * Description：
- * FileName：dictType.go
+ * FileName：dict_type.go
  * Author：CJiaの用心
  * Create：2025/6/5 16:37:21
  * Remark：
@@ -12,12 +12,12 @@ import (
 	"context"
 	"errors"
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/repository/dao/careful/tools"
 	repositoryTools "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/tools"
+	"github.com/go-sql-driver/mysql"
 )
 
 var (
-	ErrNotSupportedTypeValue        = repositoryTools.ErrNotSupportedTypeValue
+	ErrDictTypeInvalidDictValueType = repositoryTools.ErrDictTypeInvalidDictValueType
 	ErrDictTypeNotFound             = repositoryTools.ErrDictTypeNotFound
 	ErrDictTypeDuplicate            = repositoryTools.ErrDictTypeDuplicate
 	ErrDictTypeVersionInconsistency = repositoryTools.ErrDictTypeVersionInconsistency
@@ -25,7 +25,6 @@ var (
 
 type DictTypeService interface {
 	Create(ctx context.Context, domain domainTools.DictType) error
-
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, domain domainTools.DictType) error
@@ -64,12 +63,18 @@ func (svc *dictTypeService) Create(ctx context.Context, domain domainTools.DictT
 
 	// 设置DictName和TypeValue
 	domain.DictName = dict.Name
-	domain.TypeValue = dict.ValueType
+	domain.ValueType = dict.ValueType
 
 	// 唯一性校验
 	// 逻辑较为复杂，暂时不实现，默认使用mysql唯一性约束
+	if err := svc.repo.Create(ctx, domain); err != nil {
+		if svc.IsDuplicateEntryError(err) {
+			return repositoryTools.ErrDictTypeDuplicate
+		}
+		return err
+	}
 
-	return svc.repo.Create(ctx, domain)
+	return nil
 }
 
 // Import 导入
@@ -109,7 +114,7 @@ func (svc *dictTypeService) Update(ctx context.Context, domain domainTools.DictT
 
 	// 设置DictName和TypeValue
 	domain.DictName = dict.Name
-	domain.TypeValue = dict.ValueType
+	domain.ValueType = dict.ValueType
 
 	// 唯一性校验
 	// 逻辑较为复杂，暂时不实现，默认使用mysql唯一性约束
@@ -138,7 +143,7 @@ func (svc *dictTypeService) GetById(ctx context.Context, id string) (domainTools
 		return domain, err
 	}
 	if domain.Id == "" {
-		return domain, tools.ErrDictTypeNotFound
+		return domain, repositoryTools.ErrDictTypeNotFound
 	}
 	return domain, err
 }
@@ -151,4 +156,14 @@ func (svc *dictTypeService) GetListPage(ctx context.Context, filter domainTools.
 // GetListAll 查询所有列表
 func (svc *dictTypeService) GetListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, error) {
 	return svc.repo.GetListAll(ctx, filter)
+}
+
+// IsDuplicateEntryError 判断是否是唯一冲突错误
+func (svc *dictTypeService) IsDuplicateEntryError(err error) bool {
+	var mysqlErr *mysql.MySQLError
+	if errors.As(err, &mysqlErr) {
+		// MySQL 错误码 1062 表示唯一冲突
+		return mysqlErr.Number == 1062
+	}
+	return false
 }

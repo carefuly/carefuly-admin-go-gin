@@ -218,8 +218,8 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
-		ctx.Set("internal", err)
-		zap.S().Error("获取用户失败", err)
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -271,11 +271,11 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 
 	if err := h.svc.Delete(ctx, id); err != nil {
 		if errors.Is(err, serviceTools.ErrDictNotFound) {
-			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典不存在", nil)
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据字典不存在", nil)
 			return
 		}
 		ctx.Set("internal", err.Error())
-		zap.L().Error("删除字典失败", zap.Error(err))
+		zap.L().Error("删除数据字典失败", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -400,7 +400,7 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 func (h *dictHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
-		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "ID不能为空", nil)
+		response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "id不能为空", nil)
 		return
 	}
 
@@ -410,6 +410,7 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "字典不存在", nil)
 			return
 		}
+		ctx.Set("internal", err.Error())
 		zap.L().Error("获取字典失败", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return

@@ -1,6 +1,6 @@
 /**
  * Description：
- * FileName：dictType.go
+ * FileName：dict_type.go
  * Author：CJiaの用心
  * Create：2025/5/23 16:50:37
  * Remark：
@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	ErrNotSupportedTypeValue        = errors.New("不支持的字典类型")
+	ErrDictTypeInvalidDictValueType = daoTools.ErrDictTypeInvalidDictValueType
 	ErrDictTypeNotFound             = daoTools.ErrDictTypeNotFound
 	ErrDictTypeDuplicate            = daoTools.ErrDictTypeDuplicate
 	ErrDictTypeVersionInconsistency = daoTools.ErrDictTypeVersionInconsistency
@@ -202,12 +202,12 @@ func (repo *dictTypeRepository) toEntity(domain domainTools.DictType) (modelTool
 		DictTag:   domain.DictTag,
 		DictColor: domain.DictColor,
 		DictName:  domain.DictName,
-		TypeValue: domain.TypeValue,
+		ValueType: domain.ValueType,
 		DictId:    domain.DictId,
 	}
 
 	// 根据类型设置值
-	switch domain.TypeValue {
+	switch domain.ValueType {
 	case 1: // 字符串
 		model.StrValue = sql.NullString{
 			Valid:  true,
@@ -230,7 +230,7 @@ func (repo *dictTypeRepository) toEntity(domain domainTools.DictType) (modelTool
 			Bool:  domain.BoolValue,
 		}
 	default:
-		return modelTools.DictType{}, ErrNotSupportedTypeValue
+		return modelTools.DictType{}, daoTools.ErrDictTypeInvalidDictValueType
 	}
 
 	return model, nil
@@ -239,7 +239,10 @@ func (repo *dictTypeRepository) toEntity(domain domainTools.DictType) (modelTool
 // toDomain 转换为领域模型
 func (repo *dictTypeRepository) toDomain(entity *modelTools.DictType) domainTools.DictType {
 	model := domainTools.DictType{
-		DictType: *entity,
+		DictType:  *entity,
+		StrValue:  entity.StrValue.String,
+		IntValue:  entity.IntValue.Int64,
+		BoolValue: entity.BoolValue.Bool,
 	}
 
 	if entity.CreateTime != nil {

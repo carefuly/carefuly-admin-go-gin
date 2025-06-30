@@ -1,6 +1,6 @@
 /**
  * Description：
- * FileName：dictType.go
+ * FileName：dict_type.go
  * Author：CJiaの用心
  * Create：2025/5/23 16:38:20
  * Remark：
@@ -19,6 +19,7 @@ import (
 
 var (
 	ErrDictTypeNotFound             = gorm.ErrRecordNotFound
+	ErrDictTypeInvalidDictValueType = tools.ErrDictTypeInvalidDictValueType
 	ErrDictTypeDuplicate            = tools.ErrDictTypeUniqueIndex
 	ErrDictTypeVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
 )
@@ -63,12 +64,11 @@ func (dao *GORMDictTypeDAO) Update(ctx context.Context, model tools.DictType) er
 	result := dao.db.WithContext(ctx).Model(&model).
 		Where("id = ? AND version = ?", model.Id, model.Version).
 		Updates(map[string]any{
-			// "strValue":  model.StrValue,
-			// "intValue":  model.IntValue,
-			// "boolValue": model.BoolValue,
+			"name":      model.Name,
 			"dictTag":   model.DictTag,
 			"dictColor": model.DictColor,
 			"sort":      model.Sort,
+			"status":    model.Status,
 			"version":   gorm.Expr("version + 1"),
 			"modifier":  model.Modifier,
 			"remark":    model.Remark,
@@ -78,7 +78,7 @@ func (dao *GORMDictTypeDAO) Update(ctx context.Context, model tools.DictType) er
 		// 先检查记录是否存在
 		var exists bool
 		dao.db.WithContext(ctx).
-			Model(&tools.Dict{}).
+			Model(&tools.DictType{}).
 			Select("1").
 			Where("id = ?", model.Id).
 			Limit(1).
@@ -144,11 +144,12 @@ func (dao *GORMDictTypeDAO) buildQuery(ctx context.Context, filter domainTools.D
 			Modifier:   filter.Modifier,
 			BelongDept: filter.BelongDept,
 		},
-		Status:   filter.Status,
-		Name:     filter.Name,
-		DictTag:  filter.DictTag,
-		DictName: filter.DictName,
-		DictId:   filter.DictId,
+		Status:    filter.Status,
+		Name:      filter.Name,
+		DictTag:   filter.DictTag,
+		DictName:  filter.DictName,
+		ValueType: filter.ValueType,
+		DictId:    filter.DictId,
 	}
 	return builder.Apply(dao.db.WithContext(ctx).Model(&tools.DictType{}))
 }
