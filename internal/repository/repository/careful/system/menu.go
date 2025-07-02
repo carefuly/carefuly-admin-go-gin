@@ -24,6 +24,7 @@ var (
 	ErrMenuNameDuplicate        = daoSystem.ErrMenuNameDuplicate
 	ErrMenuDuplicate            = daoSystem.ErrMenuDuplicate
 	ErrMenuVersionInconsistency = daoSystem.ErrMenuVersionInconsistency
+	ErrMenuChildNodes           = daoSystem.ErrMenuChildNodes
 )
 
 type MenuRepository interface {
@@ -80,7 +81,23 @@ func (repo *menuRepository) Delete(ctx context.Context, id string) (int64, error
 
 // BatchDelete 批量删除
 func (repo *menuRepository) BatchDelete(ctx context.Context, ids []string) error {
-	err := repo.dao.BatchDelete(ctx, ids)
+	var MenuIds []string
+	// 检查是否存在子菜单
+	for _, id := range ids {
+		exists, err := repo.dao.CheckExistByIdAndParentId(ctx, id)
+		if err != nil {
+			zap.L().Error("检查菜单是否存在子菜单异常", zap.Error(err))
+			continue
+		}
+		if exists {
+			continue
+		} else {
+			MenuIds = append(MenuIds, id)
+		}
+	}
+
+	// 删除没有子菜单的菜单
+	err := repo.dao.BatchDelete(ctx, MenuIds)
 	if err != nil {
 		return err
 	}

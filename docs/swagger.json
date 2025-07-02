@@ -748,7 +748,7 @@
                 }
             }
         },
-        "/v1/system/menu/listRouter": {
+        "/v1/system/menu/listAll": {
             "get": {
                 "security": [
                     {
@@ -4529,7 +4529,7 @@
                     "type": "boolean"
                 },
                 "type": {
-                    "description": "字典分类",
+                    "description": "字典类型",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dict.TypeConst"
@@ -5129,7 +5129,7 @@
                     "type": "boolean"
                 },
                 "type": {
-                    "description": "字典分类",
+                    "description": "字典类型",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dict.TypeConst"
@@ -5390,7 +5390,7 @@
             ],
             "properties": {
                 "component": {
-                    "description": "组件名称",
+                    "description": "组件地址",
                     "type": "string",
                     "maxLength": 128
                 },
@@ -6053,7 +6053,7 @@
             ],
             "properties": {
                 "component": {
-                    "description": "组件名称",
+                    "description": "组件地址",
                     "type": "string",
                     "maxLength": 128
                 },

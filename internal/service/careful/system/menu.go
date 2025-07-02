@@ -27,6 +27,7 @@ var (
 	ErrMenuNameDuplicate        = repositorySystem.ErrMenuNameDuplicate
 	ErrMenuDuplicate            = repositorySystem.ErrMenuDuplicate
 	ErrMenuVersionInconsistency = repositorySystem.ErrMenuVersionInconsistency
+	ErrMenuChildNodes           = repositorySystem.ErrMenuChildNodes
 )
 
 type MenuService interface {
@@ -61,7 +62,7 @@ func (svc *menuService) Create(ctx context.Context, domain domainSystem.Menu) er
 		return repositorySystem.ErrMenuNameDuplicate
 	}
 
-	// 创建用户
+	// 创建
 	if err := svc.repo.Create(ctx, domain); err != nil {
 		if svc.IsDuplicateEntryError(err) {
 			return repositorySystem.ErrMenuNameDuplicate

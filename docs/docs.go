@@ -754,7 +754,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/system/menu/listRouter": {
+        "/v1/system/menu/listAll": {
             "get": {
                 "security": [
                     {
@@ -4535,7 +4535,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "type": {
-                    "description": "字典分类",
+                    "description": "字典类型",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dict.TypeConst"
@@ -5135,7 +5135,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "type": {
-                    "description": "字典分类",
+                    "description": "字典类型",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dict.TypeConst"
@@ -5396,7 +5396,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "component": {
-                    "description": "组件名称",
+                    "description": "组件地址",
                     "type": "string",
                     "maxLength": 128
                 },
@@ -6059,7 +6059,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "component": {
-                    "description": "组件名称",
+                    "description": "组件地址",
                     "type": "string",
                     "maxLength": 128
                 },

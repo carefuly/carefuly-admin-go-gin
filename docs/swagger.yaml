@@ -596,7 +596,7 @@ definitions:
       type:
         allOf:
         - $ref: '#/definitions/dict.TypeConst'
-        description: 字典分类
+        description: 字典类型
       updateTime:
         description: 更新时间
         type: string
@@ -1018,7 +1018,7 @@ definitions:
       type:
         allOf:
         - $ref: '#/definitions/dict.TypeConst'
-        description: 字典分类
+        description: 字典类型
       valueType:
         allOf:
         - $ref: '#/definitions/dict.TypeValueConst'
@@ -1207,7 +1207,7 @@ definitions:
   system.CreateMenuRequest:
     properties:
       component:
-        description: 组件名称
+        description: 组件地址
         maxLength: 128
         type: string
       icon:
@@ -1696,7 +1696,7 @@ definitions:
   system.UpdateMenuRequest:
     properties:
       component:
-        description: 组件名称
+        description: 组件地址
         maxLength: 128
         type: string
       icon:
@@ -2576,7 +2576,7 @@ paths:
       summary: 获取菜单
       tags:
       - 系统管理/菜单管理
-  /v1/system/menu/listRouter:
+  /v1/system/menu/listAll:
     get:
       consumes:
       - application/json

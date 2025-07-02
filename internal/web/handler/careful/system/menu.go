@@ -32,7 +32,7 @@ type CreateMenuRequest struct {
 	Icon        string         `json:"icon" binding:"omitempty,max=64"`                 // 菜单图标
 	Title       string         `json:"title" binding:"required,max=64"`                 // 菜单标题
 	Name        string         `json:"name" binding:"required,max=64"`                  // 组件名称
-	Component   string         `json:"component" binding:"omitempty,max=128"`           // 组件名称
+	Component   string         `json:"component" binding:"omitempty,max=128"`           // 组件地址
 	Path        string         `json:"path" binding:"required,max=128"`                 // 路由地址
 	Redirect    string         `json:"redirect" binding:"omitempty,max=128"`            // 重定向地址
 	IsHide      bool           `json:"isHide" binding:"omitempty" default:"false"`      // 是否隐藏
@@ -53,7 +53,7 @@ type UpdateMenuRequest struct {
 	Icon        string         `json:"icon" binding:"omitempty,max=64" default:"HomeFilled"` // 菜单图标
 	Title       string         `json:"title" binding:"required,max=64"`                      // 菜单标题
 	Name        string         `json:"name" binding:"required,max=64"`                       // 组件名称
-	Component   string         `json:"component" binding:"omitempty,max=128"`                // 组件名称
+	Component   string         `json:"component" binding:"omitempty,max=128"`                // 组件地址
 	Path        string         `json:"path" binding:"required,max=128"`                      // 路由地址
 	Redirect    string         `json:"redirect" binding:"omitempty,max=128"`                 // 重定向地址
 	IsHide      bool           `json:"isHide" binding:"omitempty" default:"false"`           // 是否隐藏
@@ -84,7 +84,7 @@ type MenuHandler interface {
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
 	GetMenuTree(ctx *gin.Context)
-	GetListRouter(ctx *gin.Context)
+	GetListAll(ctx *gin.Context)
 }
 
 type menuHandler struct {
@@ -110,7 +110,7 @@ func (h *menuHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
 	base.GET("/listTree", h.GetMenuTree)
-	base.GET("/listRouter", h.GetListRouter)
+	base.GET("/listAll", h.GetListAll)
 }
 
 // Create
@@ -217,14 +217,19 @@ func (h *menuHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		if errors.Is(err, serviceSystem.ErrMenuNotFound) {
+		switch {
+		case errors.Is(err, serviceSystem.ErrMenuNotFound):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "菜单不存在", nil)
 			return
+		case errors.Is(err, serviceSystem.ErrMenuChildNodes):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "请先删除当前节点下的子节点", nil)
+			return
+		default:
+			ctx.Set("internal", err.Error())
+			zap.L().Error("删除菜单失败", zap.Error(err))
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
 		}
-		ctx.Set("internal", err.Error())
-		zap.L().Error("删除菜单失败", zap.Error(err))
-		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-		return
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
@@ -412,7 +417,7 @@ func (h *menuHandler) GetMenuTree(ctx *gin.Context) {
 	response.NewResponse().SuccessResponse(ctx, "查询成功", tree)
 }
 
-// GetListRouter
+// GetListAll
 // @Summary 获取所有菜单
 // @Description 获取所有菜单列表
 // @Tags 系统管理/菜单管理
@@ -424,9 +429,9 @@ func (h *menuHandler) GetMenuTree(ctx *gin.Context) {
 // @Param title query string false "菜单标题"
 // @Success 200 {array} []domainSystem.Menu
 // @Failure 400 {object} response.Response
-// @Router /v1/system/menu/listRouter [get]
+// @Router /v1/system/menu/listAll [get]
 // @Security LoginToken
-func (h *menuHandler) GetListRouter(ctx *gin.Context) {
+func (h *menuHandler) GetListAll(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
