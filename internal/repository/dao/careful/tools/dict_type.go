@@ -31,6 +31,7 @@ type DictTypeDAO interface {
 	Update(ctx context.Context, model tools.DictType) error
 
 	FindById(ctx context.Context, id string) (*tools.DictType, error)
+	FindByDictNames(ctx context.Context, dictNames []string) ([]*tools.DictType, error)
 	FindListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, int64, error)
 	FindListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, error)
 }
@@ -105,6 +106,22 @@ func (dao *GORMDictTypeDAO) FindById(ctx context.Context, id string) (*tools.Dic
 		return &model, err
 	}
 	return &model, err
+}
+
+// FindByDictNames 根据多个dictName获取详情
+func (dao *GORMDictTypeDAO) FindByDictNames(ctx context.Context, dictNames []string) ([]*tools.DictType, error) {
+	if len(dictNames) == 0 {
+		return []*tools.DictType{}, nil
+	}
+
+	var models []*tools.DictType
+	err := dao.db.WithContext(ctx).
+		Where("status = ?", true).
+		Where("dictName IN ?", dictNames).
+		Order("sort ASC, update_time DESC").
+		Find(&models).Error
+
+	return models, err
 }
 
 // FindListPage 分页查询

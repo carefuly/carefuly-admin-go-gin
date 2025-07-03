@@ -3559,6 +3559,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/tools/dictType/listByDictNames": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "返回分层结构的字典项映射",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "根据字典名称批量查询字典项",
+                "parameters": [
+                    {
+                        "description": "字典名称数组",
+                        "name": "dictNames",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.DictType"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tools/dictType/listPage": {
             "get": {
                 "security": [

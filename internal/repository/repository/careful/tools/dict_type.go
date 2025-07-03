@@ -34,6 +34,7 @@ type DictTypeRepository interface {
 	Update(ctx context.Context, domain domainTools.DictType) error
 
 	GetById(ctx context.Context, id string) (domainTools.DictType, error)
+	GetByDictNames(ctx context.Context, dictNames []string) ([]domainTools.DictType, error)
 	GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error)
 	GetListAll(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, error)
 }
@@ -145,6 +146,25 @@ func (repo *dictTypeRepository) GetById(ctx context.Context, id string) (domainT
 	}
 
 	return toDomain, nil
+}
+
+// GetByDictNames 根据多个dictName获取详情
+func (repo *dictTypeRepository) GetByDictNames(ctx context.Context, dictNames []string) ([]domainTools.DictType, error) {
+	list, err := repo.dao.FindByDictNames(ctx, dictNames)
+	if err != nil {
+		return []domainTools.DictType{}, err
+	}
+
+	if len(list) == 0 {
+		return []domainTools.DictType{}, nil
+	}
+
+	var domains []domainTools.DictType
+	for _, v := range list {
+		domains = append(domains, repo.toDomain(v))
+	}
+
+	return domains, nil
 }
 
 // GetListPage 分页查询列表

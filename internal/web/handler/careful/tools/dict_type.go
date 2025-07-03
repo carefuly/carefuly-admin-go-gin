@@ -60,6 +60,10 @@ type UpdateDictTypeRequest struct {
 	Remark    string                `json:"remark" binding:"omitempty,max=255"`         // 备注
 }
 
+type ListByDictNamesRequest struct {
+	DictNames []string `json:"dictNames"` // 数组参数格式: ?dictNames=性别&dictNames=计量单位
+}
+
 // DictTypeListPageResponse 列表分页响应
 type DictTypeListPageResponse struct {
 	List     []domainTools.DictType `json:"list"`     // 列表
@@ -76,6 +80,7 @@ type DictTypeHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
+	GetListByDictNames(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 }
@@ -102,6 +107,7 @@ func (h *dictTypeHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/delete/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
+	base.POST("/listByDictNames", h.GetListByDictNames)
 	base.GET("/listPage", h.GetListPage)
 	base.GET("/listAll", h.GetListAll)
 }
@@ -366,6 +372,34 @@ func (h *dictTypeHandler) GetById(ctx *gin.Context) {
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "获取成功", detail)
+}
+
+// GetListByDictNames
+// @Summary 根据字典名称批量查询字典项
+// @Description 返回分层结构的字典项映射
+// @Tags 系统工具/字典信息管理
+// @Accept application/json
+// @Produce application/json
+// @Param dictNames body []string true "字典名称数组"
+// @Success 200 {object} map[string][]domainTools.DictType
+// @Failure 400 {object} response.Response
+// @Router /v1/tools/dictType/listByDictNames [post]
+// @Security LoginToken
+func (h *dictTypeHandler) GetListByDictNames(ctx *gin.Context) {
+	var req []string
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+		return
+	}
+
+	list, err := h.svc.GetByDictNames(ctx, req)
+	if err != nil {
+		zap.L().Error("获取字典名称批量查询字典项异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().SuccessResponse(ctx, "查询成功", list)
 }
 
 // GetListPage

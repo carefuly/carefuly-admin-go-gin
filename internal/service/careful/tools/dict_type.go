@@ -30,6 +30,7 @@ type DictTypeService interface {
 	Update(ctx context.Context, domain domainTools.DictType) error
 
 	GetById(ctx context.Context, id string) (domainTools.DictType, error)
+	GetByDictNames(ctx context.Context, dictNames []string) (map[string][]domainTools.DictType, error)
 	GetListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error)
 	GetListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, error)
 }
@@ -146,6 +147,44 @@ func (svc *dictTypeService) GetById(ctx context.Context, id string) (domainTools
 		return domain, repositoryTools.ErrDictTypeNotFound
 	}
 	return domain, err
+}
+
+// GetByDictNames 根据多个dictName获取详情
+func (svc *dictTypeService) GetByDictNames(ctx context.Context, dictNames []string) (map[string][]domainTools.DictType, error) {
+	if len(dictNames) == 0 {
+		return map[string][]domainTools.DictType{}, nil
+	}
+
+	dictTypes, err := svc.repo.GetByDictNames(ctx, dictNames)
+	if err != nil {
+		return nil, err
+	}
+
+	// 按dictName分组
+	resultMap := make(map[string][]domainTools.DictType)
+	for _, dt := range dictTypes {
+		switch {
+		case dt.ValueType == 1:
+			dt.Label = dt.Name
+			dt.Value = dt.StrValue
+		case dt.ValueType == 2:
+			dt.Label = dt.Name
+			dt.Value = dt.IntValue
+		case dt.ValueType == 3:
+			dt.Label = dt.Name
+			dt.Value = dt.BoolValue
+		}
+		resultMap[dt.DictName] = append(resultMap[dt.DictName], dt)
+	}
+
+	// 确保所有请求的键都存在（即使没有数据）
+	for _, name := range dictNames {
+		if _, ok := resultMap[name]; !ok {
+			resultMap[name] = []domainTools.DictType{}
+		}
+	}
+
+	return resultMap, nil
 }
 
 // GetListPage 分页查询列表

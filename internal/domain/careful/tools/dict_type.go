@@ -16,6 +16,8 @@ import (
 
 type DictType struct {
 	tools.DictType
+	Label      string `json:"label"`      // 名称
+	Value      any    `json:"value"`      // 值
 	StrValue   string `json:"strValue"`   // 字符串-字典信息值
 	IntValue   int64  `json:"intValue"`   // 整型-字典信息值
 	BoolValue  bool   `json:"boolValue"`  // 布尔-字典信息值
