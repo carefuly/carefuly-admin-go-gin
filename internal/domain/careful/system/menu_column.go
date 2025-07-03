@@ -32,7 +32,7 @@ type MenuColumnFilter struct {
 func (f *MenuColumnFilter) Apply(query *gorm.DB) *gorm.DB {
 	query = f.Filters.Apply(query).
 		Where("status = ?", f.Status).
-		Order("update_time DESC, sort ASC")
+		Order("sort ASC, update_time DESC")
 
 	if f.Title != "" {
 		query = query.Where("title LIKE ?", "%"+f.Title+"%")

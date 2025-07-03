@@ -22,7 +22,7 @@ type MenuButton struct {
 	Name   string           `gorm:"type:varchar(64);not null;column:name;comment:名称" json:"name"`                                        // 名称
 	Code   string           `gorm:"type:varchar(64);not null;column:code;comment:权限值" json:"code"`                                       // 权限值
 	Api    string           `gorm:"type:varchar(255);not null;column:api;comment:接口地址" json:"api"`                                       // 接口地址
-	Method menu.MethodConst `gorm:"type:tinyint;column:method;comment:请求方式" json:"method"`                                               // 请求方式
+	Method menu.MethodConst `gorm:"type:tinyint;not null;column:method;comment:请求方式" json:"method"`                                      // 请求方式
 	MenuId string           `gorm:"type:varchar(100);column:menu_id;comment:关联菜单" json:"menu_id"`                                        // 关联菜单
 	Menu   *Menu            `gorm:"foreignKey:menu_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"menu"`                        // 菜单
 }
