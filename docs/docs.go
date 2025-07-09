@@ -3379,6 +3379,94 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/tools/dictType/export": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导出字典信息到Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "导出字典信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典信息名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "primary",
+                        "description": "标签类型",
+                        "name": "dictTag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典名称",
+                        "name": "dictName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "数据类型",
+                        "name": "valueType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典id",
+                        "name": "dict_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tools/dictType/getById/{id}": {
             "get": {
                 "security": [
@@ -4669,6 +4757,10 @@ const docTemplate = `{
                     "description": "整型-字典信息值",
                     "type": "integer"
                 },
+                "label": {
+                    "description": "名称",
+                    "type": "string"
+                },
                 "modifier": {
                     "description": "修改人",
                     "type": "string"
@@ -4696,6 +4788,9 @@ const docTemplate = `{
                 "updateTime": {
                     "description": "更新时间",
                     "type": "string"
+                },
+                "value": {
+                    "description": "值"
                 },
                 "valueType": {
                     "description": "数据类型",

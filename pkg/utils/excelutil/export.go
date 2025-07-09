@@ -85,7 +85,7 @@ func NewExcelExporter(cfg *ExcelExportConfig) *ExcelExporter {
 			// 背景填充
 			Fill: excelize.Fill{
 				Type:    "pattern",           // 填充类型：纯色填充
-				Color:   []string{"#A6A6A6"}, // 灰色背景
+				Color:   []string{"#D3D3D3"}, // 灰色背景
 				Pattern: 1,                   // 实心填充模式
 			},
 			// 边框设置

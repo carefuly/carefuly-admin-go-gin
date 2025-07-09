@@ -70,13 +70,13 @@ type DictHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	Import(ctx *gin.Context)
-	Export(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
+	Export(ctx *gin.Context)
 }
 
 type dictHandler struct {

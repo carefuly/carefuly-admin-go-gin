@@ -10,22 +10,26 @@ package tools
 
 import (
 	"errors"
+	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
 	serviceTools "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/tools/dict"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/constants/careful/tools/dictType"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/enumconv"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/excelutil"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // CreateDictTypeRequest 创建
@@ -83,6 +87,7 @@ type DictTypeHandler interface {
 	GetListByDictNames(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
+	Export(ctx *gin.Context)
 }
 
 type dictTypeHandler struct {
@@ -110,6 +115,7 @@ func (h *dictTypeHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/listByDictNames", h.GetListByDictNames)
 	base.GET("/listPage", h.GetListPage)
 	base.GET("/listAll", h.GetListAll)
+	base.GET("/export", h.Export)
 }
 
 // Create
@@ -551,4 +557,148 @@ func (h *dictTypeHandler) GetListAll(ctx *gin.Context) {
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "查询成功", list)
+}
+
+// Export
+// @Summary 导出字典信息
+// @Description 导出字典信息到Excel文件
+// @Tags 系统工具/字典信息管理
+// @Accept application/json
+// @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+// @Param creator query string false "创建人"
+// @Param modifier query string false "修改人"
+// @Param status query bool false "状态" default(true)
+// @Param name query string false "字典信息名称"
+// @Param dictTag query string false "标签类型" default(primary)
+// @Param dictName query string false "数据字典名称"
+// @Param valueType query int true "数据类型" default(1)
+// @Param dict_id query string false "数据字典id"
+// @Success 200 {file} file "Excel文件"
+// @Failure 500 {object} response.Response
+// @Router /v1/tools/dictType/export [get]
+// @Security LoginToken
+func (h *dictTypeHandler) Export(ctx *gin.Context) {
+	uid, ok := ctx.MustGet("userId").(string)
+	if !ok {
+		ctx.Set("internal", uid)
+		zap.S().Error("用户ID获取失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
+	name := ctx.DefaultQuery("name", "")
+	dictTag := ctx.DefaultQuery("dictTag", "")
+	dictName := ctx.DefaultQuery("dictName", "")
+	valueType, _ := strconv.Atoi(ctx.DefaultQuery("valueType", "0"))
+	dictId := ctx.DefaultQuery("dict_id", "")
+
+	filter := domainTools.DictTypeFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: user.DeptId,
+		},
+		Status:    status,
+		Name:      name,
+		DictTag:   dictTag,
+		DictName:  dictName,
+		ValueType: valueType,
+		DictId:    dictId,
+	}
+
+	list, err := h.svc.GetListAll(ctx, filter)
+	if err != nil {
+		zap.L().Error("获取列表异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 准备导出配置
+	filename := fmt.Sprintf("字典信息导出_%s.xlsx", time.Now().Format("20060102150405"))
+	cfg := excelutil.ExcelExportConfig{
+		SheetName:  "字典信息",
+		FileName:   filename,
+		StreamMode: true,
+		Columns: []excelutil.ExcelColumn{
+			{Title: "字典项名称", Field: "Name", Width: 22},
+			{Title: "字符串-值", Field: "StrValue", Width: 17},
+			{Title: "整型-值", Field: "IntValue", Width: 17},
+			{Title: "布尔-值", Field: "BoolValue", Width: 17},
+			{
+				Title: "标签类型",
+				Field: "DictTag",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValidValues := []string{"primary", "success", "warning", "danger", "info"}
+					converter := enumconv.NewEnumConverter(dictType.DictTagMapping, dictType.DictTagImportMapping, typeValidValues, "标签类型")
+					str, _ := converter.FromEnum(value.(dictType.DictTagConst))
+					return str
+				},
+			},
+			{Title: "标签颜色", Field: "DictColor", Width: 17},
+			{Title: "字典名称", Field: "DictName", Width: 17},
+			{
+				Title: "数据类型",
+				Field: "ValueType",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValueValidValues := []string{"字符串", "整型", "布尔"}
+					typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "数据类型")
+					str, _ := typeValueConverter.FromEnum(value.(dict.TypeValueConst))
+					return str
+				},
+			},
+			{
+				Title: "状态",
+				Field: "Status",
+				Width: 10,
+				Formatter: func(value interface{}) string {
+					if status, ok := value.(bool); ok {
+						if status {
+							return "启用"
+						}
+						return "停用"
+					}
+					return fmt.Sprintf("%v", value)
+				},
+			},
+			{Title: "排序", Field: "Sort", Width: 8},
+			{Title: "创建时间", Field: "CreateTime", Width: 22},
+			{Title: "更新时间", Field: "UpdateTime", Width: 22},
+			{Title: "备注", Field: "Remark", Width: 40},
+		},
+		Data: list,
+	}
+
+	// 创建并执行导出器
+	exporter := excelutil.NewExcelExporter(&cfg)
+	f, err := exporter.Export()
+	if err != nil {
+		zap.L().Error("导出数据字典失败", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Type", "application/octet-stream")
+	ctx.Header("Content-Disposition", "attachment; filename=export.xlsx")
+	ctx.Header("Pragma", "no-cache")
+	ctx.Header("Cache-Control", "no-store")
+
+	// 流式写入响应
+	if _, err := f.WriteTo(ctx.Writer); err != nil {
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "生成Excel失败", nil)
+	}
 }

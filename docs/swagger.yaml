@@ -645,6 +645,9 @@ definitions:
       intValue:
         description: 整型-字典信息值
         type: integer
+      label:
+        description: 名称
+        type: string
       modifier:
         description: 修改人
         type: string
@@ -666,6 +669,8 @@ definitions:
       updateTime:
         description: 更新时间
         type: string
+      value:
+        description: 值
       valueType:
         allOf:
         - $ref: '#/definitions/dict.TypeValueConst'
@@ -4253,6 +4258,64 @@ paths:
       security:
       - LoginToken: []
       summary: 删除字典信息
+      tags:
+      - 系统工具/字典信息管理
+  /v1/tools/dictType/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出字典信息到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典信息名称
+        in: query
+        name: name
+        type: string
+      - default: primary
+        description: 标签类型
+        in: query
+        name: dictTag
+        type: string
+      - description: 数据字典名称
+        in: query
+        name: dictName
+        type: string
+      - default: 1
+        description: 数据类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      - description: 数据字典id
+        in: query
+        name: dict_id
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导出字典信息
       tags:
       - 系统工具/字典信息管理
   /v1/tools/dictType/getById/{id}:

@@ -20,7 +20,7 @@ import (
 type Role struct {
 	models.CoreModels
 	Status        bool                `gorm:"type:boolean;index:idx_status;default:true;column:status;comment:状态【true-启用 false-停用】" json:"status"` // 状态
-	Name          string              `gorm:"type:varchar(64);not null;column:name;comment:角色名称" json:"name"`                                      // 角色名称
+	Name          string              `gorm:"type:varchar(64);not null;index:idx_name;column:name;comment:角色名称" json:"name"`                       // 角色名称
 	Code          string              `gorm:"type:varchar(64);not null;uniqueIndex;column:code;comment:角色编码" json:"code"`                          // 角色编码
 	DataRange     role.DataRangeConst `gorm:"type:tinyint;default:1;column:data_range;comment:数据权限范围" json:"data_range"`                           // 数据权限范围
 	DeptIDs       []string            `gorm:"-" json:"dept_ids"`                                                                                   // 忽略GORM处理，只用于接收参数
