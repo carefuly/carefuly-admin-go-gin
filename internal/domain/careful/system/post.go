@@ -31,7 +31,7 @@ type PostFilter struct {
 func (f *PostFilter) Apply(query *gorm.DB) *gorm.DB {
 	query = f.Filters.Apply(query).
 		Where("status = ?", f.Status).
-		Order("update_time DESC, sort ASC")
+		Order("sort ASC, update_time DESC")
 
 	if f.Name != "" {
 		query = query.Where("name LIKE ?", "%"+f.Name+"%")

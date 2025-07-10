@@ -11,10 +11,9 @@ package system
 import (
 	"context"
 	"errors"
+	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 	repositorySystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/system"
 	"github.com/go-sql-driver/mysql"
-
-	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 )
 
 var (
@@ -55,7 +54,7 @@ func (svc *postService) Create(ctx context.Context, domain domainSystem.Post) er
 		return repositorySystem.ErrPostDuplicate
 	}
 
-	// 创建用户
+	// 创建
 	if err := svc.repo.Create(ctx, domain); err != nil {
 		if svc.IsDuplicateEntryError(err) {
 			return repositorySystem.ErrPostDuplicate
@@ -94,7 +93,7 @@ func (svc *postService) Update(ctx context.Context, domain domainSystem.Post) er
 		return repositorySystem.ErrPostDuplicate
 	}
 
-	// 更新用户
+	// 更新
 	if err := svc.repo.Update(ctx, domain); err != nil {
 		switch {
 		case svc.IsDuplicateEntryError(err):

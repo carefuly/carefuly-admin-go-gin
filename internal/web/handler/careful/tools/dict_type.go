@@ -686,7 +686,7 @@ func (h *dictTypeHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		zap.L().Error("导出数据字典失败", zap.Error(err))
+		zap.L().Error("导出字典信息失败", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
