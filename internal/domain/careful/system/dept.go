@@ -16,6 +16,7 @@ import (
 
 type Dept struct {
 	system.Dept
+	ParentName string `json:"parentName"` // 上级部门名称
 	CreateTime string `json:"createTime"` // 创建时间
 	UpdateTime string `json:"updateTime"` // 更新时间
 }
@@ -23,9 +24,9 @@ type Dept struct {
 type DeptFilter struct {
 	filters.Filters
 	filters.Pagination
-	Status bool   `json:"status"` // 状态
-	Name   string `json:"name"`   // 部门名称
-	Code   string `json:"code"`   // 部门编码
+	Status     bool   `json:"status"`     // 状态
+	Name       string `json:"name"`       // 部门名称
+	Code       string `json:"code"`       // 部门编码
 }
 
 func (f *DeptFilter) Apply(query *gorm.DB) *gorm.DB {

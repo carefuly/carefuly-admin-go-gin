@@ -79,7 +79,22 @@ func (repo *deptRepository) Delete(ctx context.Context, id string) (int64, error
 
 // BatchDelete 批量删除
 func (repo *deptRepository) BatchDelete(ctx context.Context, ids []string) error {
-	err := repo.dao.BatchDelete(ctx, ids)
+	var DeptIds []string
+	// 检查是否存在子部门
+	for _, id := range ids {
+		exists, err := repo.dao.CheckExistByIdAndParentId(ctx, id)
+		if err != nil {
+			zap.L().Error("检查部门是否存在子部门异常", zap.Error(err))
+			continue
+		}
+		if exists {
+			continue
+		} else {
+			DeptIds = append(DeptIds, id)
+		}
+	}
+
+	err := repo.dao.BatchDelete(ctx, DeptIds)
 	if err != nil {
 		return err
 	}
@@ -158,7 +173,14 @@ func (repo *deptRepository) GetListAll(ctx context.Context, filters domainSystem
 
 	var toDomain []domainSystem.Dept
 	for _, v := range list {
-		toDomain = append(toDomain, repo.toDomain(v))
+		dept, err := repo.dao.FindById(ctx, v.ParentID)
+		if err != nil {
+			continue
+		}
+
+		domainDept := repo.toDomain(v)
+		domainDept.ParentName = dept.Name
+		toDomain = append(toDomain, domainDept)
 	}
 
 	return toDomain, nil

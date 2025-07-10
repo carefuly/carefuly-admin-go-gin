@@ -458,7 +458,7 @@ func (h *postHandler) GetListAll(ctx *gin.Context) {
 
 // Export
 // @Summary 导出岗位信息
-// @Description 导出字岗位信息到Excel文件
+// @Description 导出岗位信息到Excel文件
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet

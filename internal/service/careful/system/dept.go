@@ -61,7 +61,7 @@ func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) er
 		return repositorySystem.ErrDeptDuplicate
 	}
 
-	// 创建用户
+	// 创建
 	if err := svc.repo.Create(ctx, domain); err != nil {
 		if svc.IsDuplicateEntryError(err) {
 			return repositorySystem.ErrDeptDuplicate
@@ -100,7 +100,7 @@ func (svc *deptService) Update(ctx context.Context, domain domainSystem.Dept) er
 		return repositorySystem.ErrDeptDuplicate
 	}
 
-	// 更新用户
+	// 更新
 	if err := svc.repo.Update(ctx, domain); err != nil {
 		switch {
 		case svc.IsDuplicateEntryError(err):
@@ -128,11 +128,6 @@ func (svc *deptService) GetById(ctx context.Context, id string) (domainSystem.De
 		return domain, repositorySystem.ErrDeptNotFound
 	}
 	return domain, err
-}
-
-// GetListAll 查询所有列表
-func (svc *deptService) GetListAll(ctx context.Context, filter domainSystem.DeptFilter) ([]domainSystem.Dept, error) {
-	return svc.repo.GetListAll(ctx, filter)
 }
 
 // GetListTree 获取树形结构
@@ -170,6 +165,11 @@ func (svc *deptService) GetListTree(ctx context.Context, filter domainSystem.Dep
 	}
 
 	return roots, nil
+}
+
+// GetListAll 查询所有列表
+func (svc *deptService) GetListAll(ctx context.Context, filter domainSystem.DeptFilter) ([]domainSystem.Dept, error) {
+	return svc.repo.GetListAll(ctx, filter)
 }
 
 // IsDuplicateEntryError 判断是否是唯一冲突错误

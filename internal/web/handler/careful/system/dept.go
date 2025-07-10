@@ -10,6 +10,7 @@ package system
 
 import (
 	"errors"
+	"fmt"
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	domainSystem "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/system"
 	modelSystem "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/system"
@@ -17,11 +18,13 @@ import (
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/excelutil"
 	validate "github.com/carefuly/carefuly-admin-go-gin/pkg/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // CreateDeptRequest 创建
@@ -68,6 +71,7 @@ type DeptHandler interface {
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
 	GetDeptTree(ctx *gin.Context)
+	Export(ctx *gin.Context)
 }
 
 type deptHandler struct {
@@ -93,6 +97,7 @@ func (h *deptHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
 	base.GET("/listTree", h.GetDeptTree)
+	base.GET("/export", h.Export)
 }
 
 // Create
@@ -352,10 +357,26 @@ func (h *deptHandler) GetById(ctx *gin.Context) {
 // @Router /v1/system/dept/listTree [get]
 // @Security LoginToken
 func (h *deptHandler) GetDeptTree(ctx *gin.Context) {
+	uid, ok := ctx.MustGet("userId").(string)
+	if !ok {
+		ctx.Set("internal", uid)
+		zap.S().Error("用户ID获取失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	belongDept := ctx.DefaultQuery("belongDept", "")
 	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
 
@@ -363,7 +384,7 @@ func (h *deptHandler) GetDeptTree(ctx *gin.Context) {
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
-			BelongDept: belongDept,
+			BelongDept: user.DeptId,
 		},
 		Status: status,
 		Name:   name,
@@ -379,4 +400,104 @@ func (h *deptHandler) GetDeptTree(ctx *gin.Context) {
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "查询成功", tree)
+}
+
+// Export
+// @Summary 导出部门信息
+// @Description 导出部门信息到Excel文件
+// @Tags 系统管理/部门管理
+// @Accept application/json
+// @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+// @Param creator query string false "创建人"
+// @Param modifier query string false "修改人"
+// @Param belongDept query string false "数据归属部门"
+// @Param status query bool false "状态" default(true)
+// @Param name query string false "部门名称"
+// @Param code query string false "部门编码"
+// @Success 200 {file} file "Excel文件"
+// @Failure 500 {object} response.Response
+// @Router /v1/system/dept/export [get]
+// @Security LoginToken
+func (h *deptHandler) Export(ctx *gin.Context) {
+	uid, ok := ctx.MustGet("userId").(string)
+	if !ok {
+		ctx.Set("internal", uid)
+		zap.S().Error("用户ID获取失败", uid)
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, uid)
+	if err != nil {
+		ctx.Set("internal", err.Error())
+		zap.S().Error("获取用户失败", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
+	name := ctx.DefaultQuery("name", "")
+	code := ctx.DefaultQuery("code", "")
+
+	filter := domainSystem.DeptFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: user.DeptId,
+		},
+		Status: status,
+		Name:   name,
+		Code:   code,
+	}
+
+	list, err := h.svc.GetListAll(ctx, filter)
+	if err != nil {
+		zap.L().Error("获取列表异常", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 准备导出配置
+	filename := fmt.Sprintf("部门信息导出_%s.xlsx", time.Now().Format("20060102150405"))
+	cfg := excelutil.ExcelExportConfig{
+		SheetName:  "部门",
+		FileName:   filename,
+		StreamMode: true,
+		Columns: []excelutil.ExcelColumn{
+			{Title: "部门名称", Field: "Name", Width: 22},
+			{Title: "部门编码", Field: "Code", Width: 18},
+			{Title: "负责人", Field: "Owner", Width: 18},
+			{Title: "联系电话", Field: "Phone", Width: 18},
+			{Title: "邮箱", Field: "Email", Width: 22},
+			{Title: "上级部门", Field: "ParentName", Width: 22},
+			{Title: "排序", Field: "Sort", Width: 8},
+			{Title: "创建时间", Field: "CreateTime", Width: 22},
+			{Title: "更新时间", Field: "UpdateTime", Width: 22},
+			{Title: "备注", Field: "Remark", Width: 40},
+		},
+		Data: list,
+	}
+
+	// 创建并执行导出器
+	exporter := excelutil.NewExcelExporter(&cfg)
+	f, err := exporter.Export()
+	if err != nil {
+		zap.L().Error("导出部门失败", zap.Error(err))
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Type", "application/octet-stream")
+	ctx.Header("Content-Disposition", "attachment; filename=export.xlsx")
+	ctx.Header("Pragma", "no-cache")
+	ctx.Header("Cache-Control", "no-store")
+
+	// 流式写入响应
+	if _, err := f.WriteTo(ctx.Writer); err != nil {
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "生成Excel失败", nil)
+	}
 }

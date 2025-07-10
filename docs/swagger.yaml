@@ -2367,6 +2367,53 @@ paths:
       summary: 批量删除部门
       tags:
       - 系统管理/部门管理
+  /v1/system/dept/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出部门信息到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - description: 数据归属部门
+        in: query
+        name: belongDept
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 部门名称
+        in: query
+        name: name
+        type: string
+      - description: 部门编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导出部门信息
+      tags:
+      - 系统管理/部门管理
   /v1/system/dept/getById/{id}:
     get:
       consumes:
@@ -3340,7 +3387,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 导出字岗位信息到Excel文件
+      description: 导出岗位信息到Excel文件
       parameters:
       - description: 创建人
         in: query
