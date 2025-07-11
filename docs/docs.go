@@ -784,6 +784,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/menu/export": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导出菜单信息到Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "导出菜单信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "菜单标题",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/menu/getById/{id}": {
             "get": {
                 "security": [
@@ -4200,6 +4261,10 @@ const docTemplate = `{
                     "description": "负责人",
                     "type": "string"
                 },
+                "parentName": {
+                    "description": "上级部门名称",
+                    "type": "string"
+                },
                 "parent_id": {
                     "description": "上级部门",
                     "type": "string"
@@ -5882,6 +5947,10 @@ const docTemplate = `{
                 },
                 "owner": {
                     "description": "负责人",
+                    "type": "string"
+                },
+                "parentName": {
+                    "description": "上级部门名称",
                     "type": "string"
                 },
                 "parent_id": {
