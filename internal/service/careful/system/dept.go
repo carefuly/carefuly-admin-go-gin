@@ -154,12 +154,14 @@ func (svc *deptService) GetListTree(ctx context.Context, filter domainSystem.Dep
 	}
 
 	// 第二遍遍历，构建树结构
-	for _, dept := range list {
-		node := deptMap[dept.Id]
-		if dept.ParentID == "" || deptMap[dept.ParentID] == nil {
-			roots = append(roots, node)
+	for _, node := range deptMap {
+		parentID := node.Dept.ParentID
+		// 关键修复：只通过ID存在性判断父节点
+		if parentID == "" || deptMap[parentID] == nil {
+			roots = append(roots, node) // 确认为根节点
 		} else {
-			parent := deptMap[dept.ParentID]
+			// 安全添加到父节点
+			parent := deptMap[parentID]
 			parent.Children = append(parent.Children, node)
 		}
 	}

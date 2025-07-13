@@ -17,10 +17,11 @@ import (
 )
 
 type MenuAndButton struct {
-	Id       string
-	Title    string
-	ParentID string
-	Type     menu.TypeConst
+	Id       string         `json:"id"`        // 菜单按钮id
+	Title    string         `json:"title"`     // 菜单按钮名称
+	ParentID string         `json:"parent_id"` // 父菜单id
+	Type     menu.TypeConst `json:"type"`      // 菜单按钮类型
+	Disabled  bool           `json:"disabled"`   // 是否禁用
 }
 
 type MenuAndButtonTree struct {
@@ -129,6 +130,7 @@ func (svc *menuButtonService) GetListByMenuIds(ctx context.Context, menuIds []st
 				Title:    m.Title,
 				ParentID: m.ParentID,
 				Type:     m.Type,
+				Disabled:  true,
 			})
 		}
 	}
@@ -141,6 +143,7 @@ func (svc *menuButtonService) GetListByMenuIds(ctx context.Context, menuIds []st
 				Title:    menuButton.Name,
 				ParentID: menuButton.MenuId,
 				Type:     3,
+				Disabled:  false,
 			})
 		}
 	}

@@ -27,10 +27,10 @@ type Role struct {
 	MenuIDs       []string            `gorm:"-" json:"menu_ids"`                                                                                   // 忽略GORM处理
 	MenuButtonIDs []string            `gorm:"-" json:"menu_button_ids"`                                                                            // 忽略GORM处理
 	MenuColumnIDs []string            `gorm:"-" json:"menu_column_ids"`                                                                            // 忽略GORM处理
-	Dept          []*Dept             `gorm:"many2many:careful_system_role_dept;"`                                                                 // 数据权限-关联部门
-	Menu          []*Menu             `gorm:"many2many:careful_system_role_menu;"`                                                                 // 数据权限-关联菜单
-	MenuButton    []*MenuButton       `gorm:"many2many:careful_system_role_menu_button;"`                                                          // 数据权限-关联菜单的接口按钮
-	MenuColumn    []*MenuColumn       `gorm:"many2many:careful_system_role_menu_column;"`                                                          // 数据权限-列表权限
+	Dept          []*Dept             `gorm:"many2many:careful_system_role_dept;" json:"dept"`                                                     // 数据权限-关联部门
+	Menu          []*Menu             `gorm:"many2many:careful_system_role_menu;" json:"menu"`                                                     // 数据权限-关联菜单
+	MenuButton    []*MenuButton       `gorm:"many2many:careful_system_role_menu_button;" json:"menuButton"`                                        // 数据权限-关联菜单的接口按钮
+	MenuColumn    []*MenuColumn       `gorm:"many2many:careful_system_role_menu_column;" json:"menuColumn"`                                        // 数据权限-列表权限
 }
 
 func NewRole() *Role {

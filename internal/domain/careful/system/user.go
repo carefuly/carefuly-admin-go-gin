@@ -33,7 +33,7 @@ type UserFilter struct {
 func (f *UserFilter) Apply(query *gorm.DB) *gorm.DB {
 	query = f.Filters.Apply(query).
 		Where("status = ?", f.Status).
-		Order("update_time DESC, sort ASC")
+		Order("sort ASC, update_time DESC")
 
 	if f.Username != "" {
 		query = query.Where("username LIKE ?", "%"+f.Username+"%")

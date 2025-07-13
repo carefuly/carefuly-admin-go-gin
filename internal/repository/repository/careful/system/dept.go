@@ -173,13 +173,22 @@ func (repo *deptRepository) GetListAll(ctx context.Context, filters domainSystem
 
 	var toDomain []domainSystem.Dept
 	for _, v := range list {
-		dept, err := repo.dao.FindById(ctx, v.ParentID)
-		if err != nil {
-			continue
+		domainDept := repo.toDomain(v)
+
+		// 只有存在有效ParentID时才查询父部门
+		if v.ParentID != "" { // 关键修复：空字符串不查询
+			dept, err := repo.dao.FindById(ctx, v.ParentID)
+			if err == nil { // 仅当查询成功时设置ParentName
+				domainDept.ParentName = dept.Name
+			} else {
+				// 可选：记录错误或设置默认值
+				domainDept.ParentName = "未知部门"
+			}
+		} else {
+			// 明确标记顶级部门
+			domainDept.ParentName = "" // 或"顶级部门"等业务标识
 		}
 
-		domainDept := repo.toDomain(v)
-		domainDept.ParentName = dept.Name
 		toDomain = append(toDomain, domainDept)
 	}
 

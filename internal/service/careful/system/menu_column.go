@@ -17,10 +17,11 @@ import (
 )
 
 type MenuAndColumn struct {
-	Id       string
-	Title    string
-	ParentID string
-	Type     menu.TypeConst
+	Id       string         `json:"id"`        // 菜单列id
+	Title    string         `json:"title"`     // 菜单列名称
+	ParentID string         `json:"parent_id"` // 父菜单id
+	Type     menu.TypeConst `json:"type"`      // 菜单列类型
+	Disabled bool           `json:"disabled"`  // 是否禁用
 }
 
 type MenuAndColumnTree struct {
@@ -129,6 +130,7 @@ func (svc *menuColumnService) GetListByMenuIds(ctx context.Context, menuIds []st
 				Title:    m.Title,
 				ParentID: m.ParentID,
 				Type:     m.Type,
+				Disabled: true,
 			})
 		}
 	}
@@ -141,6 +143,7 @@ func (svc *menuColumnService) GetListByMenuIds(ctx context.Context, menuIds []st
 				Title:    menuColumn.Title,
 				ParentID: menuColumn.MenuId,
 				Type:     4,
+				Disabled: false,
 			})
 		}
 	}
