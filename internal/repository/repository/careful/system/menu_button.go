@@ -56,6 +56,9 @@ func (repo *menuButtonRepository) Create(ctx context.Context, domain domainSyste
 // Delete 删除
 func (repo *menuButtonRepository) Delete(ctx context.Context, id string) (int64, error) {
 	rowsAffected, err := repo.dao.Delete(ctx, id)
+	if err != nil {
+		return rowsAffected, err
+	}
 
 	// 删除缓存
 	err = repo.cache.Del(ctx, id)

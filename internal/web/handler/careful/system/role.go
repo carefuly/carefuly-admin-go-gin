@@ -185,6 +185,9 @@ func (h *roleHandler) Delete(ctx *gin.Context) {
 
 	if err := h.svc.Delete(ctx, id); err != nil {
 		switch {
+		case errors.Is(err, serviceSystem.ErrRoleRelationship):
+			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "无法删除角色：该角色关联了菜单/按钮资源，请先解除关联", nil)
+			return
 		case errors.Is(err, serviceSystem.ErrRoleNotFound):
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "角色不存在", nil)
 			return

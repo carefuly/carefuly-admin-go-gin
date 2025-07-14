@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	ErrRoleRelationship         = errors.New("无法删除角色：该角色关联了菜单/按钮资源，请先解除关联")
 	ErrRoleNotFound             = repositorySystem.ErrRoleNotFound
 	ErrRoleCodeDuplicate        = repositorySystem.ErrRoleCodeDuplicate
 	ErrRoleDuplicate            = repositorySystem.ErrRoleDuplicate
@@ -68,8 +69,12 @@ func (svc *roleService) Create(ctx context.Context, domain domainSystem.Role) er
 
 // Delete 删除
 func (svc *roleService) Delete(ctx context.Context, id string) error {
+	var mysqlErr *mysql.MySQLError
 	rowsAffected, err := svc.repo.Delete(ctx, id)
 	if err != nil {
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1451 {
+			return ErrRoleRelationship
+		}
 		return err
 	}
 	if rowsAffected == 0 {

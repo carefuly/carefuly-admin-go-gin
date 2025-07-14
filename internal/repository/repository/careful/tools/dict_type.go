@@ -63,6 +63,9 @@ func (repo *dictTypeRepository) Create(ctx context.Context, domain domainTools.D
 // Delete 删除
 func (repo *dictTypeRepository) Delete(ctx context.Context, id string) (int64, error) {
 	rowsAffected, err := repo.dao.Delete(ctx, id)
+	if err != nil {
+		return rowsAffected, err
+	}
 
 	// 删除缓存
 	err = repo.cache.Del(ctx, id)
