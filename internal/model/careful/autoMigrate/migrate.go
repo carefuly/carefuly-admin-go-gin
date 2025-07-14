@@ -9,33 +9,32 @@
 package autoMigrate
 
 import (
-	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/logger"
-	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/system"
 	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	"gorm.io/gorm"
 )
 
 func AutoMigrate(db *gorm.DB) {
-	initSystem(db)
-	// initTools(db)
+	// initSystem(db)
+	initTools(db)
 	// initLogger(db)
 }
 
 func initSystem(db *gorm.DB) {
 	// system.NewUser().AutoMigrate(db)
 	// system.NewRole().AutoMigrate(db)
-	system.NewMenu().AutoMigrate(db)
-	system.NewMenuButton().AutoMigrate(db)
-	system.NewMenuColumn().AutoMigrate(db)
+	// system.NewMenu().AutoMigrate(db)
+	// system.NewMenuButton().AutoMigrate(db)
+	// system.NewMenuColumn().AutoMigrate(db)
 	// system.NewDept().AutoMigrate(db)
 	// system.NewPost().AutoMigrate(db)
 }
 
 func initTools(db *gorm.DB) {
-	tools.NewDict().AutoMigrate(db)
-	tools.NewDictType().AutoMigrate(db)
+	// tools.NewDict().AutoMigrate(db)
+	// tools.NewDictType().AutoMigrate(db)
+	tools.NewBucket().AutoMigrate(db)
 }
 
 func initLogger(db *gorm.DB) {
-	logger.NewOperateLogger().AutoMigrate(db)
+	// logger.NewOperateLogger().AutoMigrate(db)
 }

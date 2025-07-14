@@ -35,11 +35,13 @@ func NewToolsRouter(rely config.RelyConfig) *ToolsRouter {
 func (r *ToolsRouter) RegisterRouter(router *gin.RouterGroup) {
 	baseRouter := router.Group("/tools")
 
+	// 用户
 	userCache := cacheSystem.NewRedisUserCache(r.rely.Redis)
 	userDAO := daoSystem.NewGORMUserDAO(r.rely.Db.Careful)
 	userRepository := repositorySystem.NewUserRepository(userDAO, userCache)
 	userService := serviceSystem.NewUserService(userRepository)
 
+	// 数据字典
 	dictCache := cacheTools.NewRedisDictCache(r.rely.Redis)
 	dictDAO := daoTools.NewGORMDictDAO(r.rely.Db.Careful)
 	dictRepository := repositoryTools.NewDictRepository(dictDAO, dictCache)
@@ -47,10 +49,19 @@ func (r *ToolsRouter) RegisterRouter(router *gin.RouterGroup) {
 	dictHandler := handlerTools.NewDictHandler(r.rely, dictService, userService)
 	dictHandler.RegisterRoutes(baseRouter)
 
+	// 字典项
 	dictTypeCache := cacheTools.NewRedisDictTypeCache(r.rely.Redis)
 	dictTypeDAO := daoTools.NewGORMDictTypeDAO(r.rely.Db.Careful)
 	dictTypeRepository := repositoryTools.NewDictTypeRepository(dictTypeDAO, dictTypeCache)
 	dictTypeService := serviceTools.NewDictTypeService(dictTypeRepository, dictRepository)
 	dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService, userService)
 	dictTypeHandler.RegisterRoutes(baseRouter)
+
+	// 存储桶
+	bucketCache := cacheTools.NewRedisBucketCache(r.rely.Redis)
+	bucketDAO := daoTools.NewGORMBucketDAO(r.rely.Db.Careful)
+	bucketRepository := repositoryTools.NewBucketRepository(bucketDAO, bucketCache)
+	bucketService := serviceTools.NewBucketService(bucketRepository)
+	bucketHandler := handlerTools.NewBucketHandler(r.rely, bucketService, userService)
+	bucketHandler.RegisterRoutes(baseRouter)
 }

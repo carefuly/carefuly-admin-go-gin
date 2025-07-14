@@ -10,10 +10,12 @@ package filters
 
 import "gorm.io/gorm"
 
+// QueryFiltersBuilder 查询构建器接口
 type QueryFiltersBuilder interface {
 	Apply(query *gorm.DB) *gorm.DB
 }
 
+// Pagination 分页查询构建器
 type Pagination struct {
 	Page     int `json:"page"`     // 当前页
 	PageSize int `json:"pageSize"` // 每页显示的条数
