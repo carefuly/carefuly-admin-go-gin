@@ -118,7 +118,7 @@ func (repo *bucketRepository) GetById(ctx context.Context, id string) (domainToo
 		if errors.Is(err, daoTools.ErrBucketNotFound) {
 			// 数据库不存在，设置防穿透标记
 			_ = repo.cache.SetNotFound(ctx, id)
-			return domainTools.Bucket{}, nil
+			return domainTools.Bucket{}, daoTools.ErrBucketNotFound
 		}
 		return domainTools.Bucket{}, err
 	}

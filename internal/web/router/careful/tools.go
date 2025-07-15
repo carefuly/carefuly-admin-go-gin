@@ -17,6 +17,7 @@ import (
 	repositorySystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/system"
 	repositoryTools "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/tools"
 	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
+	serviceThird "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
 	serviceTools "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
 	handlerTools "github.com/carefuly/carefuly-admin-go-gin/internal/web/handler/careful/tools"
 	"github.com/gin-gonic/gin"
@@ -57,11 +58,14 @@ func (r *ToolsRouter) RegisterRouter(router *gin.RouterGroup) {
 	dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService, userService)
 	dictTypeHandler.RegisterRoutes(baseRouter)
 
+	// 文件
+	fileService := serviceThird.NewBucketFileService()
+
 	// 存储桶
 	bucketCache := cacheTools.NewRedisBucketCache(r.rely.Redis)
 	bucketDAO := daoTools.NewGORMBucketDAO(r.rely.Db.Careful)
 	bucketRepository := repositoryTools.NewBucketRepository(bucketDAO, bucketCache)
 	bucketService := serviceTools.NewBucketService(bucketRepository)
-	bucketHandler := handlerTools.NewBucketHandler(r.rely, bucketService, userService)
+	bucketHandler := handlerTools.NewBucketHandler(r.rely, bucketService, userService, fileService)
 	bucketHandler.RegisterRoutes(baseRouter)
 }

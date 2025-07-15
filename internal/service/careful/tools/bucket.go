@@ -53,7 +53,7 @@ func (svc *bucketService) Create(ctx context.Context, domain domainTools.Bucket)
 		return err
 	}
 	if exists {
-		return repositoryTools.ErrDictNameDuplicate
+		return repositoryTools.ErrBucketNameDuplicate
 	}
 
 	exists, err = svc.repo.CheckExistByCode(ctx, domain.Code, "")
@@ -61,7 +61,7 @@ func (svc *bucketService) Create(ctx context.Context, domain domainTools.Bucket)
 		return err
 	}
 	if exists {
-		return repositoryTools.ErrDictCodeDuplicate
+		return repositoryTools.ErrBucketCodeDuplicate
 	}
 
 	if err := svc.repo.Create(ctx, domain); err != nil {
@@ -69,11 +69,11 @@ func (svc *bucketService) Create(ctx context.Context, domain domainTools.Bucket)
 		if field, isDuplicate := svc.IsDuplicateEntryError(err); isDuplicate {
 			switch field {
 			case "name":
-				return repositoryTools.ErrDictNameDuplicate
+				return repositoryTools.ErrBucketNameDuplicate
 			case "code":
-				return repositoryTools.ErrDictCodeDuplicate
+				return repositoryTools.ErrBucketCodeDuplicate
 			case "all":
-				return repositoryTools.ErrDictDuplicate
+				return repositoryTools.ErrBucketDuplicate
 			default:
 				return err
 			}

@@ -70,8 +70,6 @@ func (dao *GORMBucketDAO) Update(ctx context.Context, model tools.Bucket) error 
 		Where("id = ? AND version = ?", model.Id, model.Version).
 		Updates(map[string]any{
 			"name":     model.Name,
-			"code":     model.Code,
-			"size":     model.Size,
 			"sort":     model.Sort,
 			"status":   model.Status,
 			"version":  gorm.Expr("version + 1"),

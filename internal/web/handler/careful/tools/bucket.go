@@ -15,6 +15,7 @@ import (
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	serviceSystem "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/system"
+	serviceThird "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/third"
 	serviceTools "github.com/carefuly/carefuly-admin-go-gin/internal/service/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
@@ -42,7 +43,6 @@ type CreateBucketRequest struct {
 type UpdateBucketRequest struct {
 	Id      string `json:"id" binding:"required"`                     // 主键ID
 	Name    string `json:"name" binding:"required,max=50"`            // 存储桶名称
-	Code    string `json:"code" binding:"required,max=50"`            // 存储桶大小(GB)
 	Sort    int    `json:"sort" binding:"omitempty" default:"1"`      // 排序
 	Status  bool   `json:"status" binding:"omitempty" default:"true"` // 状态【true-启用 false-停用】
 	Version int    `json:"version" binding:"omitempty"`               // 版本
@@ -73,13 +73,16 @@ type bucketHandler struct {
 	rely    config.RelyConfig
 	svc     serviceTools.BucketService
 	userSvc serviceSystem.UserService
+	fileSvc serviceThird.BucketFileService
 }
 
-func NewBucketHandler(rely config.RelyConfig, svc serviceTools.BucketService, userSvc serviceSystem.UserService) BucketHandler {
+func NewBucketHandler(rely config.RelyConfig, svc serviceTools.BucketService,
+	userSvc serviceSystem.UserService, fileSvc serviceThird.BucketFileService) BucketHandler {
 	return &bucketHandler{
 		rely:    rely,
 		svc:     svc,
 		userSvc: userSvc,
+		fileSvc: fileSvc,
 	}
 }
 
@@ -111,7 +114,7 @@ func (h *bucketHandler) Create(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
-		zap.S().Error("用户ID获取失败", uid)
+		zap.S().Error("用户ID获取失败 >>> ", uid)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -119,7 +122,7 @@ func (h *bucketHandler) Create(ctx *gin.Context) {
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("获取用户失败", err.Error())
+		zap.S().Error("获取用户失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -159,10 +162,17 @@ func (h *bucketHandler) Create(ctx *gin.Context) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "存储桶已存在", nil)
 			return
 		default:
-			zap.S().Error("创建存储桶失败", err.Error())
+			zap.S().Error("创建存储桶失败 >>> ", err.Error())
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
+	}
+
+	// 创建关联目录（重要：在DB事务成功后执行）
+	if err := h.fileSvc.CreateBucketDir(ctx, req.Code); err != nil {
+		zap.S().Error("创建存储桶目录失败 >>> ", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
 	}
 
 	response.NewResponse().SuccessResponse(ctx, "新增成功", nil)
@@ -186,9 +196,25 @@ func (h *bucketHandler) Delete(ctx *gin.Context) {
 		return
 	}
 
+	detail, err := h.svc.GetById(ctx, id)
+
 	if err := h.svc.Delete(ctx, id); err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("删除存储桶失败", err.Error())
+		zap.S().Error("删除存储桶失败 >>> ", err.Error())
+		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	if err != nil {
+		zap.S().Error("删除查询存储桶异常 >>> ", err.Error())
+		// 不存在也友好提示
+		response.NewResponse().SuccessResponse(ctx, "删除成功", nil)
+		return
+	}
+
+	// 删除关联目录（在DB成功后执行）
+	if err := h.fileSvc.DeleteBucketDir(ctx, detail.Code); err != nil {
+		zap.S().Error("删除存储桶目录失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -214,10 +240,26 @@ func (h *bucketHandler) BatchDelete(ctx *gin.Context) {
 		return
 	}
 
+	for _, id := range ids {
+		detail, err := h.svc.GetById(ctx, id)
+
+		if err != nil {
+			zap.S().Error("删除查询存储桶异常 >>> ", err.Error())
+			continue
+		}
+
+		// 删除关联目录（在DB成功后执行）
+		if err := h.fileSvc.DeleteBucketDir(ctx, detail.Code); err != nil {
+			zap.S().Error("删除存储桶目录失败 >>> ", err.Error())
+			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
+		}
+	}
+
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("批量存储桶异常", err.Error())
+		zap.S().Error("批量存储桶异常 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -240,7 +282,7 @@ func (h *bucketHandler) Update(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
-		zap.S().Error("用户ID获取失败", uid)
+		zap.S().Error("用户ID获取失败 >>> ", uid)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -248,7 +290,7 @@ func (h *bucketHandler) Update(ctx *gin.Context) {
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("获取用户失败", err.Error())
+		zap.S().Error("获取用户失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -272,7 +314,6 @@ func (h *bucketHandler) Update(ctx *gin.Context) {
 			},
 			Status: req.Status,
 			Name:   req.Name,
-			Code:   req.Code,
 		},
 	}
 
@@ -291,7 +332,7 @@ func (h *bucketHandler) Update(ctx *gin.Context) {
 			response.NewResponse().ErrorResponse(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			zap.S().Error("更新存储桶失败", err.Error())
+			zap.S().Error("更新存储桶失败 >>> ", err.Error())
 			response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -325,7 +366,7 @@ func (h *bucketHandler) GetById(ctx *gin.Context) {
 			return
 		}
 		ctx.Set("internal", err.Error())
-		zap.S().Error("获取存储桶失败", err.Error())
+		zap.S().Error("获取存储桶失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -354,7 +395,7 @@ func (h *bucketHandler) GetListPage(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
-		zap.S().Error("用户ID获取失败", uid)
+		zap.S().Error("用户ID获取失败 >>> ", uid)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -362,7 +403,7 @@ func (h *bucketHandler) GetListPage(ctx *gin.Context) {
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("获取用户失败", err.Error())
+		zap.S().Error("获取用户失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -393,7 +434,7 @@ func (h *bucketHandler) GetListPage(ctx *gin.Context) {
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		zap.S().Error("获取分页列表异常", err.Error())
+		zap.S().Error("获取分页列表异常 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -425,7 +466,7 @@ func (h *bucketHandler) GetListAll(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
-		zap.S().Error("用户ID获取失败", uid)
+		zap.S().Error("用户ID获取失败 >>> ", uid)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -433,7 +474,7 @@ func (h *bucketHandler) GetListAll(ctx *gin.Context) {
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("获取用户失败", err.Error())
+		zap.S().Error("获取用户失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -458,7 +499,7 @@ func (h *bucketHandler) GetListAll(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		zap.S().Error("获取列表异常", err.Error())
+		zap.S().Error("获取列表异常 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -485,7 +526,7 @@ func (h *bucketHandler) Export(ctx *gin.Context) {
 	uid, ok := ctx.MustGet("userId").(string)
 	if !ok {
 		ctx.Set("internal", uid)
-		zap.S().Error("用户ID获取失败", uid)
+		zap.S().Error("用户ID获取失败 >>> ", uid)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -493,7 +534,7 @@ func (h *bucketHandler) Export(ctx *gin.Context) {
 	user, err := h.userSvc.GetById(ctx, uid)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.S().Error("获取用户失败", err.Error())
+		zap.S().Error("获取用户失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -518,7 +559,7 @@ func (h *bucketHandler) Export(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		zap.S().Error("获取列表异常", err.Error())
+		zap.S().Error("获取列表异常 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -559,7 +600,7 @@ func (h *bucketHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		zap.S().Error("导出数据存储桶失败", err.Error())
+		zap.S().Error("导出数据存储桶失败 >>> ", err.Error())
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

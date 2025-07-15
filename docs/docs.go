@@ -2973,6 +2973,453 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/tools/bucket/create": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建存储桶",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "创建存储桶",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreateBucketRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tools.CreateBucketRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/delete/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除存储桶",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "批量删除存储桶",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id存储桶",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "删除存储桶",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/export": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导出存储桶数据到Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "导出存储桶数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "存储桶名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "存储桶编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id存储桶信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "获取存储桶",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有存储桶列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "获取所有存储桶",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "存储桶名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "存储桶编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取存储桶分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "获取存储桶分页列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "存储桶名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "存储桶编码",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tools.BucketListPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/bucket/update": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新存储桶信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/存储桶管理"
+                ],
+                "summary": "更新存储桶",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateBucketRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tools.UpdateBucketRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tools/dict/create": {
             "post": {
                 "security": [
@@ -4905,6 +5352,63 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "编码",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "size": {
+                    "description": "存储桶大小(GB)",
+                    "type": "integer"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本号",
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict": {
             "type": "object",
             "properties": {
@@ -6060,17 +6564,29 @@ const docTemplate = `{
                         "$ref": "#/definitions/system.MenuAndButtonTree"
                     }
                 },
+                "disabled": {
+                    "description": "是否禁用",
+                    "type": "boolean"
+                },
                 "id": {
+                    "description": "菜单按钮id",
                     "type": "string"
                 },
-                "parentID": {
+                "parent_id": {
+                    "description": "父菜单id",
                     "type": "string"
                 },
                 "title": {
+                    "description": "菜单按钮名称",
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/menu.TypeConst"
+                    "description": "菜单按钮类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
                 }
             }
         },
@@ -6084,17 +6600,29 @@ const docTemplate = `{
                         "$ref": "#/definitions/system.MenuAndColumnTree"
                     }
                 },
+                "disabled": {
+                    "description": "是否禁用",
+                    "type": "boolean"
+                },
                 "id": {
+                    "description": "菜单列id",
                     "type": "string"
                 },
-                "parentID": {
+                "parent_id": {
+                    "description": "父菜单id",
                     "type": "string"
                 },
                 "title": {
+                    "description": "菜单列名称",
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/menu.TypeConst"
+                    "description": "菜单列类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.TypeConst"
+                        }
+                    ]
                 }
             }
         },
@@ -6629,24 +7157,10 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
-                "button_ids": {
-                    "description": "按钮ID数组",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "code": {
                     "description": "角色编码",
                     "type": "string",
                     "maxLength": 100
-                },
-                "column_ids": {
-                    "description": "列权限ID数组",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "data_range": {
                     "description": "数据权限范围",
@@ -6666,6 +7180,20 @@ const docTemplate = `{
                 "id": {
                     "description": "主键ID",
                     "type": "string"
+                },
+                "menu_button_ids": {
+                    "description": "按钮ID数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "menu_column_ids": {
+                    "description": "列权限ID数组",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "menu_ids": {
                     "description": "菜单ID数组",
@@ -6738,6 +7266,69 @@ const docTemplate = `{
                 "img": {
                     "description": "验证码图片",
                     "type": "string"
+                }
+            }
+        },
+        "tools.BucketListPageResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket"
+                    }
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页数量",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "tools.CreateBucketRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "存储桶编码",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "name": {
+                    "description": "存储桶名称",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "size": {
+                    "description": "存储桶大小(GB)",
+                    "type": "integer",
+                    "default": 1
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
@@ -6899,6 +7490,43 @@ const docTemplate = `{
                 },
                 "total": {
                     "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "tools.UpdateBucketRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "存储桶名称",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
+                "version": {
+                    "description": "版本",
                     "type": "integer"
                 }
             }

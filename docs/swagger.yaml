@@ -564,6 +564,48 @@ definitions:
         description: 版本号
         type: integer
     type: object
+  github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      size:
+        description: 存储桶大小(GB)
+        type: integer
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      updateTime:
+        description: 更新时间
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
   github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Dict:
     properties:
       belongDept:
@@ -1402,14 +1444,22 @@ definitions:
         items:
           $ref: '#/definitions/system.MenuAndButtonTree'
         type: array
+      disabled:
+        description: 是否禁用
+        type: boolean
       id:
+        description: 菜单按钮id
         type: string
-      parentID:
+      parent_id:
+        description: 父菜单id
         type: string
       title:
+        description: 菜单按钮名称
         type: string
       type:
-        $ref: '#/definitions/menu.TypeConst'
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
+        description: 菜单按钮类型
     type: object
   system.MenuAndColumnTree:
     properties:
@@ -1418,14 +1468,22 @@ definitions:
         items:
           $ref: '#/definitions/system.MenuAndColumnTree'
         type: array
+      disabled:
+        description: 是否禁用
+        type: boolean
       id:
+        description: 菜单列id
         type: string
-      parentID:
+      parent_id:
+        description: 父菜单id
         type: string
       title:
+        description: 菜单列名称
         type: string
       type:
-        $ref: '#/definitions/menu.TypeConst'
+        allOf:
+        - $ref: '#/definitions/menu.TypeConst'
+        description: 菜单列类型
     type: object
   system.MenuButtonListPageResponse:
     properties:
@@ -1819,20 +1877,10 @@ definitions:
     type: object
   system.UpdateRoleRequest:
     properties:
-      button_ids:
-        description: 按钮ID数组
-        items:
-          type: string
-        type: array
       code:
         description: 角色编码
         maxLength: 100
         type: string
-      column_ids:
-        description: 列权限ID数组
-        items:
-          type: string
-        type: array
       data_range:
         allOf:
         - $ref: '#/definitions/role.DataRangeConst'
@@ -1845,6 +1893,16 @@ definitions:
       id:
         description: 主键ID
         type: string
+      menu_button_ids:
+        description: 按钮ID数组
+        items:
+          type: string
+        type: array
+      menu_column_ids:
+        description: 列权限ID数组
+        items:
+          type: string
+        type: array
       menu_ids:
         description: 菜单ID数组
         items:
@@ -1902,6 +1960,53 @@ definitions:
       img:
         description: 验证码图片
         type: string
+    type: object
+  tools.BucketListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
+  tools.CreateBucketRequest:
+    properties:
+      code:
+        description: 存储桶编码
+        maxLength: 50
+        type: string
+      name:
+        description: 存储桶名称
+        maxLength: 50
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      size:
+        default: 1
+        description: 存储桶大小(GB)
+        type: integer
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+    required:
+    - code
+    - name
     type: object
   tools.CreateDictRequest:
     properties:
@@ -2018,6 +2123,34 @@ definitions:
       total:
         description: 总数
         type: integer
+    type: object
+  tools.UpdateBucketRequest:
+    properties:
+      id:
+        description: 主键ID
+        type: string
+      name:
+        description: 存储桶名称
+        maxLength: 50
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      version:
+        description: 版本
+        type: integer
+    required:
+    - id
+    - name
     type: object
   tools.UpdateDictRequest:
     properties:
@@ -4005,6 +4138,291 @@ paths:
       summary: 生成指定业务验证码
       tags:
       - 第三方业务管理
+  /v1/tools/bucket/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建存储桶
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateBucketRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.CreateBucketRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建存储桶
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id存储桶
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除存储桶
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除存储桶
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除存储桶
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出存储桶数据到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 存储桶名称
+        in: query
+        name: name
+        type: string
+      - description: 存储桶编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导出存储桶数据
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id存储桶信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取存储桶
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有存储桶列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 存储桶名称
+        in: query
+        name: name
+        type: string
+      - description: 存储桶编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_carefuly-admin-go-gin_internal_domain_careful_tools.Bucket'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有存储桶
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取存储桶分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 存储桶名称
+        in: query
+        name: name
+        type: string
+      - description: 存储桶编码
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.BucketListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取存储桶分页列表
+      tags:
+      - 系统工具/存储桶管理
+  /v1/tools/bucket/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新存储桶信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateBucketRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.UpdateBucketRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新存储桶
+      tags:
+      - 系统工具/存储桶管理
   /v1/tools/dict/create:
     post:
       consumes:
