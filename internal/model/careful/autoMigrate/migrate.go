@@ -9,14 +9,14 @@
 package autoMigrate
 
 import (
-	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
+	"github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/logger"
 	"gorm.io/gorm"
 )
 
 func AutoMigrate(db *gorm.DB) {
 	// initSystem(db)
-	initTools(db)
-	// initLogger(db)
+	// initTools(db)
+	initLogger(db)
 }
 
 func initSystem(db *gorm.DB) {
@@ -32,9 +32,10 @@ func initSystem(db *gorm.DB) {
 func initTools(db *gorm.DB) {
 	// tools.NewDict().AutoMigrate(db)
 	// tools.NewDictType().AutoMigrate(db)
-	tools.NewBucket().AutoMigrate(db)
+	// tools.NewBucket().AutoMigrate(db)
 }
 
 func initLogger(db *gorm.DB) {
 	// logger.NewOperateLogger().AutoMigrate(db)
+	logger.NewCacheLogger().AutoMigrate(db)
 }

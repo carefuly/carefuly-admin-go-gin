@@ -13,6 +13,7 @@ import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/jwt"
+	"github.com/carefuly/carefuly-admin-go-gin/pkg/utils/requestUtils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -120,11 +121,20 @@ func (l *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 			return
 		}
 
+		// gin.Context.Set() 方法将数据存储到上下文，可以在后续的中间件或处理程序中访问。
+		// 通过 gin.Context.Get() 方法获取存储在上下文中的数据。
+		// 通过 gin.Context.Set() 方法存储数据时，需要指定一个键，以便在后续的中间件或处理程序中访问该数据。
+		// 通过 gin.Context.Get() 方法获取数据时，需要指定相同的键。
+		ctx.Set("requestIp", requestUtils.NormalizeIP(ctx))
+		ctx.Set("request", ctx.Request)
+
 		// 将用户信息存储到上下文
+
 		ctx.Set("claims", claims)
 		ctx.Set("userId", claims.UserId)
 		ctx.Set("username", claims.Username)
 		ctx.Set("userType", claims.UserType)
+		ctx.Set("deptId", claims.DeptId)
 	}
 }
 

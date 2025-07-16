@@ -25,6 +25,7 @@ type BucketCache interface {
 	Set(ctx context.Context, domain domainTools.Bucket) error
 	Del(ctx context.Context, id string) error
 	SetNotFound(ctx context.Context, id string) error // 防止缓存穿透
+	Key(id string) string
 }
 
 type RedisBucketCache struct {
@@ -40,7 +41,7 @@ func NewRedisBucketCache(cmd redis.Cmdable) BucketCache {
 }
 
 func (c *RedisBucketCache) Get(ctx context.Context, id string) (*domainTools.Bucket, error) {
-	key := c.key(id)
+	key := c.Key(id)
 
 	data, err := c.cmd.Get(ctx, key).Result()
 	if err != nil {
@@ -61,7 +62,7 @@ func (c *RedisBucketCache) Get(ctx context.Context, id string) (*domainTools.Buc
 }
 
 func (c *RedisBucketCache) Set(ctx context.Context, domain domainTools.Bucket) error {
-	key := c.key(domain.Id)
+	key := c.Key(domain.Id)
 	data, err := json.Marshal(domain)
 	if err != nil {
 		return err
@@ -70,16 +71,16 @@ func (c *RedisBucketCache) Set(ctx context.Context, domain domainTools.Bucket) e
 }
 
 func (c *RedisBucketCache) Del(ctx context.Context, id string) error {
-	key := c.key(id)
+	key := c.Key(id)
 	return c.cmd.Del(ctx, key).Err()
 }
 
 func (c *RedisBucketCache) SetNotFound(ctx context.Context, id string) error {
-	key := c.key(id)
+	key := c.Key(id)
 	// 设置短暂的有效期防止缓存穿透
 	return c.cmd.Set(ctx, key, "not_found", time.Minute).Err()
 }
 
-func (c *RedisBucketCache) key(id string) string {
+func (c *RedisBucketCache) Key(id string) string {
 	return fmt.Sprintf("careful:tools:bucket:info:%s", id)
 }

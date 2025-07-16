@@ -12,6 +12,8 @@ import (
 	config "github.com/carefuly/carefuly-admin-go-gin/config/file"
 	cacheSystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/careful/system"
 	cacheTools "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/careful/tools"
+	cacheDecorator "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/decorator/careful/tools"
+	cacheRecord "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/decorator/record"
 	daoSystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/dao/careful/system"
 	daoTools "github.com/carefuly/carefuly-admin-go-gin/internal/repository/dao/careful/tools"
 	repositorySystem "github.com/carefuly/carefuly-admin-go-gin/internal/repository/repository/careful/system"
@@ -63,8 +65,10 @@ func (r *ToolsRouter) RegisterRouter(router *gin.RouterGroup) {
 
 	// 存储桶
 	bucketCache := cacheTools.NewRedisBucketCache(r.rely.Redis)
+	bucketCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	bucketCacheLoggingDecorator := cacheDecorator.NewBucketCacheLoggingDecorator(bucketCache, bucketCacheLogger)
 	bucketDAO := daoTools.NewGORMBucketDAO(r.rely.Db.Careful)
-	bucketRepository := repositoryTools.NewBucketRepository(bucketDAO, bucketCache)
+	bucketRepository := repositoryTools.NewBucketRepository(bucketDAO, bucketCacheLoggingDecorator)
 	bucketService := serviceTools.NewBucketService(bucketRepository)
 	bucketHandler := handlerTools.NewBucketHandler(r.rely, bucketService, userService, fileService)
 	bucketHandler.RegisterRoutes(baseRouter)

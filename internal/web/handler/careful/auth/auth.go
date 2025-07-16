@@ -173,7 +173,7 @@ func (h *authHandler) LoginHandler(ctx *gin.Context) {
 	}
 
 	// 生成JWT令牌
-	token, err := jwt.GenerateToken(ctx, user.Id, user.Username, int(user.UserType), h.rely.Token.Secret, h.rely.Token.Expire)
+	token, err := jwt.GenerateToken(ctx, user.Id, user.Username, int(user.UserType), user.DeptId, h.rely.Token.Secret, h.rely.Token.Expire)
 	if err != nil {
 		zap.S().Errorf("生成令牌失败: %v", err)
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "生成令牌失败: "+err.Error(), nil)
@@ -233,7 +233,7 @@ func (h *authHandler) RefreshTokenHandler(ctx *gin.Context) {
 	}
 
 	// 生成新的JWT令牌
-	newToken, err := jwt.GenerateToken(ctx, user.Id, user.Username, int(user.UserType), h.rely.Token.Secret, h.rely.Token.Expire)
+	newToken, err := jwt.GenerateToken(ctx, user.Id, user.Username, int(user.UserType), user.DeptId, h.rely.Token.Secret, h.rely.Token.Expire)
 	if err != nil {
 		zap.L().Error("生成新令牌失败", zap.Error(err))
 		response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)

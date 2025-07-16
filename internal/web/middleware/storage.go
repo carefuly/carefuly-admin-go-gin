@@ -92,7 +92,7 @@ func (s *Storage) StorageLogger(db *gorm.DB) gin.HandlerFunc {
 
 			record.RequestStatus = c.Writer.Status()
 			record.RequestMethod = c.Request.Method
-			record.RequestIp = c.ClientIP()
+			record.RequestIp = requestUtils.NormalizeIP(c)
 
 			record.RequestPath = path
 			record.RequestQuery = query
@@ -127,7 +127,7 @@ func (s *Storage) StorageLogger(db *gorm.DB) gin.HandlerFunc {
 				zap.String("requestTime", fmt.Sprintf("%v", latency)),
 				zap.Int("requestStatus", c.Writer.Status()),
 				zap.String("requestMethod", c.Request.Method),
-				zap.String("requestIp", c.ClientIP()),
+				zap.String("requestIp", requestUtils.NormalizeIP(c)),
 				zap.String("requestPath", path),
 				zap.Any("requestQuery", query),
 				zap.Any("requestBody", loggingReader.Format()),

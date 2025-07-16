@@ -29,16 +29,18 @@ type Claims struct {
 	Username  string `json:"username"`
 	UserType  int    `json:"userType"`
 	UserAgent string `json:"userAgent"`
+	DeptId    string `json:"deptId"`
 }
 
 // GenerateToken generates a new JWT token
-func GenerateToken(ctx *gin.Context, userId, username string, userType int, secret string, expireHours int) (string, error) {
+func GenerateToken(ctx *gin.Context, userId, username string, userType int, deptId, secret string, expireHours int) (string, error) {
 	// Set claims
 	claims := Claims{
 		UserId:    userId,
 		Username:  username,
 		UserType:  userType,
 		UserAgent: ctx.GetHeader("User-Agent"),
+		DeptId:    deptId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expireHours))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

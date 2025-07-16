@@ -14,6 +14,7 @@ import (
 	domainTools "github.com/carefuly/carefuly-admin-go-gin/internal/domain/careful/tools"
 	modelTools "github.com/carefuly/carefuly-admin-go-gin/internal/model/careful/tools"
 	cacheTools "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/careful/tools"
+	cacheDecorator "github.com/carefuly/carefuly-admin-go-gin/internal/repository/cache/decorator/careful/tools"
 	daoTools "github.com/carefuly/carefuly-admin-go-gin/internal/repository/dao/careful/tools"
 	"github.com/carefuly/carefuly-admin-go-gin/pkg/models"
 	"go.uber.org/zap"
@@ -43,10 +44,10 @@ type BucketRepository interface {
 
 type bucketRepository struct {
 	dao   daoTools.BucketDAO
-	cache cacheTools.BucketCache
+	cache cacheDecorator.BucketCacheLoggingDecorator
 }
 
-func NewBucketRepository(dao daoTools.BucketDAO, cache cacheTools.BucketCache) BucketRepository {
+func NewBucketRepository(dao daoTools.BucketDAO, cache cacheDecorator.BucketCacheLoggingDecorator) BucketRepository {
 	return &bucketRepository{
 		dao:   dao,
 		cache: cache,
